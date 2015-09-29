@@ -1,0 +1,1 @@
+/eos/uscms/store/user/lfeng7/ntuples/nick_ntuples/TT_CT10_TuneZ2star_8TeV-powheg-tauola/*
