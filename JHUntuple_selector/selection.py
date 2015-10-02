@@ -7,7 +7,7 @@ import math
 # Some control var
 evt_to_run = -1 
 csv_cut = 0.679
-event_type = 'Powheg_TT_btag'
+#event_type = 'Powheg_TT_btag'
 events_passed = 2000
 
 
@@ -43,6 +43,16 @@ parser.add_option('--maxfiles', metavar='F', type='int', action='store',
                   dest='maxFiles',
                   help='max number of input ntuple files')
 
+parser.add_option('--maxEvt', metavar='F', type='int', action='store',
+                  default = 100000,
+                  dest='maxFiles',
+                  help='max number of input ntuple files')
+
+parser.add_option('--type', metavar='F', type='string', action='store',
+                  default = 'test',
+                  dest='evtType',
+                  help='type of sample files')
+
 (options, args) = parser.parse_args()
 
 argv = []
@@ -61,13 +71,17 @@ elif options.txtfiles:
             files.extend(inputfiles)
 else:
     files = []
+
+# Set sample type
+event_type = options.evtType
+
 # Find the type of sample. Ugly but works for now :(
 if options.txtfiles:
     type_ = options.txtfiles.split('.')
     type_ = type_[0].split('ntuples_')
     event_type = type_[1]    
-print 'Processing',event_type,'type of events'
-print 'Getting',len(files),'ntuple files.'
+#print 'Processing',event_type,'type of events'
+#print 'Getting',len(files),'ntuple files.'
 #print 'getting files: ', files
 
 
