@@ -58,10 +58,21 @@ def normalized_compare_plots(histlist):
      
 # Make plots and upload to webpage
 def plotting(histlist,event_type='MC',upload = False,testing = 'testing',logy=False):
+    prefix = './plots/'
+    # check if plotting dir is made. If not , make it now
+    if not os.path.exists(prefix):
+        os.mkdir(prefix)
+        print 'Making '+prefix
+    # Set the dir to put all plots
     if testing == "testing":
         plotdir = 'testing_plots/'
-    else : plotdir = 'plots/'
+    else : 
+        plotdir = prefix+event_type+'/'
+        if not os.path.exists(plotdir):
+            os.mkdir(plotdir)
+            print 'Creating new dir '+plotdir
     fout = ROOT.TFile(plotdir+event_type+'_plots.root','recreate')
+    # plotting
     for ihist in histlist:
         name = plotdir+event_type+'_'+ihist.GetName()+'.png'
         c1 = ROOT.TCanvas()
@@ -69,20 +80,33 @@ def plotting(histlist,event_type='MC',upload = False,testing = 'testing',logy=Fa
         ihist.Draw()
         c1.SaveAs(name)
         c1.Write()
+    # dump to webpage
     if upload == "dump":
         import os
         if testing == "testing" : 
             os.system('source ./dump_testing.sh')
-        else : os.system('source ./dump_plots.sh')
+        else : os.system('scp '+plotdir+'*.png ~/index.php pha:/home/lfeng/public_html/research/Dump/')
+    # file closure
+    fout.Close()
 
 # Save histograms to root files
-def saving(histlist,event_type='MC',testing = 'testing'):
-    if testing == "testing":
-        plotdir = 'testing_plots/'
-    else : plotdir = 'plots/'
-    fout = ROOT.TFile(plotdir+event_type+'_selection_output.root','recreate')
+def saving(histlist,event_type='MC',index = ''):
+    prefix = './output_rootfiles/'
+    # check if plotting dir is made. If not , make it now
+    if not os.path.exists(prefix):
+        os.mkdir(prefix)
+        print 'Making '+prefix
+    # Set the dir to put all output rootfiles
+    savedir = prefix+event_type+'/'
+        if not os.path.exists(savedir):
+            os.mkdir(savedir)
+            print 'Creating new dir '+savedir
+    # Saving root files
+    fout = ROOT.TFile(savedir+event_type+'_selection_output'+index+'.root','recreate')
     for ihist in histlist:
         ihist.Write()
+    # file closure
+    fout.Close()
 
 # Print pdgIds of all daughter particles
 def check_daus( gen ):
