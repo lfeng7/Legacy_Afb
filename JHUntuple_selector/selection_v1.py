@@ -50,6 +50,11 @@ parser.add_option('--maxfiles', metavar='F', type='int', action='store',
                   dest='maxFiles',
                   help='max number of input ntuple files')
 
+parser.add_option('--startfile', metavar='F', type='int', action='store',
+                  default = 0,
+                  dest='startfile',
+                  help='starting file index of input ntuple files')
+
 parser.add_option('--maxEvts', metavar='F', type='int', action='store',
                   default = 100000,
                   dest='maxEvts',
@@ -80,14 +85,14 @@ def main():
         allfiles = []
         with open(options.txtfiles, 'r') as input_:
             for line in input_:
-                print line.strip()
+#                print line.strip()
                 somefiles =  glob.glob(line.strip())
                 allfiles.extend(somefiles)
     else:
         allfiles = []
 
     # Only keep certain number of input files for fexibility
-    files = [allfiles[i] for i in range(options.maxFiles)]  
+    files = [allfiles[i] for i in range(options.startfile,options.startfile+options.maxFiles)]  
     # Print out information on the input files
     print 'getting these PATtuple files:'
     for ifile in files : print ifile
@@ -104,12 +109,13 @@ def main():
     # Run selection function to do selections
     # If we want to make plots, use many files input form
     # If not make plots, each PATtuple file will generate a ntuple files, with index go from 0 to maxFiles
-    if options.makeplots :
+    if options.makeplots is True:
         selection(files)
     else :
         global f_index
         f_index = 0
         for ifile in files:
+            print 'processing file  '+ifile
             selection(ifile)
             f_index += 1
 
@@ -220,7 +226,7 @@ def selection(patfile):
         if n_evts_passed == events_passed : 
             print 'reached',n_evts_passed,'candidate events'
             break
-        if n_evt == evt_to_run : 
+        if n_evt == options.maxEvts: 
             print 'reached',n_evt,'events looped'
             break
         n_evt += 1
@@ -370,6 +376,7 @@ def selection(patfile):
     timer.Stop()
 
     # Print out our timing information
+    print '\n'
     rtime = timer.RealTime(); # Real time (or "wall time")
     ctime = timer.CpuTime(); # CPU time
     print("RealTime={0:6.2f} seconds, CpuTime={1:6.2f} seconds").format(rtime,ctime)
@@ -380,13 +387,14 @@ def selection(patfile):
     # Run summary
     print("Analyzed events: {0:6d}").format(n_evt)
     print("Candidate events: {0:6d}").format(n_evts_passed)
+    print '\n'
 
     # Make and save plots
     histlist = [h_el_cand_pt,h_MET,h_Njets,h_Nbjets,h_m3,h_jets_pt,h_num_gen_b]
     histlist.extend([h_cutflow,h_cutflow_norm,h_selection_eff_norm,h_selection_eff])
     histlist.extend([h_csv_all_jets,h_number_bjets_partonflavor])
     histlist.extend([h_bjets_csv,h_number_tagged_bjets])
-    if options.makeplots :
+    if options.makeplots is True:
         plotting(histlist,event_type,'not dump',options.isTesting)
         histlist1 = [h_cutflow,h_cutflow_norm]
         plotting(histlist1,event_type+"_extra","dump",options.isTesting,"setlogy")

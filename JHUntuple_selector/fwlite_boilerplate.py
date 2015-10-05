@@ -40,7 +40,7 @@ def DeltaR2(a,b):
 def write_out (inputs,outfile):
     with open(outfile, 'w') as f:
         for line in inputs:
-   	    f.write(line + '\n')
+            f.write(line + '\n')
 
 def normalized_compare_plots(histlist):
     """Make a compared plots with different color and renormalized"""
@@ -82,7 +82,6 @@ def plotting(histlist,event_type='MC',upload = False,testing = 'testing',logy=Fa
         c1.Write()
     # dump to webpage
     if upload == "dump":
-        import os
         if testing == "testing" : 
             os.system('source ./dump_testing.sh')
         else : os.system('scp '+plotdir+'*.png ~/index.php pha:/home/lfeng/public_html/research/Dump/')
@@ -98,11 +97,11 @@ def saving(histlist,event_type='MC',index = ''):
         print 'Making '+prefix
     # Set the dir to put all output rootfiles
     savedir = prefix+event_type+'/'
-        if not os.path.exists(savedir):
-            os.mkdir(savedir)
-            print 'Creating new dir '+savedir
+    if not os.path.exists(savedir) : 
+        os.mkdir(savedir)
+        print 'Creating new dir '+savedir
     # Saving root files
-    fout = ROOT.TFile(savedir+event_type+'_selection_output'+index+'.root','recreate')
+    fout = ROOT.TFile(savedir+event_type+'_selection_output'+str(index)+'.root','recreate')
     for ihist in histlist:
         ihist.Write()
     # file closure
