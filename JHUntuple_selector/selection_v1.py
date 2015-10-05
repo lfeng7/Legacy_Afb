@@ -219,6 +219,10 @@ def selection(patfile):
     h_Nbjets.GetXaxis().SetNdivisions(5)
     h_num_gen_b.GetXaxis().SetNdivisions(5)
 
+    # This is to prevent hists been destroyed after file closes 
+    tmp_hlist = [h_el_cand_pt,h_el_cand_eta,h_m3,h_cutflow,h_selection_eff,h_Njets,h_num_gen_b,h_jets_pt]
+    tmp_hlist.extend([h_MET,h_Nbjets,h_csv_all_jets,h_number_bjets_partonflavor,h_number_tagged_bjets,h_bjets_csv])
+    for ihist in tmp_hlist : ihist.SetDirectory(0)
 
     # Start main event loop
     for evt in events:
@@ -231,9 +235,7 @@ def selection(patfile):
             print 'reached',n_evt,'events looped'
             break
         n_evt += 1
-        # Initialize cutflow histogram
-        h_cutflow.Fill("step0",1)
-        
+
         # Read objects in nTuple
         evt.getByLabel(el_prefix,'electron',el_hndl)
         evt.getByLabel(el_prefix,'electroniso',el_iso_hndl)
@@ -322,6 +324,9 @@ def selection(patfile):
  
         #### Signal events selection ####
 
+        # Initialize cutflow histogram
+        h_cutflow.Fill("step0",1)
+ 
         if not len(el_cand)==1 : continue # continue
         h_cutflow.Fill('el_cand',1)
         if len(mu_loose) > 0 : continue
@@ -382,7 +387,7 @@ def selection(patfile):
     histlist.extend([h_csv_all_jets,h_number_bjets_partonflavor])
     histlist.extend([h_bjets_csv,h_number_tagged_bjets])
     if options.makeplots == 'True' :
-        print '\nPlot and save\n'
+        print '\nPlot and saven'
         plotting(histlist,event_type,'not dump',options.isTesting)
         histlist1 = [h_cutflow_log,h_cutflow_norm_log]
         plotting(histlist1,event_type,"dump",options.isTesting,"setlogy")

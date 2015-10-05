@@ -15,21 +15,29 @@ parser.add_option('--inputfiles', metavar='F', type='string', action='store',
                   dest='inputFiles',
                   help='Input files')
 
+parser.add_option('--maxfiles', metavar='F', type='int', action='store',
+                  default = 2,
+                  dest='maxFiles',
+                  help='max number of input ntuple files')
+
 (options, args) = parser.parse_args()
 
 argv = []
 
 # Get the inputfiles.
 if options.inputFiles:
-    files = glob.glob( options.inputFiles )
+    allfiles = glob.glob( options.inputFiles )
+    # Only keep certain number of input files for fexibility
+    files = [allfiles[i] for i in range(options.maxFiles)]  
+
 print 'getting files', files
 
 # Read input files
 events = Events(files)
 
 # Control constants
-nevt_cut =  1000
-type = 'Powheg_TT'
+nevt_cut = 100
+type = 'MC'
 
 # Handles and labels
 hndl1 = Handle('vector<double>')
@@ -53,7 +61,7 @@ jet_flavor_label =("jhuAk5","AK5PartonFlavour")
 h1 = ROOT.TH1D('met','met;GeV;events',100,0.,200.0)
 h2 = ROOT.TH1D('nels',';nels;events',5,0.5,5.5)
 
-h3 = ROOT.TH1D('csv_all_jets', type+' CSV of all jets;csv;events',100,-20,40)
+h3 = ROOT.TH1D('csv_all_jets', type+' CSV of all jets;csv;events',100,0,1)
 h4 = ROOT.TH1D('csv_b_jets', type+' CSV of b jets;csv;events',100,-20,40)
 h5 = ROOT.TH1D('csv_light_jets', type+' CSV of light jets;csv;events',100,-20,40)
 h6 = ROOT.TH1D('csv_gluon_jets', type+' CSV of gluon jets;csv;events',100,-20,40)
@@ -61,13 +69,14 @@ h6 = ROOT.TH1D('csv_gluon_jets', type+' CSV of gluon jets;csv;events',100,-20,40
 n_evt = 0
 n_evt_csv = 0
 
+print 'Getting',events.size(),'events'
 # Event loop
 for evt in events:
     # counting and stuff
     if n_evt == nevt_cut: break
     #print 'loop over',n_evt,'events'
     n_evt += 1
-    if n_evt%1 == 5000: print 'Loop over',n_evt,'event'
+    if n_evt%5000 == 1: print 'Loop over',n_evt,'event'
 
     # get objects
     evt.getByLabel(jet_csv_label,jet_csv_hndl)
@@ -81,6 +90,7 @@ for evt in events:
     
     # Fill histograms
     for icsv,iflavor in jets : 
+        if icsv<0 or icsv>1 : continue
         h3.Fill(icsv)
         if abs(iflavor) == 5 : h4.Fill(icsv)
         if abs(iflavor) in [1,2,3,4] : h5.Fill(icsv)
