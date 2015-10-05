@@ -70,6 +70,7 @@ def plotting(histlist,event_type='MC',upload = False,testing = 'testing',logy=Fa
         plotdir = prefix+event_type+'/'
         if not os.path.exists(plotdir):
             os.mkdir(plotdir)
+            os.system('cp ~/index.php '+plotdir)
             print 'Creating new dir '+plotdir
     fout = ROOT.TFile(plotdir+event_type+'_plots.root','recreate')
     # plotting
@@ -84,7 +85,7 @@ def plotting(histlist,event_type='MC',upload = False,testing = 'testing',logy=Fa
     if upload == "dump":
         if testing == "testing" : 
             os.system('source ./dump_testing.sh')
-        else : os.system('scp '+plotdir+'*.png ~/index.php pha:/home/lfeng/public_html/research/Dump/')
+        else : os.system('scp -r '+plotdir+'  ~/index.php pha:/home/lfeng/public_html/research/Dump/')
     # file closure
     fout.Close()
 

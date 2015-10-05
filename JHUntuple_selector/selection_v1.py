@@ -17,6 +17,7 @@ csv_cut = 0.679
 #event_type = 'Powheg_TT_btag'
 events_passed = 2000
 
+f_index = 0
 
 from optparse import OptionParser
 
@@ -109,7 +110,7 @@ def main():
     # Run selection function to do selections
     # If we want to make plots, use many files input form
     # If not make plots, each PATtuple file will generate a ntuple files, with index go from 0 to maxFiles
-    if options.makeplots is True:
+    if options.makeplots == 'True' :
         selection(files)
     else :
         global f_index
@@ -370,7 +371,26 @@ def selection(patfile):
 
     h_cutflow_norm = norm(h_cutflow)
     h_selection_eff_norm = norm(h_selection_eff)
+    h_cutflow_log = h_cutflow.Clone()
+    h_cutflow_log.SetName(h_cutflow.GetName()+'_log')
+    h_cutflow_norm_log = h_cutflow_norm.Clone()
+    h_cutflow_norm_log.SetName(h_cutflow_norm.GetName()+'_log')
        
+    # Make and save plots
+    histlist = [h_el_cand_pt,h_MET,h_Njets,h_Nbjets,h_m3,h_jets_pt,h_num_gen_b]
+    histlist.extend([h_cutflow,h_cutflow_norm,h_selection_eff_norm,h_selection_eff])
+    histlist.extend([h_csv_all_jets,h_number_bjets_partonflavor])
+    histlist.extend([h_bjets_csv,h_number_tagged_bjets])
+    if options.makeplots == 'True' :
+        print '\nPlot and save\n'
+        plotting(histlist,event_type,'not dump',options.isTesting)
+        histlist1 = [h_cutflow_log,h_cutflow_norm_log]
+        plotting(histlist1,event_type,"dump",options.isTesting,"setlogy")
+        # Save to root files
+        saving(histlist,event_type)
+    else :
+        print '\nSaving output into root files \n'
+        saving(histlist,event_type,f_index)
 
     # Stop our timer
     timer.Stop()
@@ -389,21 +409,7 @@ def selection(patfile):
     print("Candidate events: {0:6d}").format(n_evts_passed)
     print '\n'
 
-    # Make and save plots
-    histlist = [h_el_cand_pt,h_MET,h_Njets,h_Nbjets,h_m3,h_jets_pt,h_num_gen_b]
-    histlist.extend([h_cutflow,h_cutflow_norm,h_selection_eff_norm,h_selection_eff])
-    histlist.extend([h_csv_all_jets,h_number_bjets_partonflavor])
-    histlist.extend([h_bjets_csv,h_number_tagged_bjets])
-    if options.makeplots is True:
-        plotting(histlist,event_type,'not dump',options.isTesting)
-        histlist1 = [h_cutflow,h_cutflow_norm]
-        plotting(histlist1,event_type+"_extra","dump",options.isTesting,"setlogy")
-        # Save to root files
-        saving(histlist,event_type)
-    else :
-        saving(histlist,event_type,f_index)
 
 
-
-# Actual process
+#########################  Actual process  ##############################
 main()
