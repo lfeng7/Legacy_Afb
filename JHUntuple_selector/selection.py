@@ -15,7 +15,7 @@ import math
 evt_to_run = -1 
 csv_cut = 0.679
 #event_type = 'Powheg_TT_btag'
-events_passed = 2000
+events_passed = -1
 
 f_index = 0
 
@@ -86,27 +86,20 @@ def main():
         allfiles = []
         with open(options.txtfiles, 'r') as input_:
             for line in input_:
-#                print line.strip()
+                print 'Getting files from this dir '+line.strip()
                 somefiles =  glob.glob(line.strip())
                 allfiles.extend(somefiles)
     else:
         allfiles = []
 
     # Only keep certain number of input files for fexibility
-    files = [allfiles[i] for i in range(options.startfile,options.startfile+options.maxFiles)]  
+    if options.maxFiles < 0 : files = allfiles
+    if options.maxFiles > 0 :
+        files = [allfiles[i] for i in range(options.startfile,options.startfile+options.maxFiles)]  
     # Print out information on the input files
     print 'getting these PATtuple files:'
     for ifile in files : print ifile
-
-    # Find the type of sample. Ugly but works for now :(
-    if options.txtfiles:
-        type_ = options.txtfiles.split('.')
-        type_ = type_[0].split('ntuples_')
-        event_type = type_[1]    
-    #print 'Processing',event_type,'type of events'
-    #print 'Getting',len(files),'ntuple files.'
-    #print 'getting files: ', files
-    
+   
     # Run selection function to do selections
     # If we want to make plots, use many files input form
     # If not make plots, each PATtuple file will generate a ntuple files, with index go from 0 to maxFiles

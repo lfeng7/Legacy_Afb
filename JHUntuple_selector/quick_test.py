@@ -24,12 +24,15 @@ parser.add_option('--maxfiles', metavar='F', type='int', action='store',
 
 argv = []
 
+#debug
+print options.inputFiles
+
 # Get the inputfiles.
 if options.inputFiles:
     allfiles = glob.glob( options.inputFiles )
     # Only keep certain number of input files for fexibility
     files = [allfiles[i] for i in range(options.maxFiles)]  
-
+    
 print 'getting files', files
 
 # Read input files
