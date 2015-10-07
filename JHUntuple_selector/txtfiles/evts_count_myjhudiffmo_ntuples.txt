@@ -39,3 +39,7 @@ Getting input files from pat_locations/W3JetsToLNu_TuneZ2Star_8TeV-madgraph/*
 Getting 10 files
 Getting 2263637 events
 
+Getting input files from ntuples/jhu_diffmo/TT_CT10_TuneZ2star_8TeV/*
+Getting 10 files
+Getting 1150618 events
+

@@ -1,0 +1,44 @@
+Getting input files from ntuples/nick_jhu_diffmo/T_s/*
+Getting 2 files
+Getting 259176 events
+
+Getting input files from ntuples/nick_jhu_diffmo/T_t/*
+Getting 25 files
+Getting 3748155 events
+
+Getting input files from ntuples/nick_jhu_diffmo/T_tW/*
+Getting 4 files
+Getting 495559 events
+
+Getting input files from ntuples/nick_jhu_diffmo/Tbar_s/*
+Getting 1 files
+Getting 139604 events
+
+Getting input files from ntuples/nick_jhu_diffmo/Tbar_t/*
+Getting 13 files
+Getting 1930185 events
+
+Getting input files from ntuples/nick_jhu_diffmo/Tbar_tW/*
+Getting 4 files
+Getting 491463 events
+
+Getting input files from ntuples/nick_jhu_diffmo/DY3JetsToLL_M/*
+Getting 70 files
+Getting 10655325 events
+
+Getting input files from ntuples/nick_jhu_diffmo/DY4JetsToLL_M/*
+Getting 39 files
+Getting 5843425 events
+
+Getting input files from ntuples/nick_jhu_diffmo/W4JetsToLNu_TuneZ2Star_8TeV/*
+Getting 87 files
+Getting 13326400 events
+
+Getting input files from ntuples/nick_jhu_diffmo/W3JetsToLNu_TuneZ2Star_8TeV/*
+Getting 68 files
+Getting 15507852 events
+
+Getting input files from ntuples/nick_jhu_diffmo/TT_CT10_TuneZ2star_8TeV/*
+Getting 188 files
+Getting 21560109 events
+
