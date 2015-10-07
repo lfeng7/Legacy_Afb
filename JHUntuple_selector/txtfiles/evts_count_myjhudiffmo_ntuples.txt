@@ -1,0 +1,41 @@
+
+Getting input files from pat_locations/T_s-channel_TuneZ2star_8TeV-powheg-tauola/*
+Getting 2 files
+Getting 259176 events
+
+Getting input files from pat_locations/T_t-channel_TuneZ2star_8TeV-powheg-tauola/*
+Getting 10 files
+Getting 1536211 events
+
+Getting input files from pat_locations/T_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/*
+Getting 4 files
+Getting 495559 events
+
+Getting input files from pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/*
+Getting 10 files
+Getting 1530347 events
+
+Getting input files from pat_locations/Tbar_s-channel_TuneZ2star_8TeV-powheg-tauola/*
+Getting 1 files
+Getting 139604 events
+
+Getting input files from pat_locations/Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/*
+Getting 4 files
+Getting 491463 events
+
+Getting input files from pat_locations/DY3JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/*
+Getting 10 files
+Getting 1533162 events
+
+Getting input files from pat_locations/DY4JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/*
+Getting 10 files
+Getting 1508497 events
+
+Getting input files from pat_locations/W4JetsToLNu_TuneZ2Star_8TeV-madgraph/*
+Getting 10 files
+Getting 1534294 events
+
+Getting input files from pat_locations/W3JetsToLNu_TuneZ2Star_8TeV-madgraph/*
+Getting 10 files
+Getting 2263637 events
+

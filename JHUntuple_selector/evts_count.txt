@@ -1,0 +1,4 @@
+Getting input files from pat_locations/T_s-channel_TuneZ2star_8TeV-powheg-tauola/*
+Getting 2 files
+Getting 259176 events
+

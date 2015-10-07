@@ -1,0 +1,811 @@
+source run
+run_manay_channels_1.sh  run_manay_channels_2.sh  
+_lfeng7@cmslpc25:JHUntuple_selector\[lfeng7@cmslpc25 JHUntuple_selector]$ source run_manay_channels_1.sh 
+TDR Style initialized
+getting these PATtuple files:
+pat_locations/T_s-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_1.root
+pat_locations/T_s-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_2.root
+processing file  pat_locations/T_s-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_1.root
+Getting 133475 events
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 3 candidate events
+Loop over 10001 event , selected 4 candidate events
+Loop over 15001 event , selected 4 candidate events
+Loop over 20001 event , selected 6 candidate events
+Loop over 25001 event , selected 12 candidate events
+Loop over 30001 event , selected 18 candidate events
+Loop over 35001 event , selected 20 candidate events
+Loop over 40001 event , selected 25 candidate events
+Loop over 45001 event , selected 25 candidate events
+Loop over 50001 event , selected 29 candidate events
+Loop over 55001 event , selected 33 candidate events
+Loop over 60001 event , selected 37 candidate events
+Loop over 65001 event , selected 41 candidate events
+Loop over 70001 event , selected 46 candidate events
+Loop over 75001 event , selected 46 candidate events
+Loop over 80001 event , selected 51 candidate events
+Loop over 85001 event , selected 54 candidate events
+Loop over 90001 event , selected 55 candidate events
+Loop over 95001 event , selected 58 candidate events
+Loop over 100001 event , selected 61 candidate events
+Loop over 105001 event , selected 65 candidate events
+Loop over 110001 event , selected 67 candidate events
+Loop over 115001 event , selected 68 candidate events
+Loop over 120001 event , selected 75 candidate events
+Loop over 125001 event , selected 77 candidate events
+Loop over 130001 event , selected 81 candidate events
+
+Saving output into root files 
+
+
+
+RealTime=118.68 seconds, CpuTime=116.06 seconds
+1124.69 events / RealTime second .
+1150.05 events / CpuTime second .
+0.70 candidate events / RealTime second .
+0.72 candidate events / CpuTime second .
+Analyzed events: 133475
+Candidate events:     83
+
+
+processing file  pat_locations/T_s-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_2.root
+Getting 125701 events
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 6 candidate events
+Loop over 10001 event , selected 13 candidate events
+Loop over 15001 event , selected 15 candidate events
+Loop over 20001 event , selected 18 candidate events
+Loop over 25001 event , selected 26 candidate events
+Loop over 30001 event , selected 29 candidate events
+Loop over 35001 event , selected 33 candidate events
+Loop over 40001 event , selected 40 candidate events
+Loop over 45001 event , selected 42 candidate events
+Loop over 50001 event , selected 48 candidate events
+Loop over 55001 event , selected 50 candidate events
+Loop over 60001 event , selected 53 candidate events
+Loop over 65001 event , selected 58 candidate events
+Loop over 70001 event , selected 63 candidate events
+Loop over 75001 event , selected 65 candidate events
+Loop over 80001 event , selected 68 candidate events
+Loop over 85001 event , selected 71 candidate events
+Loop over 90001 event , selected 74 candidate events
+Loop over 95001 event , selected 78 candidate events
+Loop over 100001 event , selected 80 candidate events
+Loop over 105001 event , selected 84 candidate events
+Loop over 110001 event , selected 88 candidate events
+Loop over 115001 event , selected 90 candidate events
+Loop over 120001 event , selected 92 candidate events
+Loop over 125001 event , selected 95 candidate events
+
+Saving output into root files 
+
+
+
+RealTime=108.64 seconds, CpuTime=106.46 seconds
+1157.05 events / RealTime second .
+1180.73 events / CpuTime second .
+0.88 candidate events / RealTime second .
+0.90 candidate events / CpuTime second .
+Analyzed events: 125701
+Candidate events:     96
+
+
+TDR Style initialized
+getting these PATtuple files:
+pat_locations/T_t-channel_TuneZ2star_8TeV-powheg-tauola/0000
+pat_locations/T_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_1.root
+pat_locations/T_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_10.root
+pat_locations/T_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_2.root
+pat_locations/T_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_3.root
+pat_locations/T_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_4.root
+pat_locations/T_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_5.root
+pat_locations/T_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_6.root
+pat_locations/T_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_7.root
+pat_locations/T_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_8.root
+pat_locations/T_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_9.root
+processing file  pat_locations/T_t-channel_TuneZ2star_8TeV-powheg-tauola/0000
+Error in <TFile::TFile>: file pat_locations/T_t-channel_TuneZ2star_8TeV-powheg-tauola/0000 does not exist
+python: /build/cmsbuild/auto-builds/CMSSW_5_3_24-slc6_amd64_gcc472/build/CMSSW_5_3_24-build/slc6_amd64_gcc472/external/boost/1.47.0-cms/include/boost/smart_ptr/shared_ptr.hpp:423: T* boost::shared_ptr<T>::operator->() const [with T = TFile]: Assertion `px != 0' failed.
+GettingAbort
+TDR Style initialized
+getting these PATtuple files:
+TDR Style initialized
+getting these PATtuple files:
+pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_1.root
+pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_10.root
+pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_2.root
+pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_3.root
+pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_4.root
+pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_5.root
+pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_6.root
+pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_7.root
+pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_8.root
+pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_9.root
+processing file  pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_1.root
+Getting 153808 events
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 3 candidate events
+Loop over 10001 event , selected 3 candidate events
+Loop over 15001 event , selected 6 candidate events
+Loop over 20001 event , selected 10 candidate events
+Loop over 25001 event , selected 15 candidate events
+Loop over 30001 event , selected 17 candidate events
+Loop over 35001 event , selected 21 candidate events
+Loop over 40001 event , selected 24 candidate events
+Loop over 45001 event , selected 26 candidate events
+Loop over 50001 event , selected 30 candidate events
+Loop over 55001 event , selected 33 candidate events
+Loop over 60001 event , selected 36 candidate events
+Loop over 65001 event , selected 37 candidate events
+Loop over 70001 event , selected 41 candidate events
+Loop over 75001 event , selected 44 candidate events
+Loop over 80001 event , selected 45 candidate events
+Loop over 85001 event , selected 45 candidate events
+Loop over 90001 event , selected 46 candidate events
+Loop over 95001 event , selected 49 candidate events
+Loop over 100001 event , selected 51 candidate events
+Loop over 105001 event , selected 51 candidate events
+Loop over 110001 event , selected 52 candidate events
+Loop over 115001 event , selected 57 candidate events
+Loop over 120001 event , selected 59 candidate events
+Loop over 125001 event , selected 60 candidate events
+Loop over 130001 event , selected 61 candidate events
+Loop over 135001 event , selected 62 candidate events
+Loop over 140001 event , selected 65 candidate events
+Loop over 145001 event , selected 66 candidate events
+Loop over 150001 event , selected 68 candidate events
+
+Saving output into root files 
+
+
+
+RealTime=132.97 seconds, CpuTime=130.52 seconds
+1156.73 events / RealTime second .
+1178.42 events / CpuTime second .
+0.53 candidate events / RealTime second .
+0.54 candidate events / CpuTime second .
+Analyzed events: 153808
+Candidate events:     70
+
+
+processing file  pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_10.root
+Getting 153927 events
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 2 candidate events
+Loop over 10001 event , selected 8 candidate events
+Loop over 15001 event , selected 9 candidate events
+Loop over 20001 event , selected 9 candidate events
+Loop over 25001 event , selected 14 candidate events
+Loop over 30001 event , selected 15 candidate events
+Loop over 35001 event , selected 16 candidate events
+Loop over 40001 event , selected 16 candidate events
+Loop over 45001 event , selected 21 candidate events
+Loop over 50001 event , selected 22 candidate events
+Loop over 55001 event , selected 25 candidate events
+Loop over 60001 event , selected 26 candidate events
+Loop over 65001 event , selected 28 candidate events
+Loop over 70001 event , selected 31 candidate events
+Loop over 75001 event , selected 31 candidate events
+Loop over 80001 event , selected 34 candidate events
+Loop over 85001 event , selected 34 candidate events
+Loop over 90001 event , selected 36 candidate events
+Loop over 95001 event , selected 41 candidate events
+Loop over 100001 event , selected 43 candidate events
+Loop over 105001 event , selected 50 candidate events
+Loop over 110001 event , selected 52 candidate events
+Loop over 115001 event , selected 53 candidate events
+Loop over 120001 event , selected 54 candidate events
+Loop over 125001 event , selected 54 candidate events
+Loop over 130001 event , selected 55 candidate events
+Loop over 135001 event , selected 56 candidate events
+Loop over 140001 event , selected 59 candidate events
+Loop over 145001 event , selected 62 candidate events
+Loop over 150001 event , selected 63 candidate events
+
+Saving output into root files 
+
+
+
+RealTime=132.07 seconds, CpuTime=129.66 seconds
+1165.50 events / RealTime second .
+1187.16 events / CpuTime second .
+0.48 candidate events / RealTime second .
+0.49 candidate events / CpuTime second .
+Analyzed events: 153927
+Candidate events:     63
+
+
+processing file  pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_2.root
+Getting 153788 events
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 2 candidate events
+Loop over 10001 event , selected 4 candidate events
+Loop over 15001 event , selected 7 candidate events
+Loop over 20001 event , selected 9 candidate events
+Loop over 25001 event , selected 10 candidate events
+Loop over 30001 event , selected 12 candidate events
+Loop over 35001 event , selected 16 candidate events
+Loop over 40001 event , selected 17 candidate events
+Loop over 45001 event , selected 21 candidate events
+Loop over 50001 event , selected 26 candidate events
+Loop over 55001 event , selected 28 candidate events
+Loop over 60001 event , selected 32 candidate events
+Loop over 65001 event , selected 33 candidate events
+Loop over 70001 event , selected 35 candidate events
+Loop over 75001 event , selected 41 candidate events
+Loop over 80001 event , selected 43 candidate events
+Loop over 85001 event , selected 46 candidate events
+Loop over 90001 event , selected 47 candidate events
+Loop over 95001 event , selected 50 candidate events
+Loop over 100001 event , selected 55 candidate events
+Loop over 105001 event , selected 55 candidate events
+Loop over 110001 event , selected 60 candidate events
+Loop over 115001 event , selected 61 candidate events
+Loop over 120001 event , selected 62 candidate events
+Loop over 125001 event , selected 65 candidate events
+Loop over 130001 event , selected 67 candidate events
+Loop over 135001 event , selected 68 candidate events
+Loop over 140001 event , selected 68 candidate events
+Loop over 145001 event , selected 70 candidate events
+Loop over 150001 event , selected 75 candidate events
+
+Saving output into root files 
+
+
+
+RealTime=132.92 seconds, CpuTime=130.12 seconds
+1156.97 events / RealTime second .
+1181.89 events / CpuTime second .
+0.56 candidate events / RealTime second .
+0.58 candidate events / CpuTime second .
+Analyzed events: 153788
+Candidate events:     75
+
+
+processing file  pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_3.root
+Getting 153777 events
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 5 candidate events
+Loop over 10001 event , selected 6 candidate events
+Loop over 15001 event , selected 8 candidate events
+Loop over 20001 event , selected 12 candidate events
+Loop over 25001 event , selected 15 candidate events
+Loop over 30001 event , selected 20 candidate events
+Loop over 35001 event , selected 21 candidate events
+Loop over 40001 event , selected 23 candidate events
+Loop over 45001 event , selected 28 candidate events
+Loop over 50001 event , selected 28 candidate events
+Loop over 55001 event , selected 31 candidate events
+Loop over 60001 event , selected 33 candidate events
+Loop over 65001 event , selected 34 candidate events
+Loop over 70001 event , selected 39 candidate events
+Loop over 75001 event , selected 41 candidate events
+Loop over 80001 event , selected 45 candidate events
+Loop over 85001 event , selected 47 candidate events
+Loop over 90001 event , selected 49 candidate events
+Loop over 95001 event , selected 51 candidate events
+Loop over 100001 event , selected 55 candidate events
+Loop over 105001 event , selected 60 candidate events
+Loop over 110001 event , selected 62 candidate events
+Loop over 115001 event , selected 64 candidate events
+Loop over 120001 event , selected 67 candidate events
+Loop over 125001 event , selected 67 candidate events
+Loop over 130001 event , selected 69 candidate events
+Loop over 135001 event , selected 72 candidate events
+Loop over 140001 event , selected 78 candidate events
+Loop over 145001 event , selected 79 candidate events
+Loop over 150001 event , selected 80 candidate events
+
+Saving output into root files 
+
+
+
+RealTime=134.14 seconds, CpuTime=131.97 seconds
+1146.42 events / RealTime second .
+1165.24 events / CpuTime second .
+0.60 candidate events / RealTime second .
+0.61 candidate events / CpuTime second .
+Analyzed events: 153777
+Candidate events:     80
+
+
+processing file  pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_4.root
+Getting 153788 events
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 1 candidate events
+Loop over 10001 event , selected 6 candidate events
+Loop over 15001 event , selected 10 candidate events
+Loop over 20001 event , selected 14 candidate events
+Loop over 25001 event , selected 15 candidate events
+Loop over 30001 event , selected 15 candidate events
+Loop over 35001 event , selected 19 candidate events
+Loop over 40001 event , selected 21 candidate events
+Loop over 45001 event , selected 22 candidate events
+Loop over 50001 event , selected 23 candidate events
+Loop over 55001 event , selected 26 candidate events
+Loop over 60001 event , selected 29 candidate events
+Loop over 65001 event , selected 30 candidate events
+Loop over 70001 event , selected 37 candidate events
+Loop over 75001 event , selected 39 candidate events
+Loop over 80001 event , selected 45 candidate events
+Loop over 85001 event , selected 49 candidate events
+Loop over 90001 event , selected 51 candidate events
+Loop over 95001 event , selected 53 candidate events
+Loop over 100001 event , selected 57 candidate events
+Loop over 105001 event , selected 60 candidate events
+Loop over 110001 event , selected 66 candidate events
+Loop over 115001 event , selected 69 candidate events
+Loop over 120001 event , selected 71 candidate events
+Loop over 125001 event , selected 72 candidate events
+Loop over 130001 event , selected 75 candidate events
+Loop over 135001 event , selected 80 candidate events
+Loop over 140001 event , selected 84 candidate events
+Loop over 145001 event , selected 89 candidate events
+Loop over 150001 event , selected 92 candidate events
+
+Saving output into root files 
+
+
+
+RealTime=136.18 seconds, CpuTime=133.81 seconds
+1129.33 events / RealTime second .
+1149.30 events / CpuTime second .
+0.70 candidate events / RealTime second .
+0.71 candidate events / CpuTime second .
+Analyzed events: 153788
+Candidate events:     95
+
+
+processing file  pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_5.root
+Getting 153799 events
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 0 candidate events
+Loop over 10001 event , selected 3 candidate events
+Loop over 15001 event , selected 3 candidate events
+Loop over 20001 event , selected 5 candidate events
+Loop over 25001 event , selected 9 candidate events
+Loop over 30001 event , selected 15 candidate events
+Loop over 35001 event , selected 16 candidate events
+Loop over 40001 event , selected 16 candidate events
+Loop over 45001 event , selected 17 candidate events
+Loop over 50001 event , selected 19 candidate events
+Loop over 55001 event , selected 25 candidate events
+Loop over 60001 event , selected 30 candidate events
+Loop over 65001 event , selected 30 candidate events
+Loop over 70001 event , selected 32 candidate events
+Loop over 75001 event , selected 33 candidate events
+Loop over 80001 event , selected 37 candidate events
+Loop over 85001 event , selected 39 candidate events
+Loop over 90001 event , selected 42 candidate events
+Loop over 95001 event , selected 47 candidate events
+Loop over 100001 event , selected 50 candidate events
+Loop over 105001 event , selected 54 candidate events
+Loop over 110001 event , selected 58 candidate events
+Loop over 115001 event , selected 61 candidate events
+Loop over 120001 event , selected 62 candidate events
+Loop over 125001 event , selected 63 candidate events
+Loop over 130001 event , selected 68 candidate events
+Loop over 135001 event , selected 68 candidate events
+Loop over 140001 event , selected 72 candidate events
+Loop over 145001 event , selected 75 candidate events
+Loop over 150001 event , selected 76 candidate events
+
+Saving output into root files 
+
+
+
+RealTime=134.58 seconds, CpuTime=131.27 seconds
+1142.80 events / RealTime second .
+1171.62 events / CpuTime second .
+0.56 candidate events / RealTime second .
+0.58 candidate events / CpuTime second .
+Analyzed events: 153799
+Candidate events:     76
+
+
+processing file  pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_6.root
+Getting 153831 events
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 4 candidate events
+Loop over 10001 event , selected 5 candidate events
+Loop over 15001 event , selected 7 candidate events
+Loop over 20001 event , selected 10 candidate events
+Loop over 25001 event , selected 12 candidate events
+Loop over 30001 event , selected 14 candidate events
+Loop over 35001 event , selected 17 candidate events
+Loop over 40001 event , selected 21 candidate events
+Loop over 45001 event , selected 26 candidate events
+Loop over 50001 event , selected 31 candidate events
+Loop over 55001 event , selected 33 candidate events
+Loop over 60001 event , selected 38 candidate events
+Loop over 65001 event , selected 42 candidate events
+Loop over 70001 event , selected 46 candidate events
+Loop over 75001 event , selected 50 candidate events
+Loop over 80001 event , selected 51 candidate events
+Loop over 85001 event , selected 54 candidate events
+Loop over 90001 event , selected 58 candidate events
+Loop over 95001 event , selected 59 candidate events
+Loop over 100001 event , selected 61 candidate events
+Loop over 105001 event , selected 62 candidate events
+Loop over 110001 event , selected 64 candidate events
+Loop over 115001 event , selected 65 candidate events
+Loop over 120001 event , selected 69 candidate events
+Loop over 125001 event , selected 71 candidate events
+Loop over 130001 event , selected 79 candidate events
+Loop over 135001 event , selected 80 candidate events
+Loop over 140001 event , selected 82 candidate events
+Loop over 145001 event , selected 83 candidate events
+Loop over 150001 event , selected 85 candidate events
+
+Saving output into root files 
+
+
+
+RealTime=138.62 seconds, CpuTime=134.31 seconds
+1109.77 events / RealTime second .
+1145.34 events / CpuTime second .
+0.61 candidate events / RealTime second .
+0.63 candidate events / CpuTime second .
+Analyzed events: 153831
+Candidate events:     85
+
+
+processing file  pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_7.root
+Getting 153777 events
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 1 candidate events
+Loop over 10001 event , selected 3 candidate events
+Loop over 15001 event , selected 5 candidate events
+Loop over 20001 event , selected 7 candidate events
+Loop over 25001 event , selected 14 candidate events
+Loop over 30001 event , selected 18 candidate events
+Loop over 35001 event , selected 19 candidate events
+Loop over 40001 event , selected 19 candidate events
+Loop over 45001 event , selected 21 candidate events
+Loop over 50001 event , selected 23 candidate events
+Loop over 55001 event , selected 28 candidate events
+Loop over 60001 event , selected 30 candidate events
+Loop over 65001 event , selected 30 candidate events
+Loop over 70001 event , selected 31 candidate events
+Loop over 75001 event , selected 31 candidate events
+Loop over 80001 event , selected 32 candidate events
+Loop over 85001 event , selected 36 candidate events
+Loop over 90001 event , selected 37 candidate events
+Loop over 95001 event , selected 42 candidate events
+Loop over 100001 event , selected 43 candidate events
+Loop over 105001 event , selected 48 candidate events
+Loop over 110001 event , selected 50 candidate events
+Loop over 115001 event , selected 54 candidate events
+Loop over 120001 event , selected 56 candidate events
+Loop over 125001 event , selected 59 candidate events
+Loop over 130001 event , selected 60 candidate events
+Loop over 135001 event , selected 61 candidate events
+Loop over 140001 event , selected 64 candidate events
+Loop over 145001 event , selected 67 candidate events
+Loop over 150001 event , selected 69 candidate events
+
+Saving output into root files 
+
+
+
+RealTime=137.87 seconds, CpuTime=133.18 seconds
+1115.39 events / RealTime second .
+1154.66 events / CpuTime second .
+0.51 candidate events / RealTime second .
+0.53 candidate events / CpuTime second .
+Analyzed events: 153777
+Candidate events:     70
+
+
+processing file  pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_8.root
+Getting 146067 events
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 0 candidate events
+Loop over 10001 event , selected 5 candidate events
+Loop over 15001 event , selected 7 candidate events
+Loop over 20001 event , selected 11 candidate events
+Loop over 25001 event , selected 15 candidate events
+Loop over 30001 event , selected 17 candidate events
+Loop over 35001 event , selected 20 candidate events
+Loop over 40001 event , selected 21 candidate events
+Loop over 45001 event , selected 23 candidate events
+Loop over 50001 event , selected 24 candidate events
+Loop over 55001 event , selected 28 candidate events
+Loop over 60001 event , selected 29 candidate events
+Loop over 65001 event , selected 31 candidate events
+Loop over 70001 event , selected 35 candidate events
+Loop over 75001 event , selected 35 candidate events
+Loop over 80001 event , selected 38 candidate events
+Loop over 85001 event , selected 41 candidate events
+Loop over 90001 event , selected 42 candidate events
+Loop over 95001 event , selected 44 candidate events
+Loop over 100001 event , selected 47 candidate events
+Loop over 105001 event , selected 49 candidate events
+Loop over 110001 event , selected 50 candidate events
+Loop over 115001 event , selected 52 candidate events
+Loop over 120001 event , selected 55 candidate events
+Loop over 125001 event , selected 56 candidate events
+Loop over 130001 event , selected 58 candidate events
+Loop over 135001 event , selected 62 candidate events
+Loop over 140001 event , selected 65 candidate events
+Loop over 145001 event , selected 67 candidate events
+
+Saving output into root files 
+
+
+
+RealTime=127.51 seconds, CpuTime=124.62 seconds
+1145.55 events / RealTime second .
+1172.10 events / CpuTime second .
+0.53 candidate events / RealTime second .
+0.54 candidate events / CpuTime second .
+Analyzed events: 146067
+Candidate events:     67
+
+
+processing file  pat_locations/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_9.root
+Getting 153785 events
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 2 candidate events
+Loop over 10001 event , selected 2 candidate events
+Loop over 15001 event , selected 4 candidate events
+Loop over 20001 event , selected 6 candidate events
+Loop over 25001 event , selected 9 candidate events
+Loop over 30001 event , selected 13 candidate events
+Loop over 35001 event , selected 14 candidate events
+Loop over 40001 event , selected 15 candidate events
+Loop over 45001 event , selected 15 candidate events
+Loop over 50001 event , selected 15 candidate events
+Loop over 55001 event , selected 20 candidate events
+Loop over 60001 event , selected 24 candidate events
+Loop over 65001 event , selected 26 candidate events
+Loop over 70001 event , selected 29 candidate events
+Loop over 75001 event , selected 29 candidate events
+Loop over 80001 event , selected 32 candidate events
+Loop over 85001 event , selected 35 candidate events
+Loop over 90001 event , selected 35 candidate events
+Loop over 95001 event , selected 40 candidate events
+Loop over 100001 event , selected 45 candidate events
+Loop over 105001 event , selected 49 candidate events
+Loop over 110001 event , selected 55 candidate events
+Loop over 115001 event , selected 56 candidate events
+Loop over 120001 event , selected 58 candidate events
+Loop over 125001 event , selected 59 candidate events
+Loop over 130001 event , selected 65 candidate events
+Loop over 135001 event , selected 66 candidate events
+Loop over 140001 event , selected 67 candidate events
+Loop over 145001 event , selected 68 candidate events
+Loop over 150001 event , selected 73 candidate events
+
+Saving output into root files 
+
+
+
+RealTime=133.05 seconds, CpuTime=130.17 seconds
+1155.84 events / RealTime second .
+1181.42 events / CpuTime second .
+0.55 candidate events / RealTime second .
+0.56 candidate events / CpuTime second .
+Analyzed events: 153785
+Candidate events:     73
+
+
+TDR Style initialized
+getting these PATtuple files:
+pat_locations/Tbar_s-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_1.root
+processing file  pat_locations/Tbar_s-channel_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_1.root
+Getting 139604 events
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 1 candidate events
+Loop over 10001 event , selected 5 candidate events
+Loop over 15001 event , selected 7 candidate events
+Loop over 20001 event , selected 8 candidate events
+Loop over 25001 event , selected 15 candidate events
+Loop over 30001 event , selected 17 candidate events
+Loop over 35001 event , selected 19 candidate events
+Loop over 40001 event , selected 20 candidate events
+Loop over 45001 event , selected 23 candidate events
+Loop over 50001 event , selected 28 candidate events
+Loop over 55001 event , selected 28 candidate events
+Loop over 60001 event , selected 31 candidate events
+Loop over 65001 event , selected 36 candidate events
+Loop over 70001 event , selected 41 candidate events
+Loop over 75001 event , selected 45 candidate events
+Loop over 80001 event , selected 46 candidate events
+Loop over 85001 event , selected 49 candidate events
+Loop over 90001 event , selected 51 candidate events
+Loop over 95001 event , selected 53 candidate events
+Loop over 100001 event , selected 56 candidate events
+Loop over 105001 event , selected 59 candidate events
+Loop over 110001 event , selected 63 candidate events
+Loop over 115001 event , selected 65 candidate events
+Loop over 120001 event , selected 65 candidate events
+Loop over 125001 event , selected 67 candidate events
+Loop over 130001 event , selected 70 candidate events
+Loop over 135001 event , selected 71 candidate events
+
+Saving output into root files 
+
+
+
+RealTime=119.99 seconds, CpuTime=117.56 seconds
+1163.47 events / RealTime second .
+1187.51 events / CpuTime second .
+0.61 candidate events / RealTime second .
+0.62 candidate events / CpuTime second .
+Analyzed events: 139604
+Candidate events:     73
+
+
+TDR Style initialized
+getting these PATtuple files:
+pat_locations/Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_1.root
+pat_locations/Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_2.root
+pat_locations/Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_3.root
+pat_locations/Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_4.root
+processing file  pat_locations/Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_1.root
+Getting 154477 events
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 32 candidate events
+Loop over 10001 event , selected 56 candidate events
+Loop over 15001 event , selected 72 candidate events
+Loop over 20001 event , selected 89 candidate events
+Loop over 25001 event , selected 101 candidate events
+Loop over 30001 event , selected 114 candidate events
+Loop over 35001 event , selected 129 candidate events
+Loop over 40001 event , selected 152 candidate events
+Loop over 45001 event , selected 170 candidate events
+Loop over 50001 event , selected 193 candidate events
+Loop over 55001 event , selected 213 candidate events
+Loop over 60001 event , selected 241 candidate events
+Loop over 65001 event , selected 258 candidate events
+Loop over 70001 event , selected 276 candidate events
+Loop over 75001 event , selected 291 candidate events
+Loop over 80001 event , selected 322 candidate events
+Loop over 85001 event , selected 348 candidate events
+Loop over 90001 event , selected 366 candidate events
+Loop over 95001 event , selected 396 candidate events
+Loop over 100001 event , selected 411 candidate events
+Loop over 105001 event , selected 439 candidate events
+Loop over 110001 event , selected 458 candidate events
+Loop over 115001 event , selected 472 candidate events
+Loop over 120001 event , selected 493 candidate events
+Loop over 125001 event , selected 513 candidate events
+Loop over 130001 event , selected 528 candidate events
+Loop over 135001 event , selected 549 candidate events
+Loop over 140001 event , selected 567 candidate events
+Loop over 145001 event , selected 586 candidate events
+Loop over 150001 event , selected 607 candidate events
+
+Saving output into root files 
+
+
+
+RealTime=142.67 seconds, CpuTime=139.87 seconds
+1082.77 events / RealTime second .
+1104.43 events / CpuTime second .
+4.37 candidate events / RealTime second .
+4.46 candidate events / CpuTime second .
+Analyzed events: 154477
+Candidate events:    624
+
+
+processing file  pat_locations/Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_2.root
+Getting 125510 events
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 22 candidate events
+Loop over 10001 event , selected 38 candidate events
+Loop over 15001 event , selected 60 candidate events
+Loop over 20001 event , selected 88 candidate events
+Loop over 25001 event , selected 114 candidate events
+Loop over 30001 event , selected 135 candidate events
+Loop over 35001 event , selected 162 candidate events
+Loop over 40001 event , selected 182 candidate events
+Loop over 45001 event , selected 206 candidate events
+Loop over 50001 event , selected 220 candidate events
+Loop over 55001 event , selected 242 candidate events
+Loop over 60001 event , selected 259 candidate events
+Loop over 65001 event , selected 279 candidate events
+Loop over 70001 event , selected 300 candidate events
+Loop over 75001 event , selected 316 candidate events
+Loop over 80001 event , selected 337 candidate events
+Loop over 85001 event , selected 360 candidate events
+Loop over 90001 event , selected 376 candidate events
+Loop over 95001 event , selected 397 candidate events
+Loop over 100001 event , selected 409 candidate events
+Loop over 105001 event , selected 428 candidate events
+Loop over 110001 event , selected 444 candidate events
+Loop over 115001 event , selected 459 candidate events
+Loop over 120001 event , selected 485 candidate events
+Loop over 125001 event , selected 496 candidate events
+
+Saving output into root files 
+
+
+
+RealTime=116.49 seconds, CpuTime=113.57 seconds
+1077.43 events / RealTime second .
+1105.13 events / CpuTime second .
+4.28 candidate events / RealTime second .
+4.38 candidate events / CpuTime second .
+Analyzed events: 125510
+Candidate events:    498
+
+
+processing file  pat_locations/Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_3.root
+Getting 150048 events
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 18 candidate events
+Loop over 10001 event , selected 32 candidate events
+Loop over 15001 event , selected 55 candidate events
+Loop over 20001 event , selected 72 candidate events
+Loop over 25001 event , selected 89 candidate events
+Loop over 30001 event , selected 106 candidate events
+Loop over 35001 event , selected 129 candidate events
+Loop over 40001 event , selected 152 candidate events
+Loop over 45001 event , selected 172 candidate events
+Loop over 50001 event , selected 191 candidate events
+Loop over 55001 event , selected 206 candidate events
+Loop over 60001 event , selected 226 candidate events
+Loop over 65001 event , selected 246 candidate events
+Loop over 70001 event , selected 261 candidate events
+Loop over 75001 event , selected 268 candidate events
+Loop over 80001 event , selected 292 candidate events
+Loop over 85001 event , selected 316 candidate events
+Loop over 90001 event , selected 338 candidate events
+Loop over 95001 event , selected 363 candidate events
+Loop over 100001 event , selected 384 candidate events
+Loop over 105001 event , selected 399 candidate events
+Loop over 110001 event , selected 414 candidate events
+Loop over 115001 event , selected 438 candidate events
+Loop over 120001 event , selected 462 candidate events
+Loop over 125001 event , selected 481 candidate events
+Loop over 130001 event , selected 502 candidate events
+Loop over 135001 event , selected 529 candidate events
+Loop over 140001 event , selected 554 candidate events
+Loop over 145001 event , selected 581 candidate events
+Loop over 150001 event , selected 596 candidate events
+
+Saving output into root files 
+
+
+
+RealTime=137.70 seconds, CpuTime=134.58 seconds
+1089.69 events / RealTime second .
+1114.94 events / CpuTime second .
+4.33 candidate events / RealTime second .
+4.43 candidate events / CpuTime second .
+Analyzed events: 150048
+Candidate events:    596
+
+
+processing file  pat_locations/Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/jhutester_numEvent1000_4.root
+Getting 61428 events
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 19 candidate events
+Loop over 10001 event , selected 46 candidate events
+Loop over 15001 event , selected 62 candidate events
+Loop over 20001 event , selected 78 candidate events
+Loop over 25001 event , selected 105 candidate events
+Loop over 30001 event , selected 124 candidate events
+Loop over 35001 event , selected 146 candidate events
+Loop over 40001 event , selected 164 candidate events
+Loop over 45001 event , selected 185 candidate events
+Loop over 50001 event , selected 199 candidate events
+Loop over 55001 event , selected 220 candidate events
+Loop over 60001 event , selected 239 candidate events
+
+Saving output into root files 
+
+
+
+RealTime= 58.66 seconds, CpuTime= 55.24 seconds
+1047.18 events / RealTime second .
+1112.02 events / CpuTime second .
+4.19 candidate events / RealTime second .
+4.45 candidate events / CpuTime second .
+Analyzed events:  61428
+Candidate events:    246
+
+
+_lfeng7@cmslpc25:JHUntuple_selector\[lfeng7@cmslpc25 JHUntuple_selector]$ source run_manay_channels_1.sh[30Dcmsenv[Ksetenv[6Dsource run_manay_channels_1.sh[30D[Ksource run_manay_channels_1.sh[30Dcmsenv[Ksetenv[6Dsource run_manay_channels_1.sh[30D[Kp[Ksource [7D[K
