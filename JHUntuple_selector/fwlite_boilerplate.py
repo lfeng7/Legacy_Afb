@@ -103,6 +103,7 @@ def saving(histlist,event_type='MC',index = ''):
         print 'Creating new dir '+savedir
     # Saving root files
     fout = ROOT.TFile(savedir+event_type+'_selection_output'+str(index)+'.root','recreate')
+    print 'saving output into file: '+fout
     for ihist in histlist:
         ihist.Write()
     # file closure
