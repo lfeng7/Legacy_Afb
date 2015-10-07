@@ -53,9 +53,9 @@ print 'Getting',events.size(),'events'
 
 # Wrtie output into a txt file
 fout = open('evts_count.txt','a')
-outputlines = 'Getting input files from', options.inputFiles, '\n'
-outputlines += 'Getting', len(files), 'files', '\n'
-outputlines += 'Getting',events.size(),'events','\n\n'
+outputlines = 'Getting input files from '+ options.inputFiles+'\n'
+outputlines += 'Getting '+str(len(files))+' files', '\n'
+outputlines += 'Getting '+str(events.size())+' events','\n\n'
 fout.write(outputlines)
 fout.close()
 
