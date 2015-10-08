@@ -51,7 +51,9 @@ hlist_ = []
 #    0,         1         2        3         4                 5
 # (filepath, nevts_gen, xsec_NLO, type, nevts_total_ntuple, nevts_used_ntuple)
 flist.append(['T_s_selection_output_all.root',259176,3.79,'singletop',259176,259176] )
-flist.append(['TT_CT10_selection_output_all.root',21560109,245.9,'ttbar',21560109,1150618])
+flist.append(['T_t_selection_output_all.root',3758227,56.4,'singletop',3748155,1536211] )
+#flist.append(['TT_CT10_selection_output_all.root',21560109,245.9,'ttbar',21560109,1150618])
+flist.append(['W4Jets_selection_output_all.root',13326400,246.0,'wjets',13326400,1534294])
 
 # list of histogram to make stack plots
 hlist = ['cutflow','jets_pt']
@@ -106,11 +108,11 @@ for ifile in flist :
         print 'weight is:',weight   
     
     # close temp file
-    f_.Close()
+#    f_.Close()
 
 ##### end loop over files ######
 
 # Plot and save
 plotlist = [istack for name,istack in stacklist]  
-plotting(plotlist,'stackplots',options.dumpplots,'not log',leg) 
+plotting(plotlist,'stackplots',options.dumpplots,'not log') 
   
