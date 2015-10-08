@@ -46,6 +46,7 @@ prepend = './output_rootfiles/all_channels/'   # dir of output files to stack
 sample_types = []
 flist = []
 hlist_ = []
+all_hists = []
 
 # stucture of a list of files
 #    0,         1         2        3         4                 5
@@ -86,33 +87,42 @@ for ifile in flist :
     if sample_type not in sample_types: 
         add_legend = 1
         sample_types.append(sample_type)
-        # debugg
+        # debug
         if options.verbose == 'yes' : print 'Adding new sample type',sample_type 
     else : add_legend = 0
+
+    many_hists = []
 
     # Loop over histograms and make stacks 
     for ihist in stacklist:
         ihist_name = ihist[0]
         istack = ihist[1]
         ih = f_.Get(ihist_name)     
+        # Delink the hist from the tmp file f_
+        ih.SetDirectory(0)
         ih.Scale(weight) 
         ih.SetFillColor(icolor)
         ih.SetLineColor(icolor)
         ih.SetMarkerStyle(21)
         istack.Add(ih) 
-        # Add entries to legend
-        if add_legend : leg.AddEntry(ih,sample_type,"F")
+        # Keep scaled histgrams in a list for later use
+        many_hists.append(ih)
+        
+    # Add entries to legend
+    if add_legend : 
+        leg.AddEntry(many_hists[0],sample_type,"F")
+        if options.verbose == 'yes' : print 'Adding a new legend entry for type:',sample_type
 
     # for debugging
     if options.verbose == 'yes' :
         print 'weight is:',weight   
     
-    # close temp file
-#    f_.Close()
+    all_hists.append(many_hists)
+
 
 ##### end loop over files ######
 
 # Plot and save
 plotlist = [istack for name,istack in stacklist]  
-plotting(plotlist,'stackplots',options.dumpplots,'not log') 
+plotting(plotlist,'stackplots',options.dumpplots,'not log',leg) 
   
