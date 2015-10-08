@@ -41,6 +41,9 @@ data_lumi = 19.7*1000
 
 # Get input files
 prepend = './output_rootfiles/all_channels/'   # dir of output files to stack 
+
+# Make an txt files for some information output
+f_info = open('info_stackplots.txt','w')
   
 # initialization and declaration
 sample_types = []
@@ -51,17 +54,27 @@ all_hists = []
 # stucture of a list of files
 #    0,         1         2        3         4                 5
 # (filepath, nevts_gen, xsec_NLO, type, nevts_total_ntuple, nevts_used_ntuple)
+# backgrounds
 flist.append(['T_s_selection_output_all.root',259176,3.79,'singletop',259176,259176] )
 flist.append(['T_t_selection_output_all.root',3758227,56.4,'singletop',3748155,1536211] )
-#flist.append(['TT_CT10_selection_output_all.root',21560109,245.9,'ttbar',21560109,1150618])
+flist.append(['T_tW_selection_output_all.root',497658,11.1,'singletop',495559,495559])
+flist.append(['Tbar_s_selection_output_all.root',139974,1.76,'singletop',139604,139604])
+flist.append(['Tbar_t_selection_output_all.root',1935072,30.7,'singletop',1930185,1530347])
+flist.append(['Tbar_tW_selection_output_all.root',493460,11.1,'singletop',491463,491463])
+flist.append(['W3Jets_selection_output_all.root',15522558,640.4,'wjets',15507852,2263637])
 flist.append(['W4Jets_selection_output_all.root',13326400,246.0,'wjets',13326400,1534294])
+flist.append(['DY4_selection_output_all.root',6387032,28.59,'zjets',5843425,1508497])
+flist.append(['DY3_selection_output_all.root',10997628,65.79,'zjets',10655325,1533162])
+# signal
+flist.append(['TT_CT10_selection_output_all.root',21560109,245.9,'ttbar',21560109,1150618])
+
 
 # list of histogram to make stack plots
-hlist = ['cutflow','jets_pt']
+hlist = ['cutflow','jets_pt','Njets','m3','cutflow_norm','csv_all_jets','el_cand_pt','number_tagged_bjets']
 
 # Booking stack histograms 
 for hist in hlist:
-    hlist_.append(ROOT.THStack(hist,'undefined'))
+    hlist_.append(ROOT.THStack(hist,hist))
 # put the name of histogram in the stack and the stack histograms in a list
 stacklist = zip(hlist,hlist_)
 
@@ -107,17 +120,23 @@ for ifile in flist :
         istack.Add(ih) 
         # Keep scaled histgrams in a list for later use
         many_hists.append(ih)
+
+    all_hists.append(many_hists)
         
     # Add entries to legend
     if add_legend : 
         leg.AddEntry(many_hists[0],sample_type,"F")
         if options.verbose == 'yes' : print 'Adding a new legend entry for type:',sample_type
 
+    # write some informations about current sample
+    info_ = 'Sample type : '+sample_type+'\n'+'Events weight : '+str(weight)+'\n'
+    info_ += 'Nevts : '+str(ifile[5])+'\n'+'Fraction of sample used : '+str(fraction)+'\n'
+    f_info.write(info_)
+
     # for debugging
     if options.verbose == 'yes' :
         print 'weight is:',weight   
     
-    all_hists.append(many_hists)
 
 
 ##### end loop over files ######
@@ -125,4 +144,6 @@ for ifile in flist :
 # Plot and save
 plotlist = [istack for name,istack in stacklist]  
 plotting(plotlist,'stackplots',options.dumpplots,'not log',leg) 
+# file closure
+f_info.close()
   
