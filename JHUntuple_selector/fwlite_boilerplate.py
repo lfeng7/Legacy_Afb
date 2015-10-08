@@ -57,21 +57,18 @@ def normalized_compare_plots(histlist):
         i+=1
      
 # Make plots and upload to webpage
-def plotting(histlist,event_type='MC',upload = False,testing = 'testing',logy=False):
+def plotting(histlist,event_type='MC',upload = False,logy=False,legend = None):
     prefix = './plots/'
     # check if plotting dir is made. If not , make it now
     if not os.path.exists(prefix):
         os.mkdir(prefix)
         print 'Making '+prefix
     # Set the dir to put all plots
-    if testing == "testing":
-        plotdir = 'testing_plots/'
-    else : 
-        plotdir = prefix+event_type+'/'
-        if not os.path.exists(plotdir):
-            os.mkdir(plotdir)
-            os.system('cp ~/index.php '+plotdir)
-            print 'Creating new dir '+plotdir
+    plotdir = prefix+event_type+'/'
+    if not os.path.exists(plotdir):
+        os.mkdir(plotdir)
+        os.system('cp ~/index.php '+plotdir)
+        print 'Creating new dir '+plotdir
     fout = ROOT.TFile(plotdir+event_type+'_plots.root','recreate')
     # plotting
     for ihist in histlist:
@@ -79,13 +76,12 @@ def plotting(histlist,event_type='MC',upload = False,testing = 'testing',logy=Fa
         c1 = ROOT.TCanvas()
         if logy == "setlogy" : c1.SetLogy()
         ihist.Draw()
+        if legend : legend.Draw()
         c1.SaveAs(name)
         c1.Write()
     # dump to webpage
     if upload == "dump":
-        if testing == "testing" : 
-            os.system('source ./dump_testing.sh')
-        else : os.system('scp -r '+plotdir+'  ~/index.php pha:/home/lfeng/public_html/research/Dump/')
+        os.system('scp -r '+plotdir+'  ~/index.php pha:/home/lfeng/public_html/research/Dump/')
     # file closure
     fout.Close()
 
