@@ -41,10 +41,10 @@ parser.add_option('--txtfiles', metavar='F', type='string', action='store',
                   dest='txtfiles',
                   help='Input txt files')
 
-parser.add_option('--test', metavar='F', type='string', action='store',
-                  default = "testing",
-                  dest='isTesting',
-                  help='If this run is for testing')
+parser.add_option('--mcordata', metavar='F', type='string', action='store',
+                  default = "mc",
+                  dest='mcordata',
+                  help='If this run is on data or mc')
 
 parser.add_option('--maxfiles', metavar='F', type='int', action='store',
                   default = 10,
@@ -161,10 +161,10 @@ def selection(patfile):
     jet_csv_hndl = Handle('vector<double>')
     jet_csv_label = ("jhuAk5","AK5csv")
     jet_PartonFlavor_hndl = Handle('vector<int> ')
-    jet_PartonFlavor_label = ( "jhuAk5","AK5PartonFlavour")
+    jet_PartonFlavor_label = ( "jhuAk5","AK5PartonFlavour") 
 
     # gen info
-    gen_hndl = Handle('vector<reco::GenParticle>  ')
+    gen_hndl = Handle('vector<reco::GenParticle>  ') 
     gen_label = "prunedGenParticles"
 
     # define label module names here
@@ -174,35 +174,37 @@ def selection(patfile):
     muloose_prefix = 'jhuMuonPFlowLoose'
 
 
-    ## Keep some timing information
+    ## Initialization
+    pdg_jets = [1,2,3,4,5,21]
     n_evt = 0
     n_evts_passed,n_PFel,n_PFel_isloose,n_PFel_istight = 0,0,0,0
     timer = ROOT.TStopwatch()
     timer.Start()
 
-
-    ## Book histograms here
-    # histlist = [h_cutflow,h_selection_eff,h_el_cand_pt,h_el_cand_eta,h_met,h_Njets,h_Nbjets,h_m3,h_jets_pt]
+    # cutflows
+    h_cutflow = ROOT.TH1D('cutflow',event_type+' cutflow;cuts;events',10,0.,10.)
+    h_cutflow.SetBit(ROOT.TH1.kCanRebin)
 
     # for selection validation
     h_el_cand_pt = ROOT.TH1D('el_cand_pt',event_type+' electron candidates pT;pT;events',100,0.,200.)
     h_el_cand_eta = ROOT.TH1D('el_cand_eta',event_type+' electron candidates eta;eta;events',100,0.,2.5)
     h_m3 = ROOT.TH1D('m3',event_type+' M3;m3;events',100,0.,500.)
-    h_cutflow = ROOT.TH1D('cutflow',event_type+' cutflow;cuts;events',10,0.,10.)
-    h_cutflow.SetBit(ROOT.TH1.kCanRebin)
-    h_selection_eff = ROOT.TH1D('selection_efficiency',event_type+' efficiency;cuts;events',3,0.,3.)
     h_Njets = ROOT.TH1D('Njets',event_type+' Num candidate jets;Njets;events',5,3,8)
-    h_num_gen_b = ROOT.TH1D('NGenbjets',event_type+' Num Gen bjets;Nbjets;events',5,1,6)
     h_jets_pt = ROOT.TH1D('jets_pt',event_type+' jet candidates pT;pT;events',100,0.,300.)
     h_MET = ROOT.TH1D('MET',event_type+' MET;MET;events',100,0.,200.)
     h_Nbjets = ROOT.TH1D('Nbjets',event_type+' Num candidate bjets;Nbjets;events',5,1,6)
 
+    # generator level info
+    h_num_gen_b = ROOT.TH1D('NGenbjets',event_type+' Num Gen bjets;Nbjets;events',5,1,6)
+    h_num_gen_jets = ROOT.TH1D('NGenJets',event_type+' Num Gen jets;Njets;events',9,1,10)  
+
     # features of jets
     h_csv_all_jets = ROOT.TH1D('csv_all_jets',event_type+' CSV of all jets;csv;events',100,0,1)
+    h_csv_jetCands = ROOT.TH1D('csv_jetCands',event_type+' CSV of selected jet candidates;csv;events',100,0,1)
 
     # study of b-tagging
     h_number_bjets_partonflavor =  ROOT.TH1D('number_bjets_partonflavor',event_type+' Num bjets from partonflavor;Nbjets;events',6,0,6) 
-    h_number_tagged_bjets =  ROOT.TH1D('number_tagged_bjets',event_type+' Num b-tagged jets;Nbjets;events',6,0,6)
+    h_number_tagged_bjets =  ROOT.TH1D('number_btagging',event_type+' Num b-tagged jets;Nbjets;events',6,0,6)
     h_bjets_csv = ROOT.TH1D('csv_bjets',event_type+' CSV of bjets;csv;events',100,0,1) 
 
     # Some cosmetics on histograms
@@ -211,9 +213,10 @@ def selection(patfile):
     h_Njets.GetXaxis().SetNdivisions(6)
     h_Nbjets.GetXaxis().SetNdivisions(5)
     h_num_gen_b.GetXaxis().SetNdivisions(5)
+    h_num_gen_jets.GetXaxis().SetNdivisions(9)
 
     # This is to prevent hists been destroyed after file closes 
-    tmp_hlist = [h_el_cand_pt,h_el_cand_eta,h_m3,h_cutflow,h_selection_eff,h_Njets,h_num_gen_b,h_jets_pt]
+    tmp_hlist = [h_el_cand_pt,h_el_cand_eta,h_m3,h_cutflow,h_Njets,h_num_gen_b,h_num_gen_jets,h_jets_pt,h_csv_jetCands]
     tmp_hlist.extend([h_MET,h_Nbjets,h_csv_all_jets,h_number_bjets_partonflavor,h_number_tagged_bjets,h_bjets_csv])
     for ihist in tmp_hlist : ihist.SetDirectory(0)
 
@@ -243,7 +246,7 @@ def selection(patfile):
         evt.getByLabel(met_label,met_hndl)
         evt.getByLabel(jet_p4_label, jet_p4_hndl)
         evt.getByLabel(jet_csv_label, jet_csv_hndl)
-        evt.getByLabel(jet_PartonFlavor_label, jet_PartonFlavor_hndl)
+        evt.getByLabel(jet_PartonFlavor_label, jet_PartonFlavor_hndl)  # not for data
 
         el_p4 = el_hndl.product()
         el_iso = el_iso_hndl.product()
@@ -258,30 +261,35 @@ def selection(patfile):
         met = met_hndl.product()
         jets_p4 = jet_p4_hndl.product()
         jets_csv = jet_csv_hndl.product()
-        jets_PartonFlavor = jet_PartonFlavor_hndl.product()
 
-        ## MC truth information
-        # Get gen particles and find out the true identy of the PF electron collection
-        evt.getByLabel(gen_label,gen_hndl)
-        genpars = gen_hndl.product()
-        # get all final state particles,status = 3,and particles with no daughters(final state partons) 
-        # or particles from W's which may have daughters
-        final_par = []
-        for ipar in genpars:
-            if ipar.status() == 3:
-                if ipar.numberOfDaughters()==0 or abs(ipar.pdgId())==5 : final_par.append(ipar)
-                elif ipar.numberOfMothers():
-                    if abs(ipar.mother(0).pdgId())==24: final_par.append(ipar)
-        # Find events with electron in final states
-        gen_el = list(ipar for ipar in final_par if ipar.status() == 3 and abs(ipar.pdgId()) == 11)
-        gen_mu = list(ipar for ipar in final_par if ipar.status() == 3 and abs(ipar.pdgId()) == 13)
-        gen_tau = list(ipar for ipar in final_par if ipar.status() == 3 and abs(ipar.pdgId()) == 15)
-        gen_b = list(ipar for ipar in final_par if abs(ipar.pdgId()) == 5)
-        # Determine if this event is e+jets event
-        if len(gen_el) == 1 and len(gen_el)+len(gen_mu)+len(gen_tau) == 1 : 
-            Is_ejets = True
-            h_selection_eff.Fill('gen_ejets',1)
+        # Informations for MC only     
+        if options.mcordata == 'mc' :
+
+            jets_PartonFlavor = jet_PartonFlavor_hndl.product()
+
+            # Get gen particles and find out the true identy of the PF electron collection
+            evt.getByLabel(gen_label,gen_hndl)
+            genpars = gen_hndl.product()
+            # get all final state particles,status = 3,and particles with no daughters(final state partons) 
+            # or particles from W's which may have daughters
+            final_par = []
+            for ipar in genpars:
+                if ipar.status() == 3:
+                    if ipar.numberOfDaughters()==0 or abs(ipar.pdgId())==5 : final_par.append(ipar)
+                    elif ipar.numberOfMothers():
+                        if abs(ipar.mother(0).pdgId())==24: final_par.append(ipar)
+            # Find events with electron in final states
+            gen_el = list(ipar for ipar in final_par if ipar.status() == 3 and abs(ipar.pdgId()) == 11)
+            gen_mu = list(ipar for ipar in final_par if ipar.status() == 3 and abs(ipar.pdgId()) == 13)
+            gen_tau = list(ipar for ipar in final_par if ipar.status() == 3 and abs(ipar.pdgId()) == 15)
+            gen_b = list(ipar for ipar in final_par if abs(ipar.pdgId()) == 5)
+            gen_jets = list(ipar for ipar in final_par if abs(ipar.pdgId()) in pdg_jets)
+            # Determine if this event is e+jets event
+            if len(gen_el) == 1 and len(gen_el)+len(gen_mu)+len(gen_tau) == 1 : 
+                Is_ejets = True
+            # Keep information about jets at generator level
             h_num_gen_b.Fill(len(gen_b))
+            h_num_gen_jets.Fill(len(gen_jets))
 
         ################ Find all physics objects for reconstruction ###################
 
@@ -311,9 +319,16 @@ def selection(patfile):
 
         # candidate jets Selection       https://twiki.cern.ch/twiki/bin/view/CMS/TopJMERun1#Jets
         jets_cand = []
-        for i in range(len(jets_p4)): 
-            if jets_p4[i].pt()>30 and jets_p4[i].eta()<2.4: jets_cand.append((jets_p4[i],jets_csv[i],jets_PartonFlavor[i]))
-        jets_cand_p4 = list( p4 for p4,csv,flavor in jets_cand)
+        for i in range(len(jets_p4)):
+            if jets_p4[i].pt()>30 and jets_p4[i].eta()<2.4: 
+                if options.mcordata == 'mc' : 
+                    jets_cand.append((jets_p4[i],jets_csv[i],jets_PartonFlavor[i]))
+                if options.mcordata == 'data' :
+                    jets_cand.append((jets_p4[i],jets_csv[i]))
+                else :
+                    print 'The sample is neither mc or data! Serious bug!'
+                    break
+        jets_cand_p4 = [ ijet[0] for ijet in jets_cand) ]
  
         #### Signal events selection ####
 
@@ -331,18 +346,21 @@ def selection(patfile):
 
         #### Some features of jet candidates after previous cuts ####
 
-        # Identify different type of jets according to parton flavor
-        bjets_flavor = [ jet for jet in jets_cand if abs(jet[2]) == 5]
-        for jet in bjets_flavor : h_bjets_csv.Fill(jet[1])
+        # Use parton flavor to find bjets.  Only works for MC samples.
+        if options.mcordata == 'mc' :
+            bjets_flavor = [ jet for jet in jets_cand if abs(jet[2]) == 5]
+            # plotting csv of real b jets by using parton flavor
+            for jet in bjets_flavor : h_bjets_csv.Fill(jet[1])
+            # Number of b jets according to parton flavor
+            h_number_bjets_partonflavor.Fill(len(bjets_flavor))
 
-        # Number of b jets according to parton flavor
-        h_number_bjets_partonflavor.Fill(len(bjets_flavor))
-
-        # b-tagging via CSV
-        bjets = [ jet for jet in jets_cand if jet[1] > csv_cut ]
-        h_number_tagged_bjets.Fill(len(bjets))
+        h_csv_jetCands.Fill(jets_cand[1])    
 
         #### Continue event selection ####
+
+        # Do b-tagging. Work for both MC and data
+        bjets = [ jet for jet in jets_cand if jet[1] > csv_cut ]
+        h_number_tagged_bjets.Fill(len(bjets))
 
         # cut on btags
         if not len(bjets) >= 2: continue
@@ -356,7 +374,6 @@ def selection(patfile):
 
         ######## Fill histograms ########
 
-        h_selection_eff.Fill('cand_events',1)
         h_el_cand_pt.Fill(el_cand[0].pt())
         h_el_cand_eta.Fill(el_cand[0].eta())
         h_MET.Fill(met[0])
@@ -368,22 +385,27 @@ def selection(patfile):
     ######## end main event loop ########
 
     h_cutflow_norm = norm(h_cutflow)
-    h_selection_eff_norm = norm(h_selection_eff)
     h_cutflow_log = h_cutflow.Clone()
     h_cutflow_log.SetName(h_cutflow.GetName()+'_log')
     h_cutflow_norm_log = h_cutflow_norm.Clone()
     h_cutflow_norm_log.SetName(h_cutflow_norm.GetName()+'_log')
        
-    # Make and save plots
-    histlist = [h_el_cand_pt,h_MET,h_Njets,h_Nbjets,h_m3,h_jets_pt,h_num_gen_b]
-    histlist.extend([h_cutflow,h_cutflow_norm,h_selection_eff_norm,h_selection_eff])
-    histlist.extend([h_csv_all_jets,h_number_bjets_partonflavor])
-    histlist.extend([h_bjets_csv,h_number_tagged_bjets])
+    ## Make and save plots
+    # histogram for candidate events
+    histlist = [h_el_cand_pt,h_MET,h_Njets,h_Nbjets,h_m3,h_jets_pt,h_csv_jetCands,h_number_tagged_bjets]
+    # cutflows
+    histlist.extend([h_cutflow,h_cutflow_norm])
+    # all events
+    histlist.extend([h_csv_all_jets,])
+    # histograms that exists only for MC
+    if options.mcordata == 'mc':
+        hlist.extend[h_num_gen_jets,h_num_gen_b,h_bjets_csv,h_number_bjets_partonflavor]
+
     if options.makeplots == 'True' :
         print '\nPlot and saven'
-        plotting(histlist,event_type,'not dump',options.isTesting)
+        plotting(histlist,event_type,'not dump')
         histlist1 = [h_cutflow_log,h_cutflow_norm_log]
-        plotting(histlist1,event_type,"dump",options.isTesting,"setlogy")
+        plotting(histlist1,event_type,"dump","setlogy")
         # Save to root files
         saving(histlist,event_type)
     else :
