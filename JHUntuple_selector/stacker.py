@@ -50,6 +50,7 @@ sample_types = []
 flist = []
 hlist_ = []
 all_hists = []
+data_hists = []
 
 # stucture of a list of files
 #    0,         1         2        3         4                 5
@@ -68,6 +69,10 @@ flist.append(['DY3_selection_output_all.root',10997628,65.79,'zjets',10655325,15
 # signal
 flist.append(['TT_CT10_selection_output_all.root',21560109,245.9,'ttbar',21560109,1150618])
 
+######## data
+#    0,         1                        2           3                  4                5    
+# (filepath, sample_integrated_lumi, total_data_L, type, nevts_total_ntuple, nevts_used_ntuple)
+datafile.append(['SingleEl_Run2012A_all_selection_output_all.root',888,19748,'data',205,200])
 
 # list of histogram to make stack plots
 hlist = ['cutflow','jets_pt','Njets','m3','cutflow_norm','csv_all_jets','el_cand_pt','number_tagged_bjets']
@@ -81,10 +86,35 @@ stacklist = zip(hlist,hlist_)
 # Make a legend
 leg = ROOT.TLegend(0.3,0.6,0.6,0.8)
 
+############ Get histograms from data files
+
+# Getting files
+print 'processing data file',datafile[0]
+fdata = ROOT.TFile(prepend+datafile[0])
+# Calculate weight for data 
+fraction_ = datafile[5]*1.0/datafile[4]
+weight_ = data_lumi/(datafile[1]*fraction_)
+# Get histograms from data
+for ihist in hlist :
+    ih = fdata.Get(ihist)
+    ih.SetDirectory(0)
+    ih.Scale(weight_)
+    ih.SetName(ih.GetName()+'_data')
+    data_hists.append(ih)
+# Add data entry to legend
+leg.AddEntry(data_hists[0])
+
+# write some informations about current sample
+info_ = 'Sample type : data'+'\n'+'Events weight : '+str(weight_)+'\n'
+info_ += 'Fraction of sample used : '+str(fraction)+'\n\n'
+f_info.write(info_)
+
+############ Make stack histograms for MC samples
+
 # Loop over files
 for ifile in flist :
     # Getting files
-    print 'processing file',ifile[0]
+    print 'processing MC file',ifile[0]
     f_ = ROOT.TFile(prepend+ifile[0])
     # Find the color of the sample type
     sample_type = ifile[3]
@@ -138,13 +168,14 @@ for ifile in flist :
         print 'weight is:',weight   
     
 
-
 ##### end loop over files ######
 
 # Plot and save
 plotlist = [istack for name,istack in stacklist]  
 plotting(plotlist,'stackplots',options.dumpplots,'not log',leg) 
-saving(plotlist,'stackplots')
+savelist = plotlist+data_hists
+savelist.append(leg) 
+saving(savelist,'stackplots')
 # file closure
 f_info.close()
   
