@@ -56,7 +56,7 @@ parser.add_option('--startfile', metavar='F', type='int', action='store',
                   dest='startfile',
                   help='starting file index of input ntuple files')
 
-parser.add_option('--maxEvts', metavar='F', type='int', action='store',
+parser.add_option('--maxevts', metavar='F', type='int', action='store',
                   default = 100000,
                   dest='maxEvts',
                   help='max number of input ntuple files')
@@ -94,8 +94,9 @@ def main():
 
     # Only keep certain number of input files for fexibility
     if options.maxFiles < 0 : files = allfiles
-    if options.maxFiles > 0 :
+    if options.maxFiles > 0 and options.startfile+options.maxFiles <= len(allfiles) :
         files = [allfiles[i] for i in range(options.startfile,options.startfile+options.maxFiles)]  
+    else : files = allfiles
     # Print out information on the input files
     print 'getting these PATtuple files:'
     for ifile in files : print ifile
@@ -246,7 +247,8 @@ def selection(patfile):
         evt.getByLabel(met_label,met_hndl)
         evt.getByLabel(jet_p4_label, jet_p4_hndl)
         evt.getByLabel(jet_csv_label, jet_csv_hndl)
-        evt.getByLabel(jet_PartonFlavor_label, jet_PartonFlavor_hndl)  # not for data
+        if options.mcordata == 'mc' :
+            evt.getByLabel(jet_PartonFlavor_label, jet_PartonFlavor_hndl)  # not for data
 
         el_p4 = el_hndl.product()
         el_iso = el_iso_hndl.product()
@@ -323,12 +325,12 @@ def selection(patfile):
             if jets_p4[i].pt()>30 and jets_p4[i].eta()<2.4: 
                 if options.mcordata == 'mc' : 
                     jets_cand.append((jets_p4[i],jets_csv[i],jets_PartonFlavor[i]))
-                if options.mcordata == 'data' :
+                elif options.mcordata == 'data' :
                     jets_cand.append((jets_p4[i],jets_csv[i]))
                 else :
                     print 'The sample is neither mc or data! Serious bug!'
                     break
-        jets_cand_p4 = [ ijet[0] for ijet in jets_cand) ]
+        jets_cand_p4 = [ ijet[0] for ijet in jets_cand ]
  
         #### Signal events selection ####
 
@@ -353,8 +355,9 @@ def selection(patfile):
             for jet in bjets_flavor : h_bjets_csv.Fill(jet[1])
             # Number of b jets according to parton flavor
             h_number_bjets_partonflavor.Fill(len(bjets_flavor))
-
-        h_csv_jetCands.Fill(jets_cand[1])    
+        
+        for ijet in jets_cand : 
+            h_csv_jetCands.Fill(ijet[1])    
 
         #### Continue event selection ####
 
@@ -399,7 +402,7 @@ def selection(patfile):
     histlist.extend([h_csv_all_jets,])
     # histograms that exists only for MC
     if options.mcordata == 'mc':
-        hlist.extend[h_num_gen_jets,h_num_gen_b,h_bjets_csv,h_number_bjets_partonflavor]
+        histlist.extend([h_num_gen_jets,h_num_gen_b,h_bjets_csv,h_number_bjets_partonflavor])
 
     if options.makeplots == 'True' :
         print '\nPlot and saven'
