@@ -1,0 +1,55 @@
+Sample type : singletop
+Events weight : 0.288078371454
+Nevts : 259176
+Fraction of sample used : 1.0
+
+Sample type : singletop
+Events weight : 0.721321693372
+Nevts : 1536211
+Fraction of sample used : 0.409857916762
+
+Sample type : singletop
+Events weight : 0.439398140892
+Nevts : 495559
+Fraction of sample used : 1.0
+
+Sample type : singletop
+Events weight : 0.24770314487
+Nevts : 139604
+Fraction of sample used : 1.0
+
+Sample type : singletop
+Events weight : 0.39419988438
+Nevts : 1530347
+Fraction of sample used : 0.792849908169
+
+Sample type : singletop
+Events weight : 0.443136221781
+Nevts : 491463
+Fraction of sample used : 1.0
+
+Sample type : wjets
+Events weight : 5.56799865586
+Nevts : 2263637
+Fraction of sample used : 0.14596715264
+
+Sample type : wjets
+Events weight : 3.15858629441
+Nevts : 1534294
+Fraction of sample used : 0.115131918598
+
+Sample type : zjets
+Events weight : 0.341589342954
+Nevts : 1508497
+Fraction of sample used : 0.25815288123
+
+Sample type : zjets
+Events weight : 0.81904118654
+Nevts : 1533162
+Fraction of sample used : 0.143886929775
+
+Sample type : ttbar
+Events weight : 4.21011143577
+Nevts : 1150618
+Fraction of sample used : 0.0533679120082
+

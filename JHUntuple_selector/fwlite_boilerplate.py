@@ -57,7 +57,7 @@ def normalized_compare_plots(histlist):
         i+=1
      
 # Make plots and upload to webpage
-def plotting(histlist,event_type='MC',upload = False,logy=False,legend = None):
+def plotting(histlist,event_type='MC',upload = False,logy=False,legend = None,options_ = ''):
     prefix = './plots/'
     # check if plotting dir is made. If not , make it now
     if not os.path.exists(prefix):
@@ -72,10 +72,13 @@ def plotting(histlist,event_type='MC',upload = False,logy=False,legend = None):
     fout = ROOT.TFile(plotdir+event_type+'_plots.root','recreate')
     # plotting
     for ihist in histlist:
-        name = plotdir+event_type+'_'+ihist.GetName()+'.png'
         c1 = ROOT.TCanvas()
-        if logy == "setlogy" : c1.SetLogy()
-        ihist.Draw()
+        if logy == "log" : 
+            c1.SetLogy()
+            name = plotdir+event_type+'_'+ihist.GetName()+'_log.png'
+        else :
+            name = plotdir+event_type+'_'+ihist.GetName()+'.png'
+        ihist.Draw(options_)
         if legend : legend.Draw()
         c1.SaveAs(name)
         c1.Write()
@@ -86,7 +89,7 @@ def plotting(histlist,event_type='MC',upload = False,logy=False,legend = None):
     fout.Close()
 
 # Save histograms to root files
-def saving(histlist,event_type='MC',index = ''):
+def saving(histlist,event_type='MC',index = 0):
     prefix = './output_rootfiles/'
     # check if plotting dir is made. If not , make it now
     if not os.path.exists(prefix):
@@ -99,7 +102,7 @@ def saving(histlist,event_type='MC',index = ''):
         print 'Creating new dir '+savedir
     # Saving root files
     fout = ROOT.TFile(savedir+event_type+'_selection_output'+str(index)+'.root','recreate')
-    print 'saving output into file: '+savedir+event_type+'_selection_output'+str(index)+'.root'
+    print 'saving output into file: '+savedir+event_type+'_selection_output_'+str(index)+'.root'
     for ihist in histlist:
         ihist.Write()
     # file closure
@@ -122,9 +125,23 @@ def norm( hist):
     h1.SetName(h1.GetName()+'_norm')
     h1.Scale(1.0/norm)
     return h1
+
+# Normalize a stack
+def normstack(stack):
+    norm = stack.GetMaximum()
+    st_ = ROOT.THStack(stack.GetName()+'_norm',stack.GetName())
+    hists = stack.GetHists()
+    for ihist in hists:
+        ihist.Scale(1.0/norm)
+        st_.Add(ihist)
+    return st_
    
 def vector( _list):
     _vector = ROOT.vector("string")()
     for ifile in _list:
         _vector.push_back(ifile)
     return _vector 
+
+def loadroot(file_):
+    f_ = ROOT.TFile(file_)
+    return(f_)

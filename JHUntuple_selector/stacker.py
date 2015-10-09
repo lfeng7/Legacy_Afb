@@ -130,7 +130,7 @@ for ifile in flist :
 
     # write some informations about current sample
     info_ = 'Sample type : '+sample_type+'\n'+'Events weight : '+str(weight)+'\n'
-    info_ += 'Nevts : '+str(ifile[5])+'\n'+'Fraction of sample used : '+str(fraction)+'\n'
+    info_ += 'Nevts : '+str(ifile[5])+'\n'+'Fraction of sample used : '+str(fraction)+'\n\n'
     f_info.write(info_)
 
     # for debugging
@@ -144,6 +144,7 @@ for ifile in flist :
 # Plot and save
 plotlist = [istack for name,istack in stacklist]  
 plotting(plotlist,'stackplots',options.dumpplots,'not log',leg) 
+saving(plotlist,'stackplots')
 # file closure
 f_info.close()
   
