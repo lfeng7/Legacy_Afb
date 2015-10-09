@@ -72,10 +72,10 @@ flist.append(['TT_CT10_selection_output_all.root',21560109,245.9,'ttbar',2156010
 ######## data
 #    0,         1                        2           3                  4                5    
 # (filepath, sample_integrated_lumi, total_data_L, type, nevts_total_ntuple, nevts_used_ntuple)
-datafile.append(['SingleEl_Run2012A_all_selection_output_all.root',888,19748,'data',205,200])
+datafile = ['SingleEl_Run2012A_all_selection_output_all.root',888,19748,'data',205,200]
 
 # list of histogram to make stack plots
-hlist = ['cutflow','jets_pt','Njets','m3','cutflow_norm','csv_all_jets','el_cand_pt','number_tagged_bjets']
+hlist = ['cutflow','jets_pt','Njets','m3','csv_all_jets','el_cand_pt','MET']
 
 # Booking stack histograms 
 for hist in hlist:
@@ -106,7 +106,7 @@ leg.AddEntry(data_hists[0])
 
 # write some informations about current sample
 info_ = 'Sample type : data'+'\n'+'Events weight : '+str(weight_)+'\n'
-info_ += 'Fraction of sample used : '+str(fraction)+'\n\n'
+info_ += 'Fraction of sample used : '+str(fraction_)+'\n\n'
 f_info.write(info_)
 
 ############ Make stack histograms for MC samples
