@@ -91,7 +91,7 @@ def plotting(histlist,event_type='MC',upload = False,logy=False,legend = None,op
     fout.Close()
 
 # This is specifically for comparing the stacked MC plots with data
-def comparison_plot(mc_,data_,event_type='MC',legend,upload = False,logy=False):
+def comparison_plot(mc_,data_,legend,event_type='MC',upload = False,logy=False):
     prefix = './plots/'
     # check if plotting dir is made. If not , make it now
     if not os.path.exists(prefix):
@@ -116,6 +116,7 @@ def comparison_plot(mc_,data_,event_type='MC',legend,upload = False,logy=False):
     max_mc = mc_.GetMaximum()
     max_data = data_.GetMaximum()
     max_ = max(max_mc,max_data)*1.1
+    data_.SetMaximum(max_)
     # Draw two histgrams
     data_.Draw('elp')
     mc_.Draw('same')
