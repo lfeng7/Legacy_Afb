@@ -206,7 +206,7 @@ for item in data_mc :
 data_mc_log = ([stack_cutflow,data_cutflow],[stack_cutflow_norm,data_cutflow_norm])
 
 for item in data_mc_log :
-    comparison_plot(item[0],item[1],leg,dir_name,options.dumpplots,'log')
+    comparison_plot(item[0],item[1],leg,dir_name,options.dumpplots,'log','lp')
 
 # Save MC stackplots and data histograms into an root files    
 savelist = mc_stacks+data_hists+[leg]
