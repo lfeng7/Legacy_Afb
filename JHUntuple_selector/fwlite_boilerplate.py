@@ -70,6 +70,7 @@ def plotting(histlist,event_type='MC',upload = False,logy=False,legend = None,op
         os.system('cp ~/index.php '+plotdir)
         print 'Creating new dir '+plotdir
     fout = ROOT.TFile(plotdir+event_type+'_plots.root','recreate')
+
     # plotting
     for ihist in histlist:
         c1 = ROOT.TCanvas()
@@ -82,11 +83,55 @@ def plotting(histlist,event_type='MC',upload = False,logy=False,legend = None,op
         if legend : legend.Draw()
         c1.SaveAs(name)
         c1.Write()
+
     # dump to webpage
     if upload == "dump":
         os.system('scp -r '+plotdir+'  ~/index.php pha:/home/lfeng/public_html/research/Dump/')
     # file closure
     fout.Close()
+
+# This is specifically for comparing the stacked MC plots with data
+def comparison_plot(mc_,data_,event_type='MC',legend,upload = False,logy=False):
+    prefix = './plots/'
+    # check if plotting dir is made. If not , make it now
+    if not os.path.exists(prefix):
+        os.mkdir(prefix)
+        print 'Making '+prefix
+    # Set the dir to put all plots
+    plotdir = prefix+event_type+'/'
+    if not os.path.exists(plotdir):
+        os.mkdir(plotdir)
+        os.system('cp ~/index.php '+plotdir)
+        print 'Creating new dir '+plotdir
+    fout = ROOT.TFile(plotdir+event_type+'_plots.root','recreate')
+
+    # plotting
+    c1 = ROOT.TCanvas()
+    if logy == "log" : 
+        c1.SetLogy()
+        name = plotdir+event_type+'_'+mc_.GetName()+'_compare_log.png'
+    else :
+        name = plotdir+event_type+'_'+mc_.GetName()+'_compare.png'
+    # Find the max of both histograms
+    max_mc = mc_.GetMaximum()
+    max_data = data_.GetMaximum()
+    max_ = max(max_mc,max_data)*1.1
+    # Draw two histgrams
+    data_.Draw('elp')
+    mc_.Draw('same')
+    data_.Draw('elp same')
+    legend.Draw()
+
+    # Saving
+    c1.SaveAs(name)
+    c1.Write()
+        
+    # dump to webpage
+    if upload == "dump":
+        os.system('scp -r '+plotdir+'  ~/index.php pha:/home/lfeng/public_html/research/Dump/')
+    # file closure
+    fout.Close()
+
 
 # Save histograms to root files
 def saving(histlist,event_type='MC',index = 0):
