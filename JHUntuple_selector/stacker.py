@@ -32,12 +32,19 @@ parser.add_option('--verbose', metavar='F', type='string', action='store',
                   default = 'no',
                   dest='verbose',
                   help='If you want more information than you usually need.')
+
+parser.add_option('--MCplots', metavar='F', type='string', action='store',
+                  default = 'no',
+                  dest='plotMConly',
+                  help='If you want stack plots without data comparison')
+
 (options, args) = parser.parse_args()
 
 argv = []
 
 # Some preset constants
 data_lumi = 19.7*1000 
+dir_name = 'stackplots'
 
 # Get input files
 prepend = './output_rootfiles/all_channels/'   # dir of output files to stack 
@@ -171,11 +178,39 @@ for ifile in flist :
 ##### end loop over files ######
 
 # Plot and save
-plotlist = [istack for name,istack in stacklist]  
-plotting(plotlist,'stackplots',options.dumpplots,'not log',leg) 
-savelist = plotlist+data_hists
-savelist.append(leg) 
-saving(savelist,'stackplots')
+mc_stacks = [istack for name,istack in stacklist]   # This is a list of stackplots
+
+stack_cutflow = mc_stacks[0]
+data_cutflow = data_hists[0]
+
+stack_cutflow_norm = normstack(stack_cutflow)
+data_cutflow_norm = norm(data_cutflow)
+
+mc_stacks.append(stack_cutflow_norm)
+data_hists.append(data_cutflow_norm)
+
+# Plot MC stacks
+if options.plotMConly == 'yes' :
+    print 'Plotting MC stackplots without data comparison'
+    plotting(mc_stacks,dir_name,'not dump','not log',leg) 
+    plotting([stack_cutflow,stack_cutflow_norm],dir_name,options.dumpplots,'log',leg)
+
+print 'Plotting comparison plots'
+
+# Make data MC comparison plots
+data_mc = zip(mc_stacks,data_hists)
+
+for item in data_mc :
+    comparison_plot(item[0],item[1],leg,dir_name,'not dump')
+
+data_mc_log = ([stack_cutflow,data_cutflow],[stack_cutflow_norm,data_cutflow_norm])
+
+for item in data_mc_log :
+    comparison_plot(item[0],item[1],leg,dir_name,options.dumpplots,'log')
+
+# Save MC stackplots and data histograms into an root files    
+savelist = mc_stacks+data_hists+[leg]
+saving(savelist,dir_name)
 # file closure
 f_info.close()
   
