@@ -1,3 +1,7 @@
+Sample type : data
+Events weight : 22.7393018018
+Fraction of sample used : 0.975609756098
+
 Sample type : singletop
 Events weight : 0.288078371454
 Nevts : 259176
