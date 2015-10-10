@@ -5,8 +5,7 @@
 # (B) Non-plotting mode. Where no plots will be made. Each input pattuple file will generate an output root file. All files 
 # ... from same type of samples are put in the same directory.
 
-from fwlite_boilerplate import *
-from ttbar_utitilty import *
+from utility import *
 import os
 import glob
 import math

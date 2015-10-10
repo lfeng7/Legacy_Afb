@@ -1,6 +1,6 @@
 # This small macro will read in all edm files in a directory and count the total number of events 
 
-from fwlite_boilerplate import *
+from utility import *
 
 from optparse import OptionParser
 

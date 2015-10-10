@@ -1,4 +1,4 @@
-from fwlite_boilerplate import *
+from utility import *
 
 from optparse import OptionParser
 
