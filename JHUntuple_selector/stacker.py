@@ -1,6 +1,7 @@
 # This small macro will read in all edm files in a directory and count the total number of events 
 
-from utility import *
+from fwlite_boilerplate import *
+from ttbar_utitilty import *
 
 from optparse import OptionParser
 
@@ -50,6 +51,7 @@ prepend = './output_rootfiles/all_channels/'   # dir of output files to stack
 
 # Make an txt files for some information output
 f_info = open('info_stackplots.txt','w')
+f_yields = open('yields.txt','w')
   
 # initialization and declaration
 sample_types = []
@@ -124,7 +126,7 @@ for ifile in flist :
     f_ = ROOT.TFile(prepend+ifile[0])
     # Find the color of the sample type
     sample_type = ifile[3]
-    icolor = sample_color(sample_type) # need to write a sub routine that return color given sample type
+    icolor = GetSampleColor(sample_type) # need to write a sub routine that return color given sample type
 
     # Calculate weight for this channel
     fraction = ifile[5]*1.0/ifile[4]
@@ -210,6 +212,38 @@ for item in data_mc_log :
 # Save MC stackplots and data histograms into an root files    
 savelist = mc_stacks+data_hists+[leg]
 saving(savelist,dir_name)
+
+# Getting yields for MC and data
+sample_yields = []
+for ihist in stack_cutflow.GetHists():
+    type_ = GetSampleType(ihist.GetFillColor())
+    sample_yields.append(type_)
+    sample_yields.extend(GetBinEntry(ihist))
+
+MC_yields = []
+
+all_types = GetListChoices[ sample[0] for sample in sample_yields]
+
+for itype in all_types :
+    ilist = [ sample for sample in sample_yields if sample[0] == itype]
+    MC_yields.append(SumColumn(ilist))
+
+mc_total_yields = SumColumn(MC_yields)
+mc_total_yields.pop(0)
+MC_yields.append(mc_total_yields)
+
+# Yields for data
+data_yields = ['data'+GetBinEntry(data_cutflow)]
+# Write into yields output files
+f_yields.write('sample,nocut, el selection, loose mu veto, dilep veto, jets selection, b-tagging, MET \n')
+for row in MC_yields :
+    for item in row :
+        f_yields.write(str(item)+',')
+    f_yields.write('\n')
+for item in data_yields :
+    f_yields.write(str(item)+',')
+
 # file closure
 f_info.close()
+f_yields.close()
   
