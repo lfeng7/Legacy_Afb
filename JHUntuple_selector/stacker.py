@@ -1,7 +1,6 @@
 # This small macro will read in all edm files in a directory and count the total number of events 
 
-from fwlite_boilerplate import *
-from ttbar_utitilty import *
+from utility import *
 
 from optparse import OptionParser
 
@@ -184,6 +183,10 @@ mc_stacks = [istack for name,istack in stacklist]   # This is a list of stackplo
 stack_cutflow = mc_stacks[0]
 data_cutflow = data_hists[0]
 
+# this is an ugly fix in order to get correct yields....
+stack_cutflow_0 = stack_cutflow.Clone()
+data_cutflow_0 = data_cutflow.Clone()
+
 stack_cutflow_norm = normstack(stack_cutflow)
 data_cutflow_norm = norm(data_cutflow)
 
@@ -215,14 +218,14 @@ saving(savelist,dir_name)
 
 # Getting yields for MC and data
 sample_yields = []
-for ihist in stack_cutflow.GetHists():
+for ihist in stack_cutflow_0.GetHists():
     type_ = GetSampleType(ihist.GetFillColor())
-    sample_yields.append(type_)
-    sample_yields.extend(GetBinEntry(ihist))
+    sample_yields.append([type_]+GetBinEntry(ihist))
+ #   sample_yields.extend(GetBinEntry(ihist))
 
 MC_yields = []
 
-all_types = GetListChoices[ sample[0] for sample in sample_yields]
+all_types = GetListChoices([ sample[0] for sample in sample_yields])
 
 for itype in all_types :
     ilist = [ sample for sample in sample_yields if sample[0] == itype]
@@ -230,10 +233,10 @@ for itype in all_types :
 
 mc_total_yields = SumColumn(MC_yields)
 mc_total_yields.pop(0)
-MC_yields.append(mc_total_yields)
+MC_yields.append(['MC']+mc_total_yields)
 
 # Yields for data
-data_yields = ['data'+GetBinEntry(data_cutflow)]
+data_yields = ['data']+GetBinEntry(data_cutflow_0)
 # Write into yields output files
 f_yields.write('sample,nocut, el selection, loose mu veto, dilep veto, jets selection, b-tagging, MET \n')
 for row in MC_yields :

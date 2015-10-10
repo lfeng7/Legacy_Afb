@@ -26,6 +26,6 @@ def GetSampleType(color):
 def GetBinEntry(hist) :
     nbins = hist.GetSize()
     entry = []
-    for i in range(1:nbins) : 
-        entry.append(hist.GetArray()[i])
+    for i in range(1,nbins) : 
+        entry.append(int(hist.GetArray()[i]))
     return entry
