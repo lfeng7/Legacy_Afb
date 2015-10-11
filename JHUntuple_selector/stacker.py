@@ -79,7 +79,7 @@ flist.append(['TT_CT10_selection_output_all.root',21560109,245.9,'ttbar',2156010
 ######## data
 #    0,         1                        2           3                  4                5    
 # (filepath, sample_integrated_lumi, total_data_L, type, nevts_total_ntuple, nevts_used_ntuple)
-datafile = ['SingleEl_Run2012A_all_selection_output_all.root',888,19748,'data',205,200]
+datafile = ['SingleEl_Run2012A_all_selection_output_all.root',888,19748,'data',11212832,200]
 
 # list of histogram to make stack plots
 hlist = ['cutflow','jets_pt','Njets','m3','csv_all_jets','el_cand_pt','MET']
@@ -99,7 +99,8 @@ leg = ROOT.TLegend(0.3,0.6,0.6,0.8)
 print 'processing data file',datafile[0]
 fdata = ROOT.TFile(prepend+datafile[0])
 # Calculate weight for data 
-fraction_ = datafile[5]*1.0/datafile[4]
+nevts_data = fdata.Get('cutflow').GetBinContent(1)
+fraction_ = nevts_data*1.0/datafile[4]
 weight_ = data_lumi/(datafile[1]*fraction_)
 # Get histograms from data
 for ihist in hlist :
@@ -128,7 +129,8 @@ for ifile in flist :
     icolor = GetSampleColor(sample_type) # need to write a sub routine that return color given sample type
 
     # Calculate weight for this channel
-    fraction = ifile[5]*1.0/ifile[4]
+    nevts_total = f_.Get('cutflow').GetBinContent(1)
+    fraction = nevts_total*1.0/ifile[4]
     cross_section_NLO = ifile[2]
     nevts_gen = ifile[1]*fraction
     weight = data_lumi*cross_section_NLO/nevts_gen  
@@ -190,8 +192,8 @@ data_cutflow_0 = data_cutflow.Clone()
 stack_cutflow_norm = normstack(stack_cutflow)
 data_cutflow_norm = norm(data_cutflow)
 
-mc_stacks.append(stack_cutflow_norm)
-data_hists.append(data_cutflow_norm)
+#mc_stacks.append(stack_cutflow_norm)
+#data_hists.append(data_cutflow_norm)
 
 # Plot MC stacks
 if options.plotMConly == 'yes' :
@@ -203,16 +205,22 @@ print 'Plotting comparison plots'
 
 # Make data MC comparison plots
 data_mc = zip(mc_stacks,data_hists)
+data_mc_norm = ([stack_cutflow_norm,data_cutflow_norm])
 
 for item in data_mc :
-    comparison_plot(item[0],item[1],leg,dir_name,'not dump')
+    comparison_plot(item[0],item[1],leg,dir_name)
+for item in data_mc_norm :
+    comparison_plot(item[0],item[1],leg,dir_name,'not dump','notlog','p')
 
 data_mc_log = ([stack_cutflow,data_cutflow],[stack_cutflow_norm,data_cutflow_norm])
 
 for item in data_mc_log :
-    comparison_plot(item[0],item[1],leg,dir_name,options.dumpplots,'log')
+    comparison_plot(item[0],item[1],leg,dir_name,'not dump','log')
 
-# Save MC stackplots and data histograms into an root files    
+# Dump plots to web
+plotting([],dir_name,'dump')
+
+############ Save MC stackplots and data histograms into an root files    
 savelist = mc_stacks+data_hists+[leg]
 saving(savelist,dir_name)
 
@@ -221,7 +229,6 @@ sample_yields = []
 for ihist in stack_cutflow_0.GetHists():
     type_ = GetSampleType(ihist.GetFillColor())
     sample_yields.append([type_]+GetBinEntry(ihist))
- #   sample_yields.extend(GetBinEntry(ihist))
 
 MC_yields = []
 
@@ -249,4 +256,4 @@ for item in data_yields :
 # file closure
 f_info.close()
 f_yields.close()
-  
+fdata.Close()  

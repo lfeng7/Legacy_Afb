@@ -147,7 +147,7 @@ def saving(histlist,event_type='MC',index = 0):
         os.mkdir(savedir)
         print 'Creating new dir '+savedir
     # Saving root files
-    fout = ROOT.TFile(savedir+event_type+'_selection_output'+str(index)+'.root','recreate')
+    fout = ROOT.TFile(savedir+event_type+'_selection_output_'+str(index)+'.root','recreate')
     print 'saving output into file: '+savedir+event_type+'_selection_output_'+str(index)+'.root'
     for ihist in histlist:
         ihist.Write()
