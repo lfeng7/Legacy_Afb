@@ -27,6 +27,11 @@ parser.add_option('--outname', metavar='F', type='string', action='store',
                   dest='outname',
                   help='')
 
+parser.add_option('--pattern', metavar='F', type='string', action='store',
+                  default = 'output',
+                  dest='pattern',
+                  help='')
+
 (options, args) = parser.parse_args()
 
 argv = []
@@ -43,9 +48,9 @@ if options.inputFiles:
 if options.verbose == 'yes' :   
     for ifile in files : print 'Getting these files',ifle
 
-print 'Getting',len(files),'files'
+print 'Getting',len(allfiles),'files'
 
-all_index = [int(ifile.split('output')[1].split('.root')[0].strip('_')) for ifile in allfiles]
+all_index = [int(ifile.split(options.pattern)[1].split('.root')[0].strip('_')) for ifile in allfiles]
 for i in all_index : fout.write(str(i)+',')    
 
 

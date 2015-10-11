@@ -64,23 +64,23 @@ data_hists = []
 # (filepath, nevts_gen, xsec_NLO, type, nevts_total_ntuple)
 # Single Top
 flist.append(['T_s_selection_output_all.root',259176,3.79,'singletop',259176] )
-flist.append(['T_t_selection_output_all.root',3758227,56.4,'singletop',3748155] )
+flist.append(['T_t_v1_selection_output_all.root',3758227,56.4,'singletop',3748155] )
 flist.append(['T_tW_selection_output_all.root',497658,11.1,'singletop',495559])
 flist.append(['Tbar_s_selection_output_all.root',139974,1.76,'singletop',139604])
-flist.append(['Tbar_t_selection_output_all.root',1935072,30.7,'singletop',1930185])
+flist.append(['Tbar_t_v1_selection_output_all.root',1935072,30.7,'singletop',1930185])
 flist.append(['Tbar_tW_selection_output_all.root',493460,11.1,'singletop',491463])
 # Wjets
 flist.append(['W1Jets_selection_output_all.root',23130418,6662.8,'wjets',23038253])
 flist.append(['W2Jets_selection_output_all.root',34019846,2159.2,'wjets',33993463])
-flist.append(['W3Jets_selection_output_all.root',15522558,640.4,'wjets',15507852])
-flist.append(['W4Jets_selection_output_all.root',13326400,246.0,'wjets',13326400])
+flist.append(['W3Jets_v1_selection_output_all.root',15522558,640.4,'wjets',15507852])
+flist.append(['W4Jets_v1_selection_output_all.root',13326400,246.0,'wjets',13326400])
 # DYjets
-flist.append(['DY1_selection_output_all.root',24018131,660.6,'zjets',23802736])
-flist.append(['DY2_selection_output_all.root',2349457,215.1,'zjets',2345857])
-flist.append(['DY3_selection_output_all.root',10997628,65.79,'zjets',10655325])
-flist.append(['DY4_selection_output_all.root',6387032,28.59,'zjets',5843425])
+flist.append(['DY1Jets_selection_output_all.root',24018131,660.6,'zjets',23802736])
+flist.append(['DY2Jets_selection_output_all.root',2349457,215.1,'zjets',2345857])
+flist.append(['DY3Jets_selection_output_all.root',10997628,65.79,'zjets',10655325])
+flist.append(['DY4Jets_selection_output_all.root',6387032,28.59,'zjets',5843425])
 # signal
-flist.append(['TT_CT10_selection_output_all.root',21560109,245.9,'ttbar',21560109])
+flist.append(['TT_CT10_v1_selection_output_all.root',21560109,245.9,'ttbar',21560109])
 
 ######## data
 #    0,         1                        2           3                  4                5    
@@ -190,6 +190,7 @@ mc_stacks = [istack for name,istack in stacklist]   # This is a list of stackplo
 
 stack_cutflow = mc_stacks[0]
 data_cutflow = data_hists[0]
+data_cutflow.SetMinimum(2000)
 
 # this is an ugly fix in order to get correct yields....
 stack_cutflow_0 = stack_cutflow.Clone()
@@ -197,6 +198,7 @@ data_cutflow_0 = data_cutflow.Clone()
 
 stack_cutflow_norm = normstack(stack_cutflow)
 data_cutflow_norm = norm(data_cutflow)
+data_cutflow_norm.SetMinimum(0.00002)
 
 #mc_stacks.append(stack_cutflow_norm)
 #data_hists.append(data_cutflow_norm)
@@ -211,7 +213,7 @@ print 'Plotting comparison plots'
 
 # Make data MC comparison plots
 data_mc = zip(mc_stacks,data_hists)
-data_mc_norm = ([stack_cutflow_norm,data_cutflow_norm])
+data_mc_norm = [[stack_cutflow_norm,data_cutflow_norm]]
 
 for item in data_mc :
     comparison_plot(item[0],item[1],leg,dir_name)
@@ -221,9 +223,10 @@ for item in data_mc_norm :
 data_mc_log = ([stack_cutflow,data_cutflow],[stack_cutflow_norm,data_cutflow_norm])
 
 for item in data_mc_log :
-    comparison_plot(item[0],item[1],leg,dir_name,'not dump','log')
+    comparison_plot(item[0],item[1],leg,dir_name,'not dump','log','p')
 
 # Dump plots to web
+print 'Uploading all plots to web'
 plotting([],dir_name,'dump')
 
 ############ Save MC stackplots and data histograms into an root files    
