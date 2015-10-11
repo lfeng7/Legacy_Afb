@@ -57,7 +57,7 @@ def normalized_compare_plots(histlist):
         i+=1
      
 # Make plots and upload to webpage
-def plotting(histlist,event_type='MC',upload = False,logy=False,legend = None,options_ = ''):
+def plotting(histlist,event_type='MC',upload = False,logy=False,legend = None,options_ = '',createmode='update'):
     prefix = './plots/'
     # check if plotting dir is made. If not , make it now
     if not os.path.exists(prefix):
@@ -69,7 +69,8 @@ def plotting(histlist,event_type='MC',upload = False,logy=False,legend = None,op
         os.mkdir(plotdir)
         os.system('cp ~/index.php '+plotdir)
         print 'Creating new dir '+plotdir
-    fout = ROOT.TFile(plotdir+event_type+'_plots.root','recreate')
+
+    fout = ROOT.TFile(plotdir+event_type+'_plots.root',createmode)
 
     # plotting
     for ihist in histlist:
@@ -84,6 +85,7 @@ def plotting(histlist,event_type='MC',upload = False,logy=False,legend = None,op
         c1.SaveAs(name)
         c1.Write()
 
+    fout.Write()
     # dump to webpage
     if upload == "dump":
         os.system('scp -r '+plotdir+'  ~/index.php pha:/home/lfeng/public_html/research/Dump/')
@@ -91,7 +93,7 @@ def plotting(histlist,event_type='MC',upload = False,logy=False,legend = None,op
     fout.Close()
 
 # This is specifically for comparing the stacked MC plots with data
-def comparison_plot(mc_,data_,legend,event_type='MC',upload = False,logy=False,options_ = 'elp'):
+def comparison_plot(mc_,data_,legend,event_type='MC',upload = False,logy=False,options_ = 'elp',createmode='update'):
     prefix = './plots/'
     # check if plotting dir is made. If not , make it now
     if not os.path.exists(prefix):
@@ -103,7 +105,8 @@ def comparison_plot(mc_,data_,legend,event_type='MC',upload = False,logy=False,o
         os.mkdir(plotdir)
         os.system('cp ~/index.php '+plotdir)
         print 'Creating new dir '+plotdir
-    fout = ROOT.TFile(plotdir+event_type+'_plots.root','recreate')
+
+    fout = ROOT.TFile(plotdir+event_type+'_plots.root',createmode)
 
     # plotting
     c1 = ROOT.TCanvas()
@@ -151,6 +154,7 @@ def saving(histlist,event_type='MC',index = 0):
     print 'saving output into file: '+savedir+event_type+'_selection_output_'+str(index)+'.root'
     for ihist in histlist:
         ihist.Write()
+    fout.Write()
     # file closure
     fout.Close()
 

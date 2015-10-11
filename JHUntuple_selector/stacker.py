@@ -97,7 +97,7 @@ for hist in hlist:
 stacklist = zip(hlist,hlist_)
 
 # Make a legend
-leg = ROOT.TLegend(0.3,0.6,0.6,0.8)
+leg = ROOT.TLegend(0.7,0.65,1.0,0.85)
 
 ############ Get histograms from data files
 
@@ -116,7 +116,7 @@ for ihist in hlist :
     ih.SetName(ih.GetName()+'_data')
     data_hists.append(ih)
 # Add data entry to legend
-leg.AddEntry(data_hists[0])
+leg.AddEntry(data_hists[0],'data')
 
 # write some informations about current sample
 info_ = 'Sample type : data'+'\n'+'Events weight %.2f : '%weight_ +'\n'
@@ -203,6 +203,8 @@ data_cutflow_norm.SetMinimum(0.00002)
 #mc_stacks.append(stack_cutflow_norm)
 #data_hists.append(data_cutflow_norm)
 
+# Create the output root file
+plotting([],dir_name,'not dump','not log',None,'','recreate')
 # Plot MC stacks
 if options.plotMConly == 'yes' :
     print 'Plotting MC stackplots without data comparison'
