@@ -19,4 +19,10 @@ def GetListChoices(l):
     for item in l :
         if item not in tmp : tmp.append(item)
     return tmp
+
+def ListCompare( a,b) :
+    diff_a = [ i for i in a if i not in b ]
+    diff_b = [ i for i in b if i not in a ] 
+    if len(diff_a) >= len(diff_b) : return diff_a
+    else : return diff_b
  
