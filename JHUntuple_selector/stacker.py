@@ -60,26 +60,32 @@ all_hists = []
 data_hists = []
 
 # stucture of a list of files
-#    0,         1         2        3         4                 5
-# (filepath, nevts_gen, xsec_NLO, type, nevts_total_ntuple, nevts_used_ntuple)
-# backgrounds
-flist.append(['T_s_selection_output_all.root',259176,3.79,'singletop',259176,259176] )
-flist.append(['T_t_selection_output_all.root',3758227,56.4,'singletop',3748155,1536211] )
-flist.append(['T_tW_selection_output_all.root',497658,11.1,'singletop',495559,495559])
-flist.append(['Tbar_s_selection_output_all.root',139974,1.76,'singletop',139604,139604])
-flist.append(['Tbar_t_selection_output_all.root',1935072,30.7,'singletop',1930185,1530347])
-flist.append(['Tbar_tW_selection_output_all.root',493460,11.1,'singletop',491463,491463])
-flist.append(['W3Jets_selection_output_all.root',15522558,640.4,'wjets',15507852,2263637])
-flist.append(['W4Jets_selection_output_all.root',13326400,246.0,'wjets',13326400,1534294])
-flist.append(['DY4_selection_output_all.root',6387032,28.59,'zjets',5843425,1508497])
-flist.append(['DY3_selection_output_all.root',10997628,65.79,'zjets',10655325,1533162])
+#    0,         1         2        3         4           
+# (filepath, nevts_gen, xsec_NLO, type, nevts_total_ntuple)
+# Single Top
+flist.append(['T_s_selection_output_all.root',259176,3.79,'singletop',259176] )
+flist.append(['T_t_selection_output_all.root',3758227,56.4,'singletop',3748155] )
+flist.append(['T_tW_selection_output_all.root',497658,11.1,'singletop',495559])
+flist.append(['Tbar_s_selection_output_all.root',139974,1.76,'singletop',139604])
+flist.append(['Tbar_t_selection_output_all.root',1935072,30.7,'singletop',1930185])
+flist.append(['Tbar_tW_selection_output_all.root',493460,11.1,'singletop',491463])
+# Wjets
+flist.append(['W1Jets_selection_output_all.root',23130418,6662.8,'wjets',23038253])
+flist.append(['W2Jets_selection_output_all.root',34019846,2159.2,'wjets',33993463])
+flist.append(['W3Jets_selection_output_all.root',15522558,640.4,'wjets',15507852])
+flist.append(['W4Jets_selection_output_all.root',13326400,246.0,'wjets',13326400])
+# DYjets
+flist.append(['DY1_selection_output_all.root',24018131,660.6,'zjets',23802736])
+flist.append(['DY2_selection_output_all.root',2349457,215.1,'zjets',2345857])
+flist.append(['DY3_selection_output_all.root',10997628,65.79,'zjets',10655325])
+flist.append(['DY4_selection_output_all.root',6387032,28.59,'zjets',5843425])
 # signal
-flist.append(['TT_CT10_selection_output_all.root',21560109,245.9,'ttbar',21560109,1150618])
+flist.append(['TT_CT10_selection_output_all.root',21560109,245.9,'ttbar',21560109])
 
 ######## data
 #    0,         1                        2           3                  4                5    
 # (filepath, sample_integrated_lumi, total_data_L, type, nevts_total_ntuple, nevts_used_ntuple)
-datafile = ['SingleEl_Run2012A_all_selection_output_all.root',888,19748,'data',11212832,200]
+datafile = ['SingleEl_Run2012A_all_selection_output_all.root',888,19748,'data',11212832]
 
 # list of histogram to make stack plots
 hlist = ['cutflow','jets_pt','Njets','m3','csv_all_jets','el_cand_pt','MET']
@@ -113,8 +119,8 @@ for ihist in hlist :
 leg.AddEntry(data_hists[0])
 
 # write some informations about current sample
-info_ = 'Sample type : data'+'\n'+'Events weight : '+str(weight_)+'\n'
-info_ += 'Fraction of sample used : '+str(fraction_)+'\n\n'
+info_ = 'Sample type : data'+'\n'+'Events weight %.2f : '%weight_ +'\n'
+info_ += 'Fraction of sample used : %.2f'%fraction_ +'\n\n'
 f_info.write(info_)
 
 ############ Make stack histograms for MC samples
@@ -129,7 +135,7 @@ for ifile in flist :
     icolor = GetSampleColor(sample_type) # need to write a sub routine that return color given sample type
 
     # Calculate weight for this channel
-    nevts_total = f_.Get('cutflow').GetBinContent(1)
+    nevts_total = int(f_.Get('cutflow').GetBinContent(1))
     fraction = nevts_total*1.0/ifile[4]
     cross_section_NLO = ifile[2]
     nevts_gen = ifile[1]*fraction
@@ -168,8 +174,8 @@ for ifile in flist :
         if options.verbose == 'yes' : print 'Adding a new legend entry for type:',sample_type
 
     # write some informations about current sample
-    info_ = 'Sample type : '+sample_type+'\n'+'Events weight : '+str(weight)+'\n'
-    info_ += 'Nevts : '+str(ifile[5])+'\n'+'Fraction of sample used : '+str(fraction)+'\n\n'
+    info_ = 'Sample name : '+ifile[0]+'\n'+'Type: '+sample_type+'\n'+'Events weight : '+str(weight)+'\n'
+    info_ += 'Nevts : '+str(nevts_total)+'\n'+'Fraction of sample used : %.2f'%fraction+'\n\n'
     f_info.write(info_)
 
     # for debugging
