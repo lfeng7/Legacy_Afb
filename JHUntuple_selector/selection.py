@@ -92,10 +92,14 @@ def main():
         allfiles = []
 
     # Only keep certain number of input files for fexibility
-    if options.maxFiles < 0 : files = allfiles
-    if options.maxFiles > 0 and options.startfile+options.maxFiles <= len(allfiles) :
-        files = [allfiles[i] for i in range(options.startfile,options.startfile+options.maxFiles)]  
-    else : files = allfiles
+    if options.maxFiles <= 0 : files = allfiles   # maxfiles<= 0 indicates run all files
+    else :
+        headfile = options.startfile
+        endfile = headfile+options.maxFiles
+        endfile = min(endfile,len(allfiles)) # end file cannot be larger than total number of files
+        headfile = min(headfile,endfile)   # headfile must be smaller or equal to endfile
+        print 'Will process file',headfile,'to',endfile
+        files = [allfiles[i] for i in range(headfile,endfile)]  
     # Print out information on the input files
     print 'getting these PATtuple files:'
     for ifile in files : print ifile
