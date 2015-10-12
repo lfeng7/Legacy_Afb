@@ -42,7 +42,7 @@ parser.add_option('--MCplots', metavar='F', type='string', action='store',
 argv = []
 
 # Some preset constants
-data_lumi = 19.7*1000 
+data_lumi = 888
 dir_name = 'stackplots'
 
 # Get input files

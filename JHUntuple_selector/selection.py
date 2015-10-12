@@ -190,11 +190,12 @@ def selection(patfile):
     h_cutflow.SetBit(ROOT.TH1.kCanRebin)
 
     # for selection validation
-    h_el_cand_pt = ROOT.TH1D('el_cand_pt',event_type+' electron candidates pT;pT;events',100,0.,200.)
-    h_el_cand_eta = ROOT.TH1D('el_cand_eta',event_type+' electron candidates eta;eta;events',100,0.,2.5)
+    h_el_cand_pt = ROOT.TH1D('el_cand_pt',event_type+' electron candidates pT;pT (GeV);events',100,0.,200.)
+    h_el_cand_eta = ROOT.TH1D('el_cand_eta',event_type+' electron candidates eta;eta;events',100,0.,3.0)
     h_m3 = ROOT.TH1D('m3',event_type+' M3;m3;events',100,0.,500.)
     h_Njets = ROOT.TH1D('Njets',event_type+' Num candidate jets;Njets;events',5,3,8)
-    h_jets_pt = ROOT.TH1D('jets_pt',event_type+' jet candidates pT;pT;events',100,0.,300.)
+    h_jets_pt = ROOT.TH1D('jets_pt',event_type+' jet candidates pT;pT (GeV);events',100,0.,300.)
+    h_jets_eta = ROOT.TH1D('jets_eta',event_type+' jet candidates eta;eta;events',100,0.,3.0)
     h_MET = ROOT.TH1D('MET',event_type+' MET;MET;events',100,0.,200.)
     h_Nbjets = ROOT.TH1D('Nbjets',event_type+' Num candidate bjets;Nbjets;events',5,1,6)
 
@@ -220,7 +221,7 @@ def selection(patfile):
     h_num_gen_jets.GetXaxis().SetNdivisions(9)
 
     # This is to prevent hists been destroyed after file closes 
-    tmp_hlist = [h_el_cand_pt,h_el_cand_eta,h_m3,h_cutflow,h_Njets,h_num_gen_b,h_num_gen_jets,h_jets_pt,h_csv_jetCands]
+    tmp_hlist = [h_el_cand_pt,h_el_cand_eta,h_m3,h_cutflow,h_Njets,h_num_gen_b,h_num_gen_jets,h_jets_pt,h_csv_jetCands,h_jets_eta]
     tmp_hlist.extend([h_MET,h_Nbjets,h_csv_all_jets,h_number_bjets_partonflavor,h_number_tagged_bjets,h_bjets_csv])
     for ihist in tmp_hlist : ihist.SetDirectory(0)
 
@@ -325,7 +326,7 @@ def selection(patfile):
         # candidate jets Selection       https://twiki.cern.ch/twiki/bin/view/CMS/TopJMERun1#Jets
         jets_cand = []
         for i in range(len(jets_p4)):
-            if jets_p4[i].pt()>30 and jets_p4[i].eta()<2.4: 
+            if jets_p4[i].pt()>30 and abs(jets_p4[i].eta())<2.4: 
                 if options.mcordata == 'mc' : 
                     jets_cand.append((jets_p4[i],jets_csv[i],jets_PartonFlavor[i]))
                 elif options.mcordata == 'data' :
@@ -381,12 +382,14 @@ def selection(patfile):
         ######## Fill histograms ########
 
         h_el_cand_pt.Fill(el_cand[0].pt())
-        h_el_cand_eta.Fill(el_cand[0].eta())
+        h_el_cand_eta.Fill(abs(el_cand[0].eta()))
         h_MET.Fill(met[0])
         h_Njets.Fill(len(jets_cand))
         h_Nbjets.Fill(len(bjets))
         h_m3.Fill(M3(jets_cand_p4))    
-        for ijet in jets_cand_p4: h_jets_pt.Fill(ijet.pt())
+        for ijet in jets_cand_p4: 
+            h_jets_pt.Fill(ijet.pt())
+            h_jets_eta.Fill(abs(ijet.eta()))
 
     ######## end main event loop ########
 
@@ -398,11 +401,11 @@ def selection(patfile):
        
     ## Make and save plots
     # histogram for candidate events
-    histlist = [h_el_cand_pt,h_MET,h_Njets,h_Nbjets,h_m3,h_jets_pt,h_csv_jetCands,h_number_tagged_bjets]
+    histlist = [h_el_cand_pt,h_MET,h_Njets,h_Nbjets,h_m3,h_jets_pt,h_csv_jetCands,h_number_tagged_bjets,h_jets_eta,h_el_cand_eta]
     # cutflows
     histlist.extend([h_cutflow,h_cutflow_norm])
     # all events
-    histlist.extend([h_csv_all_jets,])
+    histlist.extend([h_csv_all_jets])
     # histograms that exists only for MC
     if options.mcordata == 'mc':
         histlist.extend([h_num_gen_jets,h_num_gen_b,h_bjets_csv,h_number_bjets_partonflavor])

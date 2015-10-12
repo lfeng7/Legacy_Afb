@@ -31,7 +31,10 @@ print options.inputFiles
 if options.inputFiles:
     allfiles = glob.glob( options.inputFiles )
     # Only keep certain number of input files for fexibility
-    files = [allfiles[i] for i in range(options.maxFiles)]  
+    if len(allfiles)>= options.maxFiles and options.maxFiles > 0 :
+        files = [allfiles[i] for i in range(options.maxFiles)]  
+    else :
+        files = allfiles
     
 print 'getting files', files
 
@@ -39,14 +42,16 @@ print 'getting files', files
 events = Events(files)
 
 # Control constants
-nevt_cut = 100
-type = 'MC'
+nevt_cut = 10000
+type = 'test'
 
 # Handles and labels
 hndl1 = Handle('vector<double>')
 label1 = ('jhuAk5','AK5JEC')
 hndl2 = Handle('vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > >')
 label2 =  ('jhuAk5','AK5')
+jet_p4_hndl = Handle('vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > > ')
+jet_p4_label = ("jhuAk5","AK5")
 
 # JHU ntuple format
 jet_csv_hndl = Handle('vector<double>')
@@ -68,6 +73,8 @@ h3 = ROOT.TH1D('csv_all_jets', type+' CSV of all jets;csv;events',100,0,1)
 h4 = ROOT.TH1D('csv_b_jets', type+' CSV of b jets;csv;events',100,-20,40)
 h5 = ROOT.TH1D('csv_light_jets', type+' CSV of light jets;csv;events',100,-20,40)
 h6 = ROOT.TH1D('csv_gluon_jets', type+' CSV of gluon jets;csv;events',100,-20,40)
+
+h_jets_eta = ROOT.TH1D('jets_eta',type+' jets eta;eta;events',100,-4.5,4.5)
 # Counter initiation 
 n_evt = 0
 n_evt_csv = 0
@@ -91,6 +98,9 @@ for evt in events:
     flavor = jet_flavor_hndl.product()    
     jets = zip(csv,flavor)
     
+    evt.getByLabel(jet_p4_label, jet_p4_hndl)
+    jets_p4 = jet_p4_hndl.product() 
+
     # Fill histograms
     for icsv,iflavor in jets : 
         if icsv<0 or icsv>1 : continue
@@ -98,6 +108,10 @@ for evt in events:
         if abs(iflavor) == 5 : h4.Fill(icsv)
         if abs(iflavor) in [1,2,3,4] : h5.Fill(icsv)
         if abs(iflavor) == 21 : h6.Fill(icsv)
+    
+    for ijet in jets_p4 :
+        if ijet.pt()>30 :
+            h_jets_eta.Fill(ijet.eta())
 
 # End of event loop
 
@@ -106,7 +120,8 @@ print 'break at event',n_evt
 print 'number of events with valid jet csv',n_evt_csv
 
 # Plotting and saving 
-histlist = [h3,h4,h5,h6]
+#histlist = [h3,h4,h5,h6]
+histlist = [h_jets_eta]
 
-plotting(histlist,type,"dump","testing")
+plotting(histlist,type,"dump")
   
