@@ -1,7 +1,7 @@
 # import ROOT in batch mode
 import ROOT,os
 ROOT.gROOT.SetBatch(True)  # (on lxplus, the X-connection is opened anyways) 
-ROOT.gROOT.Macro( os.path.expanduser( 'rootlogon.C' ) )
+ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
  
 # load FWLite C++ libraries
 ROOT.gSystem.Load("libFWCoreFWLite.so");
@@ -162,7 +162,7 @@ def saving(histlist,event_type='MC',index = 0000):
 def gridsaving(histlist,event_type='MC',index = 0000):
     # Saving root files
     fout = ROOT.TFile(event_type+'_selection_output_'+str(index)+'.root','recreate')
-    print 'saving output into file: '+savedir+event_type+'_selection_output_'+str(index)+'.root'
+    print 'saving output into file: '+event_type+'_selection_output_'+str(index)+'.root'
     for ihist in histlist:
         ihist.Write()
     fout.Write()

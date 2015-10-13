@@ -1,5 +1,5 @@
 #! /bin/sh
-tar czvf tarball.tgz ../selection.py ../utility 
+tar czvf tarball.tgz ../../selection.py ../../utility inputfiles
 
 voms-proxy-init --voms cms
 

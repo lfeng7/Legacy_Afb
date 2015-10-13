@@ -1,0 +1,1 @@
+/uscms_data/d3/lfeng7/Legacy_Afb/analysis/CMSSW_5_3_24/work/selection/JHUntuple_selector/ntuples/jhu_diffmo/v1_complete/SingleEl_Run2012A_v1_all/*.root
