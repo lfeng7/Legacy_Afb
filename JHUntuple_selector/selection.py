@@ -47,7 +47,7 @@ parser.add_option('--mcordata', metavar='F', type='string', action='store',
 
 parser.add_option('--maxfiles', metavar='F', type='int', action='store',
                   default = 10,
-                  dest='maxFiles',
+                  dest='maxfiles',
                   help='max number of input ntuple files')
 
 parser.add_option('--startfile', metavar='F', type='int', action='store',
@@ -80,7 +80,6 @@ def main():
     # Get the file list with all input files.
     if options.inputFiles:
         allfiles = glob.glob( options.inputFiles )
-    #    print 'getting files', files
     elif options.txtfiles:
         allfiles = []
         with open(options.txtfiles, 'r') as input_:
@@ -91,17 +90,12 @@ def main():
     else:
         allfiles = []
 
+    # Job splitting is done here
     # Only keep certain number of input files for fexibility
-    if options.maxFiles <= 0 : files = allfiles   # maxfiles<= 0 indicates run all files
-    else :
-        headfile = options.startfile
-        endfile = headfile+options.maxFiles
-        endfile = min(endfile,len(allfiles)) # end file cannot be larger than total number of files
-        headfile = min(headfile,endfile)   # headfile must be smaller or equal to endfile
-        print 'Will process file',headfile,'to',endfile
-        files = [allfiles[i] for i in range(headfile,endfile)]  
+    files = GetSomeFiles(allfiles,options.startfile,options.maxfiles)
+
     # Print out information on the input files
-    print 'getting these PATtuple files:'
+    print 'Getting these files:'
     for ifile in files : print ifile
    
     # Run selection function to do selections
