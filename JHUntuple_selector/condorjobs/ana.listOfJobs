@@ -1,0 +1,2 @@
+python ./tardir/selection.py --inputfiles ntuples/jhu_diffmo/v1_complete/SingleEl_Run2012A_v1_all/\*.root --makeplots no --mcordata data --maxevts -1 --type condor_test --maxfiles 2 --startfile 0
+python ./tardir/selection.py --inputfiles ntuples/jhu_diffmo/v1_complete/SingleEl_Run2012A_v1_all/\*.root --makeplots no --mcordata data --maxevts -1 --type condor_test --maxfiles 2 --startfile 2

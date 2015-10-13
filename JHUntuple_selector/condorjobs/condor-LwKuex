@@ -1,0 +1,15 @@
+universe = vanilla
+Executable            = /uscms_data/d3/eminizer/runManySections/runMany.bash
+Requirements          = OpSys == "LINUX"&& (Arch != "DUMMY" )
+Should_Transfer_Files = YES
+WhenToTransferOutput  = ON_EXIT_OR_EVICT
+Output = notneeded/candelete_$(Cluster)_$(Process).stdout
+Error  = notneeded/candelete_$(Cluster)_$(Process).stderr
+Log    = notneeded/candelete_$(Cluster)_$(Process).log
+Notification    = Error
+notify_user     = lfeng7@FNAL.GOV
+Arguments       = /uscms_data/d3/eminizer/runManySections /uscms_data/d3/lfeng7/Legacy_Afb/analysis/CMSSW_5_3_24/work/selection/JHUntuple_selector/condorjobs/commands.cmd $(Process) $(Cluster)
+transfer_input_files = /uscms_data/d3/lfeng7/Legacy_Afb/analysis/CMSSW_5_3_24/work/selection/JHUntuple_selector/condorjobs/tarball.tgz
+x509userproxy = $ENV(X509_USER_PROXY)
+
+Queue 2

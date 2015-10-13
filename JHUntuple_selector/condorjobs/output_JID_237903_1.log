@@ -1,0 +1,10 @@
+cmswn1787.fnal.gov
+/storage/local/data1/condor/execute/dir_24906
+python ./tardir/selection.py --inputfiles ntuples/jhu_diffmo/v1_complete/SingleEl_Run2012A_v1_all/\*.root --makeplots no --mcordata data --maxevts -1 --type condor_test --maxfiles 2 --startfile 2
+Error in <TROOT::Macro>: macro //rootlogon.C not found in path .:/cvmfs/cms.cern.ch/slc6_amd64_gcc472/lcg/root/5.32.00-cms/macros:
+Will process file 0 to 0
+Getting these files:
+
+real	0m1.938s
+user	0m0.738s
+sys	0m0.138s

@@ -1,0 +1,4 @@
+script, /uscms_data/d3/eminizer/runManySections/runManySections.py
+Tarball :tarball.tgz:
+Environment command: cd /uscms_data/d3/lfeng7/Legacy_Afb/analysis/CMSSW_5_3_24; eval `scramv1 runtime -sh`; cd -
+/storage/local/data1/condor/execute/dir_8805
