@@ -137,8 +137,8 @@ def comparison_plot(mc_,data_,legend,event_type='MC',upload = False,logy=False,o
     fout.Close()
 
 
-# Save histograms to root files
-def saving(histlist,event_type='MC',index = 0):
+# Save histograms to root files. Use for interactive run only
+def saving(histlist,event_type='MC',index = 0000):
     prefix = './output_rootfiles/'
     # check if plotting dir is made. If not , make it now
     if not os.path.exists(prefix):
@@ -151,6 +151,17 @@ def saving(histlist,event_type='MC',index = 0):
         print 'Creating new dir '+savedir
     # Saving root files
     fout = ROOT.TFile(savedir+event_type+'_selection_output_'+str(index)+'.root','recreate')
+    print 'saving output into file: '+savedir+event_type+'_selection_output_'+str(index)+'.root'
+    for ihist in histlist:
+        ihist.Write()
+    fout.Write()
+    # file closure
+    fout.Close()
+
+# Save histograms to root files in current directory. Can be used in grid jobs
+def gridsaving(histlist,event_type='MC',index = 0000):
+    # Saving root files
+    fout = ROOT.TFile(event_type+'_selection_output_'+str(index)+'.root','recreate')
     print 'saving output into file: '+savedir+event_type+'_selection_output_'+str(index)+'.root'
     for ihist in histlist:
         ihist.Write()
