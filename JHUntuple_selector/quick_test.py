@@ -2,6 +2,8 @@ from utility import *
 
 from optparse import OptionParser
 
+import sys
+
 # Job steering
 
 # Input inputFiles to use. This is in "glob" format, so you can use wildcards.
@@ -20,6 +22,11 @@ parser.add_option('--maxfiles', metavar='F', type='int', action='store',
                   dest='maxFiles',
                   help='max number of input ntuple files')
 
+parser.add_option('--startfile', metavar='F', type='int', action='store',
+                  default = 0,
+                  dest='startfile',
+                  help='starting file index of input ntuple files')
+
 (options, args) = parser.parse_args()
 
 argv = []
@@ -30,13 +37,14 @@ print options.inputFiles
 # Get the inputfiles.
 if options.inputFiles:
     allfiles = glob.glob( options.inputFiles )
-    # Only keep certain number of input files for fexibility
-    if len(allfiles)>= options.maxFiles and options.maxFiles > 0 :
-        files = [allfiles[i] for i in range(options.maxFiles)]  
-    else :
-        files = allfiles
-    
-print 'getting files', files
+
+files = GetSomeFiles(allfiles,options.startfile,options.maxfiles)
+
+print 'Getting these files:'
+for ifile in files :    
+    print ifile
+
+sys.exit()
 
 # Read input files
 events = Events(files)

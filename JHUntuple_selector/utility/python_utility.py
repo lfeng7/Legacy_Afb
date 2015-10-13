@@ -26,3 +26,14 @@ def ListCompare( a,b) :
     if len(diff_a) >= len(diff_b) : return diff_a
     else : return diff_b
  
+def GetSomeFiles(allfiles,startfile,filesperjob):
+    # Only keep certain number of input files for fexibility
+    if filesperjob <= 0 : somefiles = allfiles   # maxfiles<= 0 indicates run all files
+    else :
+        headfile = startfile
+        endfile = headfile+filesperjob
+        endfile = min(endfile,len(allfiles)) # end file cannot be larger than total number of files
+        headfile = min(headfile,endfile)   # headfile must be smaller or equal to endfile
+        print 'Will process file',headfile,'to',endfile
+        somefiles = [allfiles[i] for i in range(headfile,endfile)]  
+    return somefiles
