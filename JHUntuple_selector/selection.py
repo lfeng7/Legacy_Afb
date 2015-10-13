@@ -330,7 +330,7 @@ def selection(patfile):
         # candidate jets Selection       https://twiki.cern.ch/twiki/bin/view/CMS/TopJMERun1#Jets
         jets_cand = []
         for i in range(len(jets_p4)):
-            if jets_p4[i].pt()>30 and abs(jets_p4[i].eta())<2.4: 
+            if jets_p4[i].pt()>30 and abs(jets_p4[i].eta())<2.5: 
                 if options.mcordata == 'mc' : 
                     jets_cand.append((jets_p4[i],jets_csv[i],jets_PartonFlavor[i]))
                 elif options.mcordata == 'data' :
