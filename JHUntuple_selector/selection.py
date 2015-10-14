@@ -194,7 +194,7 @@ def selection(patfile):
     timer.Start()
 
     # cutflows
-    h_cutflow = ROOT.TH1D('cutflow',event_type+' cutflow;cuts;events',10,0.,10.)
+    h_cutflow = ROOT.TH1D('cutflow',event_type+' cutflow;cuts;events',7,0.,7.)
     h_cutflow.SetBit(ROOT.TH1.kCanRebin)
 
     # for selection validation
@@ -380,8 +380,6 @@ def selection(patfile):
         # cut on btags
         if not len(bjets) >= 2: continue
         h_cutflow.Fill('b-tagging',1)
-        if not met > 1.0: continue
-        h_cutflow.Fill('MET',1)
 
         n_evts_passed += 1
 
