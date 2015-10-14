@@ -1,1 +1,0 @@
-/eos/uscms/store/user/lfeng7/ntuples/jhu_diffmo/W1JetsToLNu_TuneZ2Star_8TeV-madgraph/crab_W1Jets_v1/151011_050557/0000/*.root
