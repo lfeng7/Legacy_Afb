@@ -65,10 +65,10 @@ data_hists = []
 # Single Top
 flist.append(['T_s_v2_selection_output_all.root',259176,3.79,'singletop',259176] )
 flist.append(['T_t_v2_selection_output_all.root',3758227,56.4,'singletop',3748155] )
-flist.append(['T_tW_selection_output_all.root',497658,11.1,'singletop',495559])
-flist.append(['Tbar_s_selection_output_all.root',139974,1.76,'singletop',139604])
-flist.append(['Tbar_t_v1_selection_output_all.root',1935072,30.7,'singletop',1930185])
-flist.append(['Tbar_tW_selection_output_all.root',493460,11.1,'singletop',491463])
+flist.append(['T_tW_v2_selection_output_all.root',497658,11.1,'singletop',495559])
+flist.append(['Tbar_s_v2_selection_output_all.root',139974,1.76,'singletop',139604])
+flist.append(['Tbar_t_v2_selection_output_all.root',1935072,30.7,'singletop',1930185])
+flist.append(['Tbar_tW_v2_selection_output_all.root',493460,11.1,'singletop',491463])
 # Wjets
 flist.append(['W1Jets_selection_output_all.root',23130418,6662.8,'wjets',23038253])
 flist.append(['W2Jets_selection_output_all.root',34019846,2159.2,'wjets',33993463])
@@ -85,7 +85,8 @@ flist.append(['TT_CT10_v2_selection_output_all.root',21560109,245.9,'ttbar',2156
 ######## data
 #    0,         1                        2           3                  4                5    
 # (filepath, sample_integrated_lumi, total_data_L, type, nevts_total_ntuple, nevts_used_ntuple)
-datafile = ['SingleEl_Run2012A_v2_selection_output_all.root',888,19748,'data',11212832]
+#datafile = ['SingleEl_Run2012A_v2_selection_output_all.root',888,19748,'data',11212832]
+datafile = ['SingleEl_Run2012ABCD_v2.root',19748,19748,'data',11212832]
 
 # list of histogram to make stack plots
 hlist = ['cutflow','jets_pt','Njets','m3','csv_all_jets','el_cand_pt','MET']
@@ -106,7 +107,7 @@ print 'processing data file',datafile[0]
 fdata = ROOT.TFile(prepend+datafile[0])
 # Calculate weight for data 
 nevts_data = fdata.Get('cutflow').GetBinContent(1)
-fraction_ = nevts_data*1.0/datafile[4]
+fraction_ = 1.0 # nevts_data*1.0/datafile[4]
 weight_ = data_lumi/(datafile[1]*fraction_)
 # Get histograms from data
 for ihist in hlist :
