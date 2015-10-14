@@ -1,6 +1,6 @@
 fout = open('ana.listOfJobs','w')
 num_files = 16
-filesperjob =  3
+filesperjob =  10
 startfile = 0
 txtfile = 'DY2JetsToLL_M.txt'
 sampletype = 'DY2JetsToLL_M'
