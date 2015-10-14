@@ -1,4 +1,6 @@
-python ./tardir/selection.py --txtfiles tardir/inputfiles/DY2JetsToLL_M.txt --makeplots no --mcordata mc --maxevts -1 --type DY2JetsToLL_M --grid yes --maxfiles 5 --startfile 0
-python ./tardir/selection.py --txtfiles tardir/inputfiles/DY2JetsToLL_M.txt --makeplots no --mcordata mc --maxevts -1 --type DY2JetsToLL_M --grid yes --maxfiles 5 --startfile 5
-python ./tardir/selection.py --txtfiles tardir/inputfiles/DY2JetsToLL_M.txt --makeplots no --mcordata mc --maxevts -1 --type DY2JetsToLL_M --grid yes --maxfiles 5 --startfile 10
-python ./tardir/selection.py --txtfiles tardir/inputfiles/DY2JetsToLL_M.txt --makeplots no --mcordata mc --maxevts -1 --type DY2JetsToLL_M --grid yes --maxfiles 5 --startfile 15
+python ./tardir/selection.py --txtfiles tardir/inputfiles/DY2JetsToLL_M.txt --makeplots no --mcordata mc --maxevts -1 --type DY2JetsToLL_M --grid yes --maxfiles 3 --startfile 0
+python ./tardir/selection.py --txtfiles tardir/inputfiles/DY2JetsToLL_M.txt --makeplots no --mcordata mc --maxevts -1 --type DY2JetsToLL_M --grid yes --maxfiles 3 --startfile 3
+python ./tardir/selection.py --txtfiles tardir/inputfiles/DY2JetsToLL_M.txt --makeplots no --mcordata mc --maxevts -1 --type DY2JetsToLL_M --grid yes --maxfiles 3 --startfile 6
+python ./tardir/selection.py --txtfiles tardir/inputfiles/DY2JetsToLL_M.txt --makeplots no --mcordata mc --maxevts -1 --type DY2JetsToLL_M --grid yes --maxfiles 3 --startfile 9
+python ./tardir/selection.py --txtfiles tardir/inputfiles/DY2JetsToLL_M.txt --makeplots no --mcordata mc --maxevts -1 --type DY2JetsToLL_M --grid yes --maxfiles 3 --startfile 12
+python ./tardir/selection.py --txtfiles tardir/inputfiles/DY2JetsToLL_M.txt --makeplots no --mcordata mc --maxevts -1 --type DY2JetsToLL_M --grid yes --maxfiles 3 --startfile 15
