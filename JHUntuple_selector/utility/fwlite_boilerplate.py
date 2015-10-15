@@ -242,7 +242,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     h_stack = mc_.GetStack().Last() # This is the combined histogram in stack
     # Make residual histogram
     h_res = ROOT.TH1D(event_type+'_residuals','; ; data/MC',h_data.GetNbinsX(),h_data.GetXaxis().GetXmin(),h_data.GetXaxis().GetXmax())
-    
+
     for ibin in range(h_data.GetNbinsX()):
         databin = h_data.GetBinContent(ibin)
         mcbin = h_stack.GetBinContent(ibin)
@@ -280,7 +280,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     mc_.Draw(); data_.Draw('SAME PE1X0'); mc_.GetXaxis().SetLabelOffset(999)
     legend.Draw()
     x_resid_pad.cd(); 
-    mc_.Draw('PE1X0 '); xline.Draw()
+    h_res.Draw('PE1X0 '); xline.Draw()
     c1.Update()    
 
     # Saving
