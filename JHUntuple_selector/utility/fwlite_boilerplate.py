@@ -206,3 +206,87 @@ def vector( _list):
 def loadroot(file_):
     f_ = ROOT.TFile(file_)
     return(f_)
+
+
+# This is specifically for comparing the stacked MC plots with data adding residule plots too
+def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=False,options_ = '',createmode='update'):
+    prefix = './plots/'
+    # check if plotting dir is made. If not , make it now
+    if not os.path.exists(prefix):
+        os.mkdir(prefix)
+        print 'Making '+prefix
+    # Set the dir to put all plots
+    plotdir = prefix+event_type+'/'
+    if not os.path.exists(plotdir):
+        os.mkdir(plotdir)
+        os.system('cp ~/index.php '+plotdir)
+        print 'Creating new dir '+plotdir
+
+    fout = ROOT.TFile(plotdir+event_type+'_plots.root',createmode)
+
+    # plotting
+    c1 = ROOT.TCanvas()
+    if logy == "log" : 
+        c1.SetLogy()
+        name = plotdir+event_type+'_'+mc_.GetName()+'_compare_log.png'
+    else :
+        name = plotdir+event_type+'_'+mc_.GetName()+'_compare.png'
+    # Find the max of both histograms
+    max_mc = mc_.GetMaximum()
+    max_data = data_.GetMaximum()
+    max_ = max(max_mc,max_data)*1.1
+    data_.SetMaximum(max_)
+    mc_.SetMaximum(max_)
+    # Calculating the residual of each bin
+    h_res = data_.Clone()
+    h_data = data_
+    h_stack = mc_.GetStack().Last() # This is the combined histogram in stack
+    for ibin in range(len(h_data.GetNbinsX())):
+        databin = h_data.GetBinContent(ibin)
+        mcbin = h_stack.GetBinContent(ibin)
+        # Calculate residual
+        if mcbin != 0 and databin != 0:
+            res = databin*1.0/mcbin
+            # Calculate error of residual, delta(res) = residual*sqrt(1/data+1/mc)
+            res_err = res*math.sqrt(1.0/databin+1.0/mcbin)
+        else :
+            res = 0 ; res_err = 0
+        # Set residual histograms
+        h_res.SetBinContent(ibin,res)
+        h_res.SetBinError(ibin,res_err)
+    # Setup residual histograms
+    h_res.SetStats(0)
+    h_res.GetYaxis().SetRangeUser(1.1*h_res.GetMaximum(),1.1*h_res.GetMinimum())
+    h_res.GetYaxis().SetNdivisions(503) 
+    #Build the lines that go at 1 on the residuals plots
+    xline = TLine(h_res.GetXaxis().GetXmin(),1.0,h_res.GetXaxis().GetXmax(),1.0); line_.SetLineWidth(2); line_.SetLineStyle(2)
+    #plot stacks with data overlaid and residuals. Totally stole from Nick :)
+    c1.cd()
+    channame = event_type
+    # Make and adjust pads
+    x_histo_pad=TPad(channame+'_x_histo_pad',channame+'_x_histo_pad',0,0.25,1,1)
+    x_resid_pad=TPad(channame+'_x_residuals_pad',channame+'_x_residuals_pad',0,0,1.,0.25)
+    x_histo_pad.SetCanvas(c1); x_resid_pad.SetCanvas(c1)
+    x_histo_pad.SetLeftMargin(0.16); x_histo_pad.SetRightMargin(0.05) 
+    x_histo_pad.SetTopMargin(0.11);  x_histo_pad.SetBottomMargin(0.02)
+    x_histo_pad.SetBorderMode(0)
+    x_resid_pad.SetLeftMargin(0.16); x_resid_pad.SetRightMargin(0.05)
+    x_resid_pad.SetTopMargin(0.0);   x_resid_pad.SetBottomMargin(0.3)
+    x_resid_pad.SetBorderMode(0)
+    x_resid_pad.Draw(); x_histo_pad.Draw()
+    x_histo_pad.cd(); 
+    mc_.Draw(); data_.Draw('SAME PE1X0'); mc_.GetXaxis().SetLabelOffset(999)
+    legend.Draw()
+    x_resid_pad.cd(); 
+    mc_.Draw('PE1X0 '); xline.Draw()
+    c1.Update()    
+
+    # Saving
+    c1.SaveAs(name)
+    c1.Write()
+        
+    # dump to webpage
+    if upload == "dump":
+        os.system('scp -r '+plotdir+'  ~/index.php pha:/home/lfeng/public_html/research/Dump/')
+    # file closure
+    fout.Close()
