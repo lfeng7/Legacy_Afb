@@ -258,7 +258,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
         h_res.SetBinError(ibin,res_err)
     # Setup residual histograms
     h_res.SetStats(0)
-    h_res.GetYaxis().SetRangeUser(1.1*h_res.GetMaximum(),1.1*h_res.GetMinimum())
+    # h_res.GetYaxis().SetRangeUser(1.1*h_res.GetMaximum(),1.1*h_res.GetMinimum())
     h_res.GetYaxis().SetNdivisions(503) 
     #Build the lines that go at 1 on the residuals plots
     xline = ROOT.TLine(h_res.GetXaxis().GetXmin(),1.0,h_res.GetXaxis().GetXmax(),1.0); xline.SetLineWidth(2); xline.SetLineStyle(2)
