@@ -241,7 +241,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     h_res = data_.Clone()
     h_data = data_
     h_stack = mc_.GetStack().Last() # This is the combined histogram in stack
-    for ibin in range(len(h_data.GetNbinsX())):
+    for ibin in range(h_data.GetNbinsX()):
         databin = h_data.GetBinContent(ibin)
         mcbin = h_stack.GetBinContent(ibin)
         # Calculate residual
@@ -259,13 +259,13 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     h_res.GetYaxis().SetRangeUser(1.1*h_res.GetMaximum(),1.1*h_res.GetMinimum())
     h_res.GetYaxis().SetNdivisions(503) 
     #Build the lines that go at 1 on the residuals plots
-    xline = TLine(h_res.GetXaxis().GetXmin(),1.0,h_res.GetXaxis().GetXmax(),1.0); line_.SetLineWidth(2); line_.SetLineStyle(2)
+    xline = ROOT.TLine(h_res.GetXaxis().GetXmin(),1.0,h_res.GetXaxis().GetXmax(),1.0); line_.SetLineWidth(2); line_.SetLineStyle(2)
     #plot stacks with data overlaid and residuals. Totally stole from Nick :)
     c1.cd()
     channame = event_type
     # Make and adjust pads
-    x_histo_pad=TPad(channame+'_x_histo_pad',channame+'_x_histo_pad',0,0.25,1,1)
-    x_resid_pad=TPad(channame+'_x_residuals_pad',channame+'_x_residuals_pad',0,0,1.,0.25)
+    x_histo_pad=ROOT.TPad(channame+'_x_histo_pad',channame+'_x_histo_pad',0,0.25,1,1)
+    x_resid_pad=ROOT.TPad(channame+'_x_residuals_pad',channame+'_x_residuals_pad',0,0,1.,0.25)
     x_histo_pad.SetCanvas(c1); x_resid_pad.SetCanvas(c1)
     x_histo_pad.SetLeftMargin(0.16); x_histo_pad.SetRightMargin(0.05) 
     x_histo_pad.SetTopMargin(0.11);  x_histo_pad.SetBottomMargin(0.02)
