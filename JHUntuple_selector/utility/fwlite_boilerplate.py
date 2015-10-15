@@ -241,8 +241,9 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     h_data = data_
     h_stack = mc_.GetStack().Last() # This is the combined histogram in stack
     # Make residual histogram
-    h_res = ROOT.TH1D(event_type+'_residuals','; ; data/MC',h_data.GetNbinsX(),h_data.GetXaxis().GetXmin(),h_data.GetXaxis().GetXmax())
+    h_res = ROOT.TH1D(event_type+'_residuals','; hi mum; data/MC',h_data.GetNbinsX(),h_data.GetXaxis().GetXmin(),h_data.GetXaxis().GetXmax())
 
+    maxxdeviations = 0.0
     for ibin in range(h_data.GetNbinsX()):
         databin = h_data.GetBinContent(ibin)
         mcbin = h_stack.GetBinContent(ibin)
@@ -253,13 +254,23 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
             res_err = res*math.sqrt(1.0/databin+1.0/mcbin)
         else :
             res = 0 ; res_err = 0
+        # Find maximum residual
+        maxxdeviations = max(maxxdeviations,max(abs(res+res_err-1.0),abs(res-res_err-1.0)))
         # Set residual histograms
         h_res.SetBinContent(ibin,res)
         h_res.SetBinError(ibin,res_err)
     # Setup residual histograms
     h_res.SetStats(0)
-    # h_res.GetYaxis().SetRangeUser(1.1*h_res.GetMaximum(),1.1*h_res.GetMinimum())
-    h_res.GetYaxis().SetNdivisions(503) 
+    h_res.GetXaxis().SetLabelSize((0.05*0.72)/0.28); h_res.GetXaxis().SetTitleOffset(0.8)
+    h_res.GetYaxis().SetLabelSize((0.05*0.72)/0.28); h_res.GetYaxis().SetTitleOffset(0.4)
+    h_res.GetXaxis().SetTitleSize((0.72/0.28)*h_res.GetXaxis().GetTitleSize())
+    h_res.GetYaxis().SetTitleSize((0.72/0.28)*h_res.GetYaxis().GetTitleSize())
+    maxx = 1.0+1.1*maxxdeviations
+    minx = 1.0-1.1*maxxdeviations
+    h_res.GetYaxis().SetRangeUser(minx,maxx)
+    h_res.GetYaxis().SetNdivisions(503)
+
+
     #Build the lines that go at 1 on the residuals plots
     xline = ROOT.TLine(h_res.GetXaxis().GetXmin(),1.0,h_res.GetXaxis().GetXmax(),1.0); xline.SetLineWidth(2); xline.SetLineStyle(2)
     #plot stacks with data overlaid and residuals. Totally stole from Nick :)
