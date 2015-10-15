@@ -196,6 +196,16 @@ def normstack(stack):
         ihist.Scale(1.0/norm)
         st_.Add(ihist)
     return st_
+
+# Rebin a stack
+def RebinStack(stack,nbin): # means merge nbin into one
+    st_ = ROOT.THStack(stack.GetName()+'_rebinned',stack.GetName())
+    hists = stack.GetHists()
+    for ihist in hists:
+        ihist.Rebin(nbin)
+        st_.Add(ihist)
+    return st_
+
    
 def vector( _list):
     _vector = ROOT.vector("string")()
