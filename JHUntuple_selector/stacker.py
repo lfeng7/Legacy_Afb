@@ -162,16 +162,17 @@ for ifile in flist :
     for ihist in stacklist:
         ihist_name = ihist[0]
         istack = ihist[1]
-        ih = f_.Get(ihist_name)     
+        ih = f_.Get(ihist_name)    
+
+        # rebin some histograms
+        if ihist in rebinlist: ih.Rebin(Nbin)
+
         # Delink the hist from the tmp file f_
         ih.SetDirectory(0)
         ih.Scale(weight) 
         ih.SetFillColor(icolor)
         ih.SetLineColor(icolor)
         ih.SetMarkerStyle(21)
-
-        # rebin some histograms
-        if ihist in rebinlist: ih.Rebin(Nbin)
 
         istack.Add(ih) 
         # Keep scaled histgrams in a list for later use
