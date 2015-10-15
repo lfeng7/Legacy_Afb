@@ -1,2 +1,1 @@
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type condor_test --grid yes --maxfiles 2 --startfile 0
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type condor_test --grid yes --maxfiles 2 --startfile 2
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012C_part2.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012C_part2 --grid yes --maxfiles 10 --startfile 0
