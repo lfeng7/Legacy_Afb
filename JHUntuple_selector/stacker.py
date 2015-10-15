@@ -119,7 +119,7 @@ for ihist in hlist :
     ih.Scale(weight_)
     ih.SetName(ih.GetName()+'_data')
     # rebin some histograms
-    if ihist in rebinlist: ih.Rebin(Nbin)
+    # if ihist in rebinlist: ih.Rebin(Nbin)
 
     data_hists.append(ih)
 # Add data entry to legend
@@ -165,7 +165,7 @@ for ifile in flist :
         ih = f_.Get(ihist_name)    
 
         # rebin some histograms
-        if ihist in rebinlist: ih.Rebin(Nbin)
+        # if ihist in rebinlist: ih.Rebin(Nbin)
 
         # Delink the hist from the tmp file f_
         ih.SetDirectory(0)
