@@ -236,11 +236,13 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     max_data = data_.GetMaximum()
     max_ = max(max_mc,max_data)*1.1
     data_.SetMaximum(max_)
-    mc_.SetMaximum(max_)
+    # mc_.SetMaximum(max_)
     # Calculating the residual of each bin
-    h_res = data_.Clone()
     h_data = data_
     h_stack = mc_.GetStack().Last() # This is the combined histogram in stack
+    # Make residual histogram
+    h_res = ROOT.TH1D(event_type+'_residuals','; ; data/MC',h_data.GetNbinsX(),h_data.GetXaxis().GetXmin(),h_data.GetXaxis().GetXmax())
+    
     for ibin in range(h_data.GetNbinsX()):
         databin = h_data.GetBinContent(ibin)
         mcbin = h_stack.GetBinContent(ibin)
@@ -259,7 +261,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     h_res.GetYaxis().SetRangeUser(1.1*h_res.GetMaximum(),1.1*h_res.GetMinimum())
     h_res.GetYaxis().SetNdivisions(503) 
     #Build the lines that go at 1 on the residuals plots
-    xline = ROOT.TLine(h_res.GetXaxis().GetXmin(),1.0,h_res.GetXaxis().GetXmax(),1.0); line_.SetLineWidth(2); line_.SetLineStyle(2)
+    xline = ROOT.TLine(h_res.GetXaxis().GetXmin(),1.0,h_res.GetXaxis().GetXmax(),1.0); xline.SetLineWidth(2); xline.SetLineStyle(2)
     #plot stacks with data overlaid and residuals. Totally stole from Nick :)
     c1.cd()
     channame = event_type
