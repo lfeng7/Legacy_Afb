@@ -251,7 +251,8 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     h_data = data_
     h_stack = mc_.GetStack().Last() # This is the combined histogram in stack
     # Make residual histogram
-    h_res = ROOT.TH1D(event_type+'_residuals','; hi mum; data/MC',h_data.GetNbinsX(),h_data.GetXaxis().GetXmin(),h_data.GetXaxis().GetXmax())
+    h_res = ROOT.TH1D(event_type+'_residuals',';; data/MC',h_data.GetNbinsX(),h_data.GetXaxis().GetXmin(),h_data.GetXaxis().GetXmax())
+    h_res.GetXaxis().SetName(h_data.GetXaxis().GetName())
 
     maxxdeviations = 0.0
     for ibin in range(h_data.GetNbinsX()):
