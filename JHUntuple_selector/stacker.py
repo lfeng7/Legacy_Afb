@@ -45,6 +45,8 @@ argv = []
 data_lumi = 19748 
 dir_name = 'stackplots'
 
+Nbin = 2
+
 # Get input files
 prepend = './output_rootfiles/all_channels/'   # dir of output files to stack 
 
@@ -90,6 +92,7 @@ datafile = ['SingleEl_Run2012ABCD_v2.root',19748,19748,'data',11212832]
 
 # list of histogram to make stack plots
 hlist = ['cutflow','jets_pt','Njets','m3','csv_all_jets','el_cand_pt','MET','jets_eta','el_cand_eta']
+rebinlist = ['jets_pt','m3','el_cand_pt','MET','jets_eta','el_cand_eta']
 
 # Booking stack histograms 
 for hist in hlist:
@@ -115,6 +118,9 @@ for ihist in hlist :
     ih.SetDirectory(0)
     ih.Scale(weight_)
     ih.SetName(ih.GetName()+'_data')
+    # rebin some histograms
+    if ihist in rebinlist: ih.Rebin(Nbin)
+
     data_hists.append(ih)
 # Add data entry to legend
 leg.AddEntry(data_hists[0],'data')
@@ -163,6 +169,10 @@ for ifile in flist :
         ih.SetFillColor(icolor)
         ih.SetLineColor(icolor)
         ih.SetMarkerStyle(21)
+
+        # rebin some histograms
+        if ihist in rebinlist: ih.Rebin(Nbin)
+
         istack.Add(ih) 
         # Keep scaled histgrams in a list for later use
         many_hists.append(ih)
