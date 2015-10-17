@@ -2,6 +2,8 @@ from utility import *
 
 from optparse import OptionParser
 
+import sys
+
 # Job steering
 
 # Input inputFiles to use. This is in "glob" format, so you can use wildcards.
@@ -11,14 +13,19 @@ from optparse import OptionParser
 parser = OptionParser()
 
 parser.add_option('--inputfiles', metavar='F', type='string', action='store',
-                  default = "",
+                  default = "none",
                   dest='inputFiles',
                   help='Input files')
 
 parser.add_option('--maxfiles', metavar='F', type='int', action='store',
-                  default = 2,
-                  dest='maxFiles',
+                  default = -1,
+                  dest='maxfiles',
                   help='max number of input ntuple files')
+
+parser.add_option('--startfile', metavar='F', type='int', action='store',
+                  default = 0,
+                  dest='startfile',
+                  help='starting file index of input ntuple files')
 
 (options, args) = parser.parse_args()
 
@@ -28,16 +35,14 @@ argv = []
 print options.inputFiles
 
 # Get the inputfiles.
-if options.inputFiles:
+if options.inputFiles != 'none':
     allfiles = glob.glob( options.inputFiles )
-    # Only keep certain number of input files for fexibility
-    if len(allfiles)>= options.maxFiles and options.maxFiles > 0 :
-        files = [allfiles[i] for i in range(options.maxFiles)]  
-    else :
-        files = allfiles
-    
-print 'getting files', files
+    files = GetSomeFiles(allfiles,options.startfile,options.maxfiles)
+    print 'Getting these files:'
+    for ifile in files :    
+        print ifile
 
+files = ['ntuples/sample_jhudiffmo/SingleEl_Run2012A.root']
 # Read input files
 events = Events(files)
 
@@ -52,6 +57,8 @@ hndl2 = Handle('vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>
 label2 =  ('jhuAk5','AK5')
 jet_p4_hndl = Handle('vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > > ')
 jet_p4_label = ("jhuAk5","AK5")
+trig_hndl = Handle('edm::TriggerResults')
+trig_label = ("TriggerResults","","HLT")
 
 # JHU ntuple format
 jet_csv_hndl = Handle('vector<double>')
@@ -88,6 +95,12 @@ for evt in events:
     n_evt += 1
     if n_evt%5000 == 1: print 'Loop over',n_evt,'event'
 
+
+    evt.getByLabel(trig_label,trig_hndl)
+    trig_ = trig_hndl.product()
+
+    break
+
     # get objects
     evt.getByLabel(jet_csv_label,jet_csv_hndl)
     evt.getByLabel(jet_flavor_label,jet_flavor_hndl)
@@ -123,5 +136,5 @@ print 'number of events with valid jet csv',n_evt_csv
 #histlist = [h3,h4,h5,h6]
 histlist = [h_jets_eta]
 
-plotting(histlist,type,"dump")
+#plotting(histlist,type,"dump")
   

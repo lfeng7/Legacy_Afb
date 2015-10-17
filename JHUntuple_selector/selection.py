@@ -4,6 +4,11 @@
 # (A) Plotting mode. Where all patuple files will be put in a file list and only one set of plots will be made.
 # (B) Non-plotting mode. Where no plots will be made. Each input pattuple file will generate an output root file. All files 
 # ... from same type of samples are put in the same directory.
+# Edit log
+# This is the grid version of v1 selection
+# Add a grid option
+# Mostly instead of outputting to local dir, directlly write outputfiles to current dir
+# Maybe I can add some functionallity to rename to output dir as the --type?
 
 from utility import *
 import os
@@ -45,9 +50,14 @@ parser.add_option('--mcordata', metavar='F', type='string', action='store',
                   dest='mcordata',
                   help='If this run is on data or mc')
 
+parser.add_option('--grid', metavar='F', type='string', action='store',
+                  default = "no",
+                  dest='grid',
+                  help='If will run on grid using condor')
+
 parser.add_option('--maxfiles', metavar='F', type='int', action='store',
                   default = 10,
-                  dest='maxFiles',
+                  dest='maxfiles',
                   help='max number of input ntuple files')
 
 parser.add_option('--startfile', metavar='F', type='int', action='store',
@@ -67,9 +77,9 @@ parser.add_option('--type', metavar='F', type='string', action='store',
 
 # if want to make plots, use multiple input patfiles instead of looping over each files
 parser.add_option('--makeplots', metavar='F', type='string', action='store',
-                  default = 'True',
+                  default = 'yes',
                   dest='makeplots',
-                  help='type of sample files')
+                  help='If we want to make plots directly. This is for testing purpose mostly, which enables plotting directly.')
 
 (options, args) = parser.parse_args()
 
@@ -80,7 +90,6 @@ def main():
     # Get the file list with all input files.
     if options.inputFiles:
         allfiles = glob.glob( options.inputFiles )
-    #    print 'getting files', files
     elif options.txtfiles:
         allfiles = []
         with open(options.txtfiles, 'r') as input_:
@@ -91,17 +100,12 @@ def main():
     else:
         allfiles = []
 
+    # Job splitting is done here
     # Only keep certain number of input files for fexibility
-    if options.maxFiles <= 0 : files = allfiles   # maxfiles<= 0 indicates run all files
-    else :
-        headfile = options.startfile
-        endfile = headfile+options.maxFiles
-        endfile = min(endfile,len(allfiles)) # end file cannot be larger than total number of files
-        headfile = min(headfile,endfile)   # headfile must be smaller or equal to endfile
-        print 'Will process file',headfile,'to',endfile
-        files = [allfiles[i] for i in range(headfile,endfile)]  
+    files = GetSomeFiles(allfiles,options.startfile,options.maxfiles)
+
     # Print out information on the input files
-    print 'getting these PATtuple files:'
+    print 'Getting these files:'
     for ifile in files : print ifile
    
     # Run selection function to do selections
@@ -190,7 +194,7 @@ def selection(patfile):
     timer.Start()
 
     # cutflows
-    h_cutflow = ROOT.TH1D('cutflow',event_type+' cutflow;cuts;events',10,0.,10.)
+    h_cutflow = ROOT.TH1D('cutflow',event_type+' cutflow;cuts;events',7,0.,7.)
     h_cutflow.SetBit(ROOT.TH1.kCanRebin)
 
     # for selection validation
@@ -330,7 +334,7 @@ def selection(patfile):
         # candidate jets Selection       https://twiki.cern.ch/twiki/bin/view/CMS/TopJMERun1#Jets
         jets_cand = []
         for i in range(len(jets_p4)):
-            if jets_p4[i].pt()>30 and abs(jets_p4[i].eta())<2.4: 
+            if jets_p4[i].pt()>30 and abs(jets_p4[i].eta())<2.5: 
                 if options.mcordata == 'mc' : 
                     jets_cand.append((jets_p4[i],jets_csv[i],jets_PartonFlavor[i]))
                 elif options.mcordata == 'data' :
@@ -376,8 +380,6 @@ def selection(patfile):
         # cut on btags
         if not len(bjets) >= 2: continue
         h_cutflow.Fill('b-tagging',1)
-        if not met > 1.0: continue
-        h_cutflow.Fill('MET',1)
 
         n_evts_passed += 1
 
@@ -404,6 +406,7 @@ def selection(patfile):
     h_cutflow_norm_log.SetName(h_cutflow_norm.GetName()+'_log')
        
     ## Make and save plots
+
     # histogram for candidate events
     histlist = [h_el_cand_pt,h_MET,h_Njets,h_Nbjets,h_m3,h_jets_pt,h_csv_jetCands,h_number_tagged_bjets,h_jets_eta,h_el_cand_eta]
     # cutflows
@@ -414,16 +417,20 @@ def selection(patfile):
     if options.mcordata == 'mc':
         histlist.extend([h_num_gen_jets,h_num_gen_b,h_bjets_csv,h_number_bjets_partonflavor])
 
-    if options.makeplots == 'True' :
+    if options.makeplots == 'yes' and options.grid != 'yes':
         print '\nPlot and saven'
         plotting(histlist,event_type,'not dump')
         histlist1 = [h_cutflow_log,h_cutflow_norm_log]
         plotting(histlist1,event_type,"dump","setlogy")
         # Save to root files
-        saving(histlist,event_type)
+        gridsaving(histlist,event_type,'hists')
     else :
-        print '\nSaving output into root files \n'
-        saving(histlist,event_type,f_index)
+        if options.grid == 'yes' :
+            print '\nSaving output into root files for grid use\n'
+            gridsaving(histlist,event_type,f_index)
+        else :
+            print '\nSaving output into root files to local dir \n'
+            saving(histlist,event_type,f_index)
 
     # Stop our timer
     timer.Stop()

@@ -45,6 +45,8 @@ argv = []
 data_lumi = 19748 
 dir_name = 'stackplots'
 
+Nbin = 2
+
 # Get input files
 prepend = './output_rootfiles/all_channels/'   # dir of output files to stack 
 
@@ -63,32 +65,34 @@ data_hists = []
 #    0,         1         2        3         4           
 # (filepath, nevts_gen, xsec_NLO, type, nevts_total_ntuple)
 # Single Top
-flist.append(['T_s_v2_selection_output_all.root',259176,3.79,'singletop',259176] )
+flist.append(['T_s_v2_selection_output_all.root',259961,3.79,'singletop',259176] )
 flist.append(['T_t_v2_selection_output_all.root',3758227,56.4,'singletop',3748155] )
-flist.append(['T_tW_selection_output_all.root',497658,11.1,'singletop',495559])
-flist.append(['Tbar_s_selection_output_all.root',139974,1.76,'singletop',139604])
-flist.append(['Tbar_t_v1_selection_output_all.root',1935072,30.7,'singletop',1930185])
-flist.append(['Tbar_tW_selection_output_all.root',493460,11.1,'singletop',491463])
+flist.append(['T_tW_v2_selection_output_all.root',497658,11.1,'singletop',495559])
+flist.append(['Tbar_s_v2_selection_output_all.root',139974,1.76,'singletop',139604])
+flist.append(['Tbar_t_v2_selection_output_all.root',1935072,30.7,'singletop',1930185])
+flist.append(['Tbar_tW_v2_selection_output_all.root',493460,11.1,'singletop',491463])
 # Wjets
-flist.append(['W1Jets_selection_output_all.root',23130418,6662.8,'wjets',23038253])
-flist.append(['W2Jets_selection_output_all.root',34019846,2159.2,'wjets',33993463])
-flist.append(['W3Jets_v2_selection_output_all.root',15522558,640.4,'wjets',15507852])
-flist.append(['W4Jets_v2_selection_output_all.root',13326400,246.0,'wjets',13326400])
+flist.append(['W1JetsToLNu_v2.root',23141598,6662.8,'wjets',23038253])
+flist.append(['W2JetsToLNu_v2.root',34044921,2159.2,'wjets',33993463])
+flist.append(['W3Jets_v2_selection_output_all.root',15539503,640.4,'wjets',15507852])
+flist.append(['W4Jets_v2_selection_output_all.root',13382803,246.0,'wjets',13326400])
 # DYjets
-flist.append(['DY1Jets_selection_output_all.root',24018131,660.6,'zjets',23802736])
-flist.append(['DY2Jets_selection_output_all.root',2349457,215.1,'zjets',2345857])
-flist.append(['DY3Jets_v2_selection_output_all.root',10997628,65.79,'zjets',10655325])
-flist.append(['DY4Jets_v2_selection_output_all.root',6387032,28.59,'zjets',5843425])
+flist.append(['DY1JetsToLL_v2.root',24045248,660.6,'zjets',23802736])
+flist.append(['DY2JetsToLL_v2.root',2352304,215.1,'zjets',2345857])
+flist.append(['DY3Jets_v2_selection_output_all.root',11015445,65.79,'zjets',10655325])
+flist.append(['DY4Jets_v2_selection_output_all.root',6402827,28.59,'zjets',5843425])
 # signal
-flist.append(['TT_CT10_v2_selection_output_all.root',21560109,245.9,'ttbar',21560109])
+flist.append(['TT_CT10_v2_selection_output_all.root',21675970,245.9,'ttbar',21560109])
 
 ######## data
 #    0,         1                        2           3                  4                5    
 # (filepath, sample_integrated_lumi, total_data_L, type, nevts_total_ntuple, nevts_used_ntuple)
-datafile = ['SingleEl_Run2012A_v2_selection_output_all.root',888,19748,'data',11212832]
+#datafile = ['SingleEl_Run2012A_v2_selection_output_all.root',888,19748,'data',11212832]
+datafile = ['SingleEl_Run2012ABCD_v2.root',19748,19748,'data',11212832]
 
 # list of histogram to make stack plots
-hlist = ['cutflow','jets_pt','Njets','m3','csv_all_jets','el_cand_pt','MET']
+hlist = ['cutflow','jets_pt','Njets','m3','csv_all_jets','el_cand_pt','MET','jets_eta','el_cand_eta']
+rebinlist = ['jets_pt','m3','el_cand_pt','MET','jets_eta','el_cand_eta']
 
 # Booking stack histograms 
 for hist in hlist:
@@ -106,7 +110,7 @@ print 'processing data file',datafile[0]
 fdata = ROOT.TFile(prepend+datafile[0])
 # Calculate weight for data 
 nevts_data = fdata.Get('cutflow').GetBinContent(1)
-fraction_ = nevts_data*1.0/datafile[4]
+fraction_ = 1.0 # nevts_data*1.0/datafile[4]
 weight_ = data_lumi/(datafile[1]*fraction_)
 # Get histograms from data
 for ihist in hlist :
@@ -114,6 +118,9 @@ for ihist in hlist :
     ih.SetDirectory(0)
     ih.Scale(weight_)
     ih.SetName(ih.GetName()+'_data')
+    # rebin some histograms
+    # if ihist in rebinlist: ih.Rebin(Nbin)
+
     data_hists.append(ih)
 # Add data entry to legend
 leg.AddEntry(data_hists[0],'data')
@@ -155,13 +162,18 @@ for ifile in flist :
     for ihist in stacklist:
         ihist_name = ihist[0]
         istack = ihist[1]
-        ih = f_.Get(ihist_name)     
+        ih = f_.Get(ihist_name)    
+
+        # rebin some histograms
+        # if ihist in rebinlist: ih.Rebin(Nbin)
+
         # Delink the hist from the tmp file f_
         ih.SetDirectory(0)
         ih.Scale(weight) 
         ih.SetFillColor(icolor)
         ih.SetLineColor(icolor)
         ih.SetMarkerStyle(21)
+
         istack.Add(ih) 
         # Keep scaled histgrams in a list for later use
         many_hists.append(ih)

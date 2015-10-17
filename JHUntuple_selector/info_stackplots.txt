@@ -1,94 +1,94 @@
 Sample type : data
-Events weight 22.73 : 
-Fraction of sample used : 0.98
+Events weight 1.00 : 
+Fraction of sample used : 1.00
 
-Sample name : T_s_selection_output_all.root
+Sample name : T_s_v2_selection_output_all.root
 Type: singletop
-Events weight : 0.288078371454
+Events weight : 0.287908263163
 Nevts : 259176
 Fraction of sample used : 1.00
 
-Sample name : T_t_v1_selection_output_all.root
+Sample name : T_t_v2_selection_output_all.root
 Type: singletop
-Events weight : 0.295639406561
+Events weight : 0.296359746231
 Nevts : 3748155
 Fraction of sample used : 1.00
 
-Sample name : T_tW_selection_output_all.root
+Sample name : T_tW_v2_selection_output_all.root
 Type: singletop
-Events weight : 0.439398140892
+Events weight : 0.440468755651
 Nevts : 495559
 Fraction of sample used : 1.00
 
-Sample name : Tbar_s_selection_output_all.root
+Sample name : Tbar_s_v2_selection_output_all.root
 Type: singletop
-Events weight : 0.24770314487
+Events weight : 0.248306685527
 Nevts : 139604
 Fraction of sample used : 1.00
 
-Sample name : Tbar_t_v1_selection_output_all.root
+Sample name : Tbar_t_v2_selection_output_all.root
 Type: singletop
-Events weight : 0.312541342131
+Events weight : 0.313302864183
 Nevts : 1930185
 Fraction of sample used : 1.00
 
-Sample name : Tbar_tW_selection_output_all.root
+Sample name : Tbar_tW_v2_selection_output_all.root
 Type: singletop
-Events weight : 0.443136221781
+Events weight : 0.444215944555
 Nevts : 491463
 Fraction of sample used : 1.00
 
-Sample name : W1Jets_selection_output_all.root
+Sample name : W1JetsToLNu_v2.root
 Type: wjets
-Events weight : 33.6703581108
+Events weight : 33.73609135
 Nevts : 3882767
 Fraction of sample used : 0.17
 
-Sample name : W2Jets_selection_output_all.root
+Sample name : W2JetsToLNu_v2.root
 Type: wjets
-Events weight : 10.4198593657
+Events weight : 10.4375546495
 Nevts : 4079062
 Fraction of sample used : 0.12
 
-Sample name : W3Jets_v1_selection_output_all.root
+Sample name : W3Jets_v2_selection_output_all.root
 Type: wjets
-Events weight : 0.812744909699
-Nevts : 15507852
-Fraction of sample used : 1.00
+Events weight : 0.824034174836
+Nevts : 15315943
+Fraction of sample used : 0.99
 
-Sample name : W4Jets_v1_selection_output_all.root
+Sample name : W4Jets_v2_selection_output_all.root
 Type: wjets
-Events weight : 0.363654100132
+Events weight : 0.363003774321
 Nevts : 13326400
 Fraction of sample used : 1.00
 
-Sample name : DY1Jets_selection_output_all.root
+Sample name : DY1JetsToLL_v2.root
 Type: zjets
-Events weight : 3.55159274896
+Events weight : 3.55623131232
 Nevts : 3631360
 Fraction of sample used : 0.15
 
-Sample name : DY2Jets_selection_output_all.root
+Sample name : DY2JetsToLL_v2.root
 Type: zjets
-Events weight : 1.80359546908
+Events weight : 1.80580180113
 Nevts : 2345857
 Fraction of sample used : 1.00
 
-Sample name : DY3Jets_selection_output_all.root
+Sample name : DY3Jets_v2_selection_output_all.root
 Type: zjets
-Events weight : 0.81904118654
+Events weight : 0.819708828779
 Nevts : 1533162
 Fraction of sample used : 0.14
 
-Sample name : DY4Jets_selection_output_all.root
+Sample name : DY4Jets_v2_selection_output_all.root
 Type: zjets
-Events weight : 0.341589342954
+Events weight : 0.341576929074
 Nevts : 1508497
 Fraction of sample used : 0.26
 
-Sample name : TT_CT10_v1_selection_output_all.root
+Sample name : TT_CT10_v2_selection_output_all.root
 Type: ttbar
-Events weight : 0.224684856649
+Events weight : 0.224028414876
 Nevts : 21560109
 Fraction of sample used : 1.00
 
