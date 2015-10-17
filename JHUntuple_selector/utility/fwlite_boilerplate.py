@@ -120,6 +120,7 @@ def comparison_plot(mc_,data_,legend,event_type='MC',upload = False,logy=False,o
     max_data = data_.GetMaximum()
     max_ = max(max_mc,max_data)*1.1
     data_.SetMaximum(max_)
+    data_.SetTitle("")
     # Draw two histgrams
     data_.Draw(options_)
     mc_.Draw('same')
