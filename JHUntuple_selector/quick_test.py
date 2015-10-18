@@ -83,12 +83,13 @@ h6 = ROOT.TH1D('csv_gluon_jets', type+' CSV of gluon jets;csv;events',100,-20,40
 
 h_jets_eta = ROOT.TH1D('jets_eta',type+' jets eta;eta;events',100,-4.5,4.5)
 
+# Make output file
+fout = ROOT.TFile('test.root','recreate')
 # Add and book ttree
-tree_ = ROOT.TTree('test','test')
-jets_ = ROOT.TLorentzVector()
-# set up tclonearray
-jets_ = ROOT.TClonesArray("jetsp4")
-tree_.Branch('jets',jets_)
+testtree = ROOT.TTree('test','test')
+
+jetsp4 = ROOT.vector('TLorentzVector')
+testtree.Branch('jetsp4',jetsp4)
 # Counter initiation 
 n_evt = 0
 n_evt_csv = 0
@@ -102,47 +103,30 @@ for evt in events:
     n_evt += 1
     if n_evt%5000 == 1: print 'Loop over',n_evt,'event'
 
-
     evt.getByLabel(trig_label,trig_hndl)
     trig_ = trig_hndl.product()
-
-    # get objects
-    evt.getByLabel(jet_csv_label,jet_csv_hndl)
-    evt.getByLabel(jet_flavor_label,jet_flavor_hndl)
-    if not jet_csv_hndl.isValid() : continue 
-    n_evt_csv += 1
-
-    csv = jet_csv_hndl.product()
-    flavor = jet_flavor_hndl.product()    
-    jets = zip(csv,flavor)
     
     evt.getByLabel(jet_p4_label, jet_p4_hndl)
     jets_p4 = jet_p4_hndl.product() 
-
-    break
-
-    # Fill histograms
-    for icsv,iflavor in jets : 
-        if icsv<0 or icsv>1 : continue
-        h3.Fill(icsv)
-        if abs(iflavor) == 5 : h4.Fill(icsv)
-        if abs(iflavor) in [1,2,3,4] : h5.Fill(icsv)
-        if abs(iflavor) == 21 : h6.Fill(icsv)
     
     for ijet in jets_p4 :
         if ijet.pt()>30 :
             ijet_p4 = ROOT.TLorentzVector()
-            # ijet_p4.SetPtEtaPhiM(ijet.pt(),ijet)
+            ijet_p4.SetPtEtaPhiM(ijet.pt(),ijet.eta(),ijet.phi(),ijet.mass())
+            jetsp4.push_back(ijet_p4)
+    testtree.Fill()
 
 # End of event loop
 
 # Run summary
 print 'break at event',n_evt
-print 'number of events with valid jet csv',n_evt_csv
+
+fout.cd()
+testtree.Write()
+fout.Close()
 
 # Plotting and saving 
 #histlist = [h3,h4,h5,h6]
-histlist = [h_jets_eta]
 
 #plotting(histlist,type,"dump")
   
