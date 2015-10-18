@@ -42,7 +42,7 @@ if options.inputFiles != 'none':
     for ifile in files :    
         print ifile
 
-files = ['ntuples/sample_jhudiffmo/SingleEl_Run2012A.root']
+files = ['sample_inputs/csv_fixed_jhuNtuples/Powheg_TT_jhuNtuple.root ']
 # Read input files
 events = Events(files)
 
@@ -74,7 +74,7 @@ jet_flavor_label =("jhuAk5","AK5PartonFlavour")
 
 # Book histograms
 h1 = ROOT.TH1D('jetspt','jetspt;pt GeV;events',50,0.,300.0)
-h2 = ROOT.TH1D('njets',';njets;events',5,3,8)
+h2 = ROOT.TH1D('njets',';njets;events',14,1,15)
 
 h3 = ROOT.TH1D('csv_all_jets', type+' CSV of all jets;csv;events',100,0,1)
 h4 = ROOT.TH1D('csv_b_jets', type+' CSV of b jets;csv;events',100,-20,40)
@@ -108,7 +108,7 @@ for evt in events:
 
     # testing writing jets p4 into a vector of TLorentzVector  and then into the ttree
 
-    jetsp4.Clear()
+    jetsp4.clear()
     
     evt.getByLabel(jet_p4_label, jet_p4_hndl)
     jets_p4 = jet_p4_hndl.product() 
@@ -134,10 +134,10 @@ ttree_ = filein.Get('test')
 
 for i in range(ttree_.GetEntries()):
     ttree_.GetEntry(i)
-    jetsp4 = ttree_.jetsp4
+    jets = ttree_.jetsp4
     #Fill numjets and pt of jets
-    h2.Fill(jetsp4.size())
-    for ijet in jetsp4:
+    h2.Fill(jets.size())
+    for ijet in jets:
         h1.Fill(ijet.Pt())
 
 plotting([h1,h2],'test','dump')
