@@ -88,7 +88,7 @@ fout = ROOT.TFile('test.root','recreate')
 # Add and book ttree
 testtree = ROOT.TTree('test','test')
 
-jetsp4 = ROOT.vector('TLorentzVector')()
+jetsp4 = ROOT.vector('ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> >')()
 testtree.Branch('jetsp4',jetsp4)
 # Counter initiation 
 n_evt = 0
@@ -115,9 +115,7 @@ for evt in events:
     
     for ijet in jets_p4 :
         if ijet.pt()>30 :
-            ijet_p4 = ROOT.TLorentzVector()
-            ijet_p4.SetPtEtaPhiM(ijet.pt(),ijet.eta(),ijet.phi(),ijet.mass())
-            jetsp4.push_back(ijet_p4)
+            jetsp4.push_back(ijet)
     testtree.Fill()
 
 # End of event loop
@@ -138,7 +136,7 @@ for i in range(ttree_.GetEntries()):
     #Fill numjets and pt of jets
     h2.Fill(jetsp4.size())
     for ijet in jetsp4:
-        h1.Fill(ijet.Pt())
+        h1.Fill(ijet.pt())
 
 plotting([h1,h2],'test','dump')
 filein.Close()
