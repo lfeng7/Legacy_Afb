@@ -139,8 +139,8 @@ for evt in events:
         ijet_p4.SetPtEtaPhiM(ijet.pt(),ijet.eta(),ijet.phi(),ijet.mass())
         jetsp4.push_back(ijet_p4)
 
-    met_pt_vec.push_back(met_pt)
-    met_phi_vec.push_back(met_phi)
+    met_pt_vec.push_back(met_pt[0])
+    met_phi_vec.push_back(met_phi[0])
 
     testtree.Fill()
 
@@ -164,8 +164,8 @@ for i in range(ttree_.GetEntries()):
     for ijet in jetsp4:
         h1.Fill(ijet.Pt())
 
-    h3.Fill(ttree_.metpt)
-    h4.Fill(ttree_.metphi)
+    h3.Fill(ttree_.metpt[0])
+    h4.Fill(ttree_.metphi[0])
 
 plotting([h1,h2,h3,h4],'test','dump')
 filein.Close()
