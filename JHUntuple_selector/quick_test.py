@@ -42,7 +42,7 @@ if options.inputFiles != 'none':
     for ifile in files :    
         print ifile
 
-files = ['sample_inputs/csv_fixed_jhuNtuples/Powheg_TT_jhuNtuple.root ']
+files = ['sample_inputs/csv_fixed_jhuNtuples/Powheg_TT_jhuNtuple.root']
 # Read input files
 events = Events(files)
 
@@ -55,10 +55,18 @@ hndl1 = Handle('vector<double>')
 label1 = ('jhuAk5','AK5JEC')
 hndl2 = Handle('vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > >')
 label2 =  ('jhuAk5','AK5')
+
 jet_p4_hndl = Handle('vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > > ')
 jet_p4_label = ("jhuAk5","AK5")
+
 trig_hndl = Handle('edm::TriggerResults')
 trig_label = ("TriggerResults","","HLT")
+
+# MET
+met_phi_hndl = Handle('double')
+met_hndl = Handle('double')
+met_phi_label = ("jhuGen","metphi")
+met_label = ("jhuGen","metpt")
 
 # JHU ntuple format
 jet_csv_hndl = Handle('vector<double>')
@@ -74,22 +82,29 @@ jet_flavor_label =("jhuAk5","AK5PartonFlavour")
 
 # Book histograms
 h1 = ROOT.TH1D('jetspt','jetspt;pt GeV;events',50,0.,300.0)
-h2 = ROOT.TH1D('njets',';njets;events',14,1,15)
+h2 = ROOT.TH1D('njets',';njets;events',5,3,8)
 
-h3 = ROOT.TH1D('csv_all_jets', type+' CSV of all jets;csv;events',100,0,1)
-h4 = ROOT.TH1D('csv_b_jets', type+' CSV of b jets;csv;events',100,-20,40)
-h5 = ROOT.TH1D('csv_light_jets', type+' CSV of light jets;csv;events',100,-20,40)
-h6 = ROOT.TH1D('csv_gluon_jets', type+' CSV of gluon jets;csv;events',100,-20,40)
+h4 = ROOT.TH1D('met_phi',type+' met phi;phi;events',50,-3.,3.)
+h3 = ROOT.TH1D('met_pt','met pt;pt GeV;events',50,0.,300.0)
 
-h_jets_eta = ROOT.TH1D('jets_eta',type+' jets eta;eta;events',100,-4.5,4.5)
+# h3 = ROOT.TH1D('csv_all_jets', type+' CSV of all jets;csv;events',100,0,1)
+
 
 # Make output file
 fout = ROOT.TFile('test.root','recreate')
 # Add and book ttree
 testtree = ROOT.TTree('test','test')
 
-jetsp4 = ROOT.vector('ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> >')()
+jetsp4 = ROOT.vector('TLorentzVector')()
 testtree.Branch('jetsp4',jetsp4)
+
+met_pt_vec = ROOT.vector('float')()
+met_phi_vec = ROOT.vector('float')()
+testtree.Branch('metpt',met_pt_vec)
+testtree.Branch('metphi',met_phi_vec)
+
+list_vecs = [jetsp4,met_pt_vec,met_phi_vec]
+
 # Counter initiation 
 n_evt = 0
 n_evt_csv = 0
@@ -97,6 +112,8 @@ n_evt_csv = 0
 print 'Getting',events.size(),'events'
 # Event loop
 for evt in events:
+    for ivec in list_vecs: ivec.clear()
+
     # counting and stuff
     if n_evt == nevt_cut: break
     #print 'loop over',n_evt,'events'
@@ -107,15 +124,24 @@ for evt in events:
     trig_ = trig_hndl.product()
 
     # testing writing jets p4 into a vector of TLorentzVector  and then into the ttree
-
-    jetsp4.clear()
     
     evt.getByLabel(jet_p4_label, jet_p4_hndl)
     jets_p4 = jet_p4_hndl.product() 
+
+    evt.getByLabel(met_label,met_hndl)
+    evt.getByLabel(met_phi_label,met_phi_hndl)
+    met_pt = met_hndl.product()
+    met_phi = met_phi_hndl.product()    
     
     for ijet in jets_p4 :
-        if ijet.pt()>30 :
-            jetsp4.push_back(ijet)
+        if not ijet.pt()>30 : continue
+        ijet_p4 = ROOT.TLorentzVector()
+        ijet_p4.SetPtEtaPhiM(ijet.pt(),ijet.eta(),ijet.phi(),ijet.mass())
+        jetsp4.push_back(ijet_p4)
+
+    met_pt_vec.push_back(met_pt)
+    met_phi_vec.push_back(met_phi)
+
     testtree.Fill()
 
 # End of event loop
@@ -132,13 +158,16 @@ ttree_ = filein.Get('test')
 
 for i in range(ttree_.GetEntries()):
     ttree_.GetEntry(i)
-    jets = ttree_.jetsp4
+    jetsp4 = ttree_.jetsp4
     #Fill numjets and pt of jets
     h2.Fill(jetsp4.size())
     for ijet in jetsp4:
-        h1.Fill(ijet.pt())
+        h1.Fill(ijet.Pt())
 
-plotting([h1,h2],'test','dump')
+    h3.Fill(ttree_.metpt)
+    h4.Fill(ttree_.metphi)
+
+plotting([h1,h2,h3,h4],'test','dump')
 filein.Close()
 
 
