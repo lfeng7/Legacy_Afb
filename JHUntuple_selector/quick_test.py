@@ -82,6 +82,13 @@ h5 = ROOT.TH1D('csv_light_jets', type+' CSV of light jets;csv;events',100,-20,40
 h6 = ROOT.TH1D('csv_gluon_jets', type+' CSV of gluon jets;csv;events',100,-20,40)
 
 h_jets_eta = ROOT.TH1D('jets_eta',type+' jets eta;eta;events',100,-4.5,4.5)
+
+# Add and book ttree
+tree_ = ROOT.TTree('test','test')
+jets_ = ROOT.TLorentzVector()
+# set up tclonearray
+jets_ = ROOT.TClonesArray("jetsp4")
+tree_.Branch('jets',jets_)
 # Counter initiation 
 n_evt = 0
 n_evt_csv = 0
@@ -99,8 +106,6 @@ for evt in events:
     evt.getByLabel(trig_label,trig_hndl)
     trig_ = trig_hndl.product()
 
-    break
-
     # get objects
     evt.getByLabel(jet_csv_label,jet_csv_hndl)
     evt.getByLabel(jet_flavor_label,jet_flavor_hndl)
@@ -114,6 +119,8 @@ for evt in events:
     evt.getByLabel(jet_p4_label, jet_p4_hndl)
     jets_p4 = jet_p4_hndl.product() 
 
+    break
+
     # Fill histograms
     for icsv,iflavor in jets : 
         if icsv<0 or icsv>1 : continue
@@ -124,7 +131,8 @@ for evt in events:
     
     for ijet in jets_p4 :
         if ijet.pt()>30 :
-            h_jets_eta.Fill(ijet.eta())
+            ijet_p4 = ROOT.TLorentzVector()
+            # ijet_p4.SetPtEtaPhiM(ijet.pt(),ijet)
 
 # End of event loop
 
