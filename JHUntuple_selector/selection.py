@@ -208,17 +208,23 @@ def selection(patfile):
     # Setup container
 
     # branches for data and mc
-    jets = ROOT.vector('TLorentzVector')()
-    jets_csv = ROOT.vector('float')()
+    jets_pt = ROOT.vector('float')()
+    jets_eta = ROOT.vector('float')()
+    jets_phi = ROOT.vector('float')()
+    jets_mass = ROOT.vector('float')()
+    jets_csv_vec = ROOT.vector('float')()
 
-    lep = ROOT.vector('TLorentzVector')()
+    lep_pt = ROOT.vector('float')()
+    lep_eta = ROOT.vector('float')()
+    lep_phi = ROOT.vector('float')()
+    lep_mass = ROOT.vector('float')()
     lep_charge = ROOT.vector('int')()
 
     met_pt_vec = ROOT.vector('float')()
     met_phi_vec = ROOT.vector('float')()
 
     # branches only for MC samples
-    jets_flavor = ROOT.vector('int')() # only for MC
+    jets_flavor = ROOT.vector('int')()
 
     gen_whad = ROOT.vector('TLorentzVector')()
     gen_whad_pdgid = ROOT.vector('int')()
@@ -238,12 +244,20 @@ def selection(patfile):
     gen_qbar = ROOT.vector('TLorentzVector')()
     gen_qbar_pdgid = ROOT.vector('int')()
 
-    all_vecs = [jets,jets_csv,lep,lep_charge,met_pt_vec,met_phi_vec,jets_flavor]
-    all_mc_vecs = []
+    all_vecs = [jets_pt,jets_eta,jets_phi,jets_mass,jets_csv_veclep_pt,lep_eta,lep_phi,lep_mass,lep_charge,met_pt_vec,met_phi_vec]
+    all_mc_vecs = [jets_flavor]
 
     # Set up branches
-    all_branches = [('jets',jets),('jets_csv',jets_csv),('lep',lep),('lep_charge',lep_charge)]
-    all_branches += [('met_pt',met_pt_vec),('met_phi',met_phi_vec),('jets_flavor',jets_flavor)]
+    branch_names = ['jets_pt','jets_eta','jets_phi','jets_mass','lep_pt','lep_eta','lep_phi','lep_mass','lep_charge','met_pt','met_phi']
+    mc_branch_names = ['jets_flavor']
+
+    all_branches = zip(branch_names,all_vecs)
+    all_mc_branches = zip(mc_branch_names,all_mc_vecs)
+
+    if mcordata == 'mc':
+        all_vecs = all_vecs+all_mc_vecs
+        all_branches = all_branches+all_mc_branches
+
     for ibranch in all_branches:
         outputtree.Branch(ibranch[0],ibranch[1])
 
@@ -391,20 +405,18 @@ def selection(patfile):
         ######## Fill TTree ########
         # jets
         for ijet in jets_cand :
-            ijetcsv = ijet[1]
-            jetp4 = ROOT.TLorentzVector()
-            jetp4.SetPtEtaPhiM(ijet.pt(),ijet.eta(),ijet.phi(),ijet.mass())
-            jets.push_back(jetp4)
-            jets_csv.push_back(ijetcsv)
+            icsv = ijet[1]
+            ip4 = ijet[0]
+            jets_csv_vec.push_back(icsv)
+            jets_pt.push_back(ip4.pt()); jets_eta.push_back(ip4.eta()); jets_phi.push_back(ip4.phi()); jets_mass.push_back(ip4.mass())                        
             if mcordata == 'mc' :
-                ijetflavor = ijet[2]
-                jets_flavor.push_back(ijetflavor)
+                iflavor = ijet[2]
+                jets_flavor.push_back(iflavor)
         # lep
-        lep_p4 = ROOT.TLorentzVector()
-        thelep = el_cand[0]
-        lep_p4.SetPtEtaPhiM(thelep[0].pt(),thelep[0].eta(),thelep[0].phi(),thelep[0].mass())
-        lep.push_back(lep_p4)
-        lep_charge.push_back(thelep[1])
+        lepp4 = el_cand[0]
+        lepcharge = el_cand[1]
+        lep_pt.push_back(lepp4.pt());lep_eta.push_back(lepp4.eta());lep_phi.push_back(lepp4.phi());lep_mass.push_back(lepp4.mass())
+        lep_charge.push_back(lepcharge)
         # MET
         met_pt_vec.push_back(met_pt[0])
         met_phi_vec.push_back(met_phi[0])
