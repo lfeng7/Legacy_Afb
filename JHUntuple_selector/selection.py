@@ -147,7 +147,7 @@ def selection(patfile):
     # leptons
     el_hndl = Handle('vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > >')
     el_iso_hndl = Handle('vector<double>')
-    el_charge_hndl = Handle('vector<double>')
+    el_charge_hndl = Handle('vector<int>')
     el_isLoose_hndl = Handle('vector<unsigned int>')
     el_isTight_hndl = Handle('vector<unsigned int>')
     el_isModTight_hndl = Handle('vector<unsigned int>')
@@ -244,17 +244,17 @@ def selection(patfile):
     gen_qbar = ROOT.vector('TLorentzVector')()
     gen_qbar_pdgid = ROOT.vector('int')()
 
-    all_vecs = [jets_pt,jets_eta,jets_phi,jets_mass,jets_csv_veclep_pt,lep_eta,lep_phi,lep_mass,lep_charge,met_pt_vec,met_phi_vec]
+    all_vecs = [jets_pt,jets_eta,jets_phi,jets_mass,jets_csv_vec,lep_pt,lep_eta,lep_phi,lep_mass,lep_charge,met_pt_vec,met_phi_vec]
     all_mc_vecs = [jets_flavor]
 
     # Set up branches
-    branch_names = ['jets_pt','jets_eta','jets_phi','jets_mass','lep_pt','lep_eta','lep_phi','lep_mass','lep_charge','met_pt','met_phi']
+    branch_names = ['jets_pt','jets_eta','jets_phi','jets_mass','jets_csv','lep_pt','lep_eta','lep_phi','lep_mass','lep_charge','met_pt','met_phi']
     mc_branch_names = ['jets_flavor']
 
     all_branches = zip(branch_names,all_vecs)
     all_mc_branches = zip(mc_branch_names,all_mc_vecs)
 
-    if mcordata == 'mc':
+    if options.mcordata == 'mc':
         all_vecs = all_vecs+all_mc_vecs
         all_branches = all_branches+all_mc_branches
 
@@ -349,10 +349,10 @@ def selection(patfile):
             icharge = el_charge[i]
             # PFelectrons passed loose selection
             # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Veto
-            if el_isLoose[i] and el_iso[i]<0.15 and el.pt()>20 and math.fabs(el.eta())<2.5 : el_loose.append((el,el_charge))
+            if el_isLoose[i] and el_iso[i]<0.15 and el.pt()>20 and math.fabs(el.eta())<2.5 : el_loose.append((el,icharge))
             # PFelectrons passed tight selection
             # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Signal
-            if el_isTight[i] and not el_isModTight[i] and el_iso[i]<0.1 and el.pt()>30 and abs(el.eta())<2.5: el_cand.append((el,el_charge))
+            if el_isTight[i] and not el_isModTight[i] and el_iso[i]<0.1 and el.pt()>30 and abs(el.eta())<2.5: el_cand.append((el,icharge))
         el_extra = list( ipar for ipar in el_loose if ipar not in el_cand)
 
         #### PF muons ####
@@ -409,12 +409,12 @@ def selection(patfile):
             ip4 = ijet[0]
             jets_csv_vec.push_back(icsv)
             jets_pt.push_back(ip4.pt()); jets_eta.push_back(ip4.eta()); jets_phi.push_back(ip4.phi()); jets_mass.push_back(ip4.mass())                        
-            if mcordata == 'mc' :
+            if options.mcordata == 'mc' :
                 iflavor = ijet[2]
                 jets_flavor.push_back(iflavor)
         # lep
-        lepp4 = el_cand[0]
-        lepcharge = el_cand[1]
+        lepp4 = el_cand[0][0]
+        lepcharge = el_cand[0][1]
         lep_pt.push_back(lepp4.pt());lep_eta.push_back(lepp4.eta());lep_phi.push_back(lepp4.phi());lep_mass.push_back(lepp4.mass())
         lep_charge.push_back(lepcharge)
         # MET
