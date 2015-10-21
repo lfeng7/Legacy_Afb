@@ -135,22 +135,24 @@ def MakeHistograms():
         # Make a list of histograms for write
         tmplist = [h_cutflow,h_cutflow_norm,h_lep_pt,h_lep_eta,h_lep_charge, h_m3,h_Njets,h_jets_pt,h_jets_eta,h_MET,h_Nbjets]
         # Fill Histograms
-        # Jets
-        num_jets = tmptree.jets_pt.size()
-        h_Njets.Fill(num_jets)
-        for ijet in tmptree.jets_pt: h_jets_pt.Fill(ijet)
-        for ijet in tmptree.jets_eta: h_jets_eta.Fill(ijet)
-        bjets = []
-        for ijet in tmptree.jets_csv:
-            if ijet>csvm : bjets.append(ijet)
-        h_Nbjets.Fill(len(bjets))
-        h_m3.Fill(M3(tmptree.jets_pt,tmptree.jets_eta,tmptree.jets_phi,tmptree.mass))
-        # leptons
-        h_lep_pt.Fill(tmptree.lep_pt[0])
-        h_lep_eta.Fill(tmptree.lep_eta[0])
-        h_lep_charge.Fill(tmptree.lep_charge[0])
-        #MET
-        h_MET.Fill(tmptree.met_pt[0])
+        for i in range(tmptree.GetEntries()):
+            tmptree.GetEntry(i)
+            # Jets
+            num_jets = tmptree.jets_pt.size()
+            h_Njets.Fill(num_jets)
+            for ijet in tmptree.jets_pt: h_jets_pt.Fill(ijet)
+            for ijet in tmptree.jets_eta: h_jets_eta.Fill(ijet)
+            bjets = []
+            for ijet in tmptree.jets_csv:
+                if ijet>csvm : bjets.append(ijet)
+            h_Nbjets.Fill(len(bjets))
+            h_m3.Fill(M3(tmptree.jets_pt,tmptree.jets_eta,tmptree.jets_phi,tmptree.mass))
+            # leptons
+            h_lep_pt.Fill(tmptree.lep_pt[0])
+            h_lep_eta.Fill(tmptree.lep_eta[0])
+            h_lep_charge.Fill(tmptree.lep_charge[0])
+            #MET
+            h_MET.Fill(tmptree.met_pt[0])
 
         # Save histograms into root files
         print 'Saving',isample_name,' histograms into root file..'
