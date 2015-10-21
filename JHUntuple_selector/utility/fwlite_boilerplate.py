@@ -172,7 +172,7 @@ def savetoroot(objects,outputdir='histograms',event_type='test',fname='',createm
         os.mkdir(savedir)
         print 'Creating new dir '+savedir
     # Saving root files
-    fout_name = savedir+event_type+fname+'.root'
+    fout_name = savedir+fname+'.root'
     fout = ROOT.TFile(fout_name,createmode)
     print 'saving output into file: '+fout_name
     fout.cd()

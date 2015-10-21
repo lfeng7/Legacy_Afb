@@ -55,6 +55,7 @@ argv = []
 # Some preset constants
 data_lumi = 19748 
 dir_name = 'controlplots'
+csvm = 0.679
 
 Nbin = 2
 
@@ -117,7 +118,7 @@ def MakeHistograms():
     for ifile in selected_samples:
         event_type = ifile
         ifilename = prepend+event_type+'.root'
-        print 'Reading root file:',ifilename
+        print '\nReading root file:',ifilename
         tmpfile = ROOT.TFile(ifilename)
         tmptree = tmpfile.Get('selected')
         h_cutflow = tmpfile.Get('cutflow')
@@ -146,7 +147,7 @@ def MakeHistograms():
             for ijet in tmptree.jets_csv:
                 if ijet>csvm : bjets.append(ijet)
             h_Nbjets.Fill(len(bjets))
-            h_m3.Fill(M3(tmptree.jets_pt,tmptree.jets_eta,tmptree.jets_phi,tmptree.mass))
+            h_m3.Fill(M3(tmptree.jets_pt,tmptree.jets_eta,tmptree.jets_phi,tmptree.jets_mass))
             # leptons
             h_lep_pt.Fill(tmptree.lep_pt[0])
             h_lep_eta.Fill(tmptree.lep_eta[0])
@@ -155,7 +156,7 @@ def MakeHistograms():
             h_MET.Fill(tmptree.met_pt[0])
 
         # Save histograms into root files
-        print 'Saving',isample_name,' histograms into root file..'
+        print 'Saving',event_type,' histograms into root file..'
         #        will save to selected_hists/test/event_type_control_plots.root
         savetoroot(tmplist,'selected_hists','test',event_type+'_control_plots')
 
