@@ -132,8 +132,13 @@ def main():
 # selection is the function to do selection. patfile should be EDM PATtuple files
 def selection(rootfiles):
 
-    # Get input root files
+    # Get input files
     files = rootfiles
+    events = Events(files)
+    print 'Getting',events.size(),'events'    
+
+    # Set sample type
+    event_type = options.evtType
 
     # Make a output root file
     if options.grid == 'yes' :
@@ -142,13 +147,6 @@ def selection(rootfiles):
     else :
         print '\nRunning in interactive mode. Creating outputfile to the output dir \n'
         saving([],event_type,f_index,'recreate')
-
-    # Set sample type
-    event_type = options.evtType
-
-    # Get input
-    events = Events(files)
-    print 'Getting',events.size(),'events'
 
     ######## Define handles here ########
 
