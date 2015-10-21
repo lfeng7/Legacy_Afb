@@ -159,6 +159,29 @@ def saving(histlist,event_type='MC',index = 0000):
     # file closure
     fout.Close()
 
+# A more general function that saves a list of objects into a single root file
+def savetoroot(objects,outputdir='histograms',event_type='test',fname=''):
+    prefix = outputdir
+    # check if plotting dir is made. If not , make it now
+    if not os.path.exists(prefix):
+        os.mkdir(prefix)
+        print 'Making '+prefix
+    # Set the dir to put all output rootfiles
+    savedir = prefix+event_type+'/'
+    if not os.path.exists(savedir) : 
+        os.mkdir(savedir)
+        print 'Creating new dir '+savedir
+    # Saving root files
+    fout_name = savedir+event_type+fname+'.root'
+    fout = ROOT.TFile(fout_name,'recreate')
+    print 'saving output into file: '+fout_name
+    fout.cd()
+    for iobj in objects:
+        iobj.Write()
+    fout.Write()
+    # file closure
+    fout.Close()    
+
 # Save histograms to root files in current directory. Can be used in grid jobs
 def gridsaving(histlist,event_type='MC',index = 0000):
     # Saving root files

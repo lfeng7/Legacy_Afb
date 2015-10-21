@@ -1,4 +1,5 @@
 # This small macro will read in all edm files in a directory and count the total number of events 
+# v2. Will take a ttree, make histograms, and stack with data.
 
 from utility import *
 
@@ -37,246 +38,310 @@ parser.add_option('--MCplots', metavar='F', type='string', action='store',
                   dest='plotMConly',
                   help='If you want stack plots without data comparison')
 
+parser.add_option('--makehists', metavar='F', type='string', action='store',
+                  default = 'no',
+                  dest='makehists',
+                  help='If you want to remake all histograms from selection files')
+
+parser.add_option('--makeplots', metavar='F', type='string', action='store',
+                  default = 'yes',
+                  dest='makeplots',
+                  help='If you want to make data MC comparison plots')
+
 (options, args) = parser.parse_args()
 
 argv = []
 
 # Some preset constants
 data_lumi = 19748 
-dir_name = 'stackplots'
+dir_name = 'controlplots'
 
 Nbin = 2
 
 # Get input files
-prepend = './output_rootfiles/all_channels/'   # dir of output files to stack 
-
-# Make an txt files for some information output
-f_info = open('info_stackplots.txt','w')
-f_yields = open('yields.txt','w')
+prepend = './output_rootfiles/all_channels/'   # dir of output files to make histograms
+hist_prepend = './selected_hists/test/' 
   
 # initialization and declaration
-sample_types = []
 flist = []
-hlist_ = []
-all_hists = []
-data_hists = []
 
+#### Set up MC input files
 # stucture of a list of files
 #    0,         1         2        3         4           
 # (filepath, nevts_gen, xsec_NLO, type, nevts_total_ntuple)
 # Single Top
-flist.append(['T_s_v2_selection_output_all.root',259961,3.79,'singletop',259176] )
-flist.append(['T_t_v2_selection_output_all.root',3758227,56.4,'singletop',3748155] )
-flist.append(['T_tW_v2_selection_output_all.root',497658,11.1,'singletop',495559])
-flist.append(['Tbar_s_v2_selection_output_all.root',139974,1.76,'singletop',139604])
-flist.append(['Tbar_t_v2_selection_output_all.root',1935072,30.7,'singletop',1930185])
-flist.append(['Tbar_tW_v2_selection_output_all.root',493460,11.1,'singletop',491463])
+flist.append(['T_s_v2_selection_output_all','singletop'，259961,3.79,259176] )
+flist.append(['T_t_v2_selection_output_all.root','singletop',3758227,56.4,3748155] )
+flist.append(['T_tW_v2_selection_output_all.root','singletop',497658,11.1,495559])
+flist.append(['Tbar_s_v2_selection_output_all.root','singletop',139974, 1.76,139604])
+flist.append(['Tbar_t_v2_selection_output_all.root','singletop',1935072, 30.7,1930185])
+flist.append(['Tbar_tW_v2_selection_output_all.root','singletop',493460,11.1,491463])
 # Wjets
-flist.append(['W1JetsToLNu_v2.root',23141598,6662.8,'wjets',23038253])
-flist.append(['W2JetsToLNu_v2.root',34044921,2159.2,'wjets',33993463])
-flist.append(['W3Jets_v2_selection_output_all.root',15539503,640.4,'wjets',15507852])
-flist.append(['W4Jets_v2_selection_output_all.root',13382803,246.0,'wjets',13326400])
+flist.append(['W1JetsToLNu_v2.root','wjets',23141598,6662.8,23038253])
+flist.append(['W2JetsToLNu_v2.root','wjets',34044921,2159.2,33993463])
+flist.append(['W3Jets_v2_selection_output_all.root','wjets',15539503,640.4,15507852])
+flist.append(['W4Jets_v2_selection_output_all.root','wjets',13382803,246.0,13326400])
 # DYjets
-flist.append(['DY1JetsToLL_v2.root',24045248,660.6,'zjets',23802736])
-flist.append(['DY2JetsToLL_v2.root',2352304,215.1,'zjets',2345857])
-flist.append(['DY3Jets_v2_selection_output_all.root',11015445,65.79,'zjets',10655325])
-flist.append(['DY4Jets_v2_selection_output_all.root',6402827,28.59,'zjets',5843425])
+flist.append(['DY1JetsToLL_v2.root','zjets',24045248,660.6,23802736])
+flist.append(['DY2JetsToLL_v2.root','zjets',2352304,215.1,2345857])
+flist.append(['DY3Jets_v2_selection_output_all.root','zjets',11015445,65.79,10655325])
+flist.append(['DY4Jets_v2_selection_output_all.root','zjets',6402827,28.59,5843425])
 # signal
-flist.append(['TT_CT10_v2_selection_output_all.root',21675970,245.9,'ttbar',21560109])
+flist.append(['TT_CT10_v2_selection_output_all.root','ttbar',21675970,245.9,21560109])
 
-######## data
-#    0,         1                        2           3                  4                5    
-# (filepath, sample_integrated_lumi, total_data_L, type, nevts_total_ntuple, nevts_used_ntuple)
+#### Set up data input files
+#    0,         1                   2             
+# (filepath,   type,   sample_integrated_lumi
 #datafile = ['SingleEl_Run2012A_v2_selection_output_all.root',888,19748,'data',11212832]
-datafile = ['SingleEl_Run2012ABCD_v2.root',19748,19748,'data',11212832]
+datafile = ['SingleEl_Run2012ABCD_v2.root','data',19748]
 
-# list of histogram to make stack plots
-hlist = ['cutflow','jets_pt','Njets','m3','csv_all_jets','el_cand_pt','MET','jets_eta','el_cand_eta']
-rebinlist = ['jets_pt','m3','el_cand_pt','MET','jets_eta','el_cand_eta']
+def main():
+    if options.makehists == 'yes':
+        print 'Making histograms from the selection root files.'
+        MakeHistograms()
+    if options.makeplots == 'yes':
+        print 'Making comparison plots of MC and data.'
+        MakeComparisonPlots()
+    print 'All done!'
 
-# Booking stack histograms 
-for hist in hlist:
-    hlist_.append(ROOT.THStack(hist,hist))
-# put the name of histogram in the stack and the stack histograms in a list
-stacklist = zip(hlist,hlist_)
+def MakeHistograms():
+    #### Making histograms for MC samples
+    nbins = 50
+    # Get a list of MC and data input file names
+    selected_samples = [ifile[0] for ifile in flist]+[datafile[0]]
+    # debug
+    if options.verbose =='yes':
+        print 'Making histograms for these samples:'
+        for ifile in selected_samples : print ifile
+    # Loop over all selection root files
+    for ifile in flist:
+        isample_name = ifile[0]
+        ifilename = prepend+isample_name+'.root'
+        tmpfile = ROOT.TFile(ifilename)
+        tmptree = tmpfile.Get('selected')
+        h_cutflow = tmpfile.Get('cutflow')
+        h_cutflow_norm = tmpfile.Get('cutflow_norm')
+        # Book Histograms
+        h_lep_pt = ROOT.TH1D('lep_pt',event_type+' selected lepton pT;pT (GeV);events',nbins,0.,200.)
+        h_lep_eta = ROOT.TH1D('lep_eta',event_type+' selected lepton eta;eta;events',nbins,-2.7,2.7)
+        h_lep_charge = ROOT.TH1D('lep_charge',event_type+' charge of the selected lepton ;charge;events',10,-2,2)
+        h_m3 = ROOT.TH1D('m3',event_type+' M3;m3;events',nbins,0.,500.)
+        h_Njets = ROOT.TH1D('Njets',event_type+' Num selected jets;Njets;events',5,3,8)
+        h_jets_pt = ROOT.TH1D('jets_pt',event_type+' selected jets pT;pT (GeV);events',nbins,0.,300.)
+        h_jets_eta = ROOT.TH1D('jets_eta',event_type+' selected jets eta;eta;events',nbins,-2.7,2.7)
+        h_MET = ROOT.TH1D('MET',event_type+' MET;MET;events',nbins,0.,200.)
+        h_Nbjets = ROOT.TH1D('Nbjets',event_type+' Num tagged bjets;Nbjets;events',5,1,6)
+        # Make a list of histograms for write
+        tmplist = [h_cutflow,h_cutflow_norm,h_lep_pt,h_lep_eta,h_lep_charge, h_m3,h_Njets,h_jets_pt,h_jets_eta,h_MET,h_Nbjets]
+        # Fill Histograms
+        # Jets
+        num_jets = tmptree.jets_pt.size()
+        h_Njets.Fill(num_jets)
+        for ijet in tmptree.jets_pt: h_jets_pt.Fill(ijet)
+        for ijet in tmptree.jets_eta: h_jets_eta.Fill(ijet)
+        bjets = []
+        for ijet in tmptree.jets_csv:
+            if ijet>csvm : bjets.append(ijet)
+        h_Nbjets.Fill(len(bjets))
+        h_m3.Fill(M3(tmptree.jets_pt,tmptree.jets_eta,tmptree.jets_phi,tmptree.mass))
+        # leptons
+        h_lep_pt.Fill(tmptree.lep_pt[0])
+        h_lep_eta.Fill(tmptree.lep_eta[0])
+        h_lep_charge.Fill(tmptree.lep_charge[0])
+        #MET
+        h_MET.Fill(tmptree.met_pt[0])
 
-# Make a legend
-leg = ROOT.TLegend(0.7,0.65,1.0,0.85)
+        # Save histograms into root files
+        print 'Saving',isample_name,' histograms into root file..'
+        savetoroot(tmplist,'selected_hists','test','_validation_plots')
 
-############ Get histograms from data files
+def MakeComparisonPlots():
 
-# Getting files
-print 'processing data file',datafile[0]
-fdata = ROOT.TFile(prepend+datafile[0])
-# Calculate weight for data 
-nevts_data = fdata.Get('cutflow').GetBinContent(1)
-fraction_ = 1.0 # nevts_data*1.0/datafile[4]
-weight_ = data_lumi/(datafile[1]*fraction_)
-# Get histograms from data
-for ihist in hlist :
-    ih = fdata.Get(ihist)
-    ih.SetDirectory(0)
-    ih.Scale(weight_)
-    ih.SetName(ih.GetName()+'_data')
-    # rebin some histograms
-    # if ihist in rebinlist: ih.Rebin(Nbin)
+    ########################################################
+    #               Making comparison plots                #
+    ########################################################
 
-    data_hists.append(ih)
-# Add data entry to legend
-leg.AddEntry(data_hists[0],'data')
+    # list of histogram to make stack plots
+    hlist = ['cutflow','jets_pt','Njets','m3','lep_pt','MET','jets_eta','lep_eta','Nbjets','lep_charge']
+    rebinlist = ['jets_pt','m3','el_cand_pt','MET','jets_eta','el_cand_eta']
 
-# write some informations about current sample
-info_ = 'Sample type : data'+'\n'+'Events weight %.2f : '%weight_ +'\n'
-info_ += 'Fraction of sample used : %.2f'%fraction_ +'\n\n'
-f_info.write(info_)
+    # Booking stack histograms 
+    for hist in hlist:
+        hlist_.append(ROOT.THStack(hist,hist))
+    # put the name of histogram in the stack and the stack histograms in a list
+    stacklist = zip(hlist,hlist_)
 
-############ Make stack histograms for MC samples
+    # Make a legend
+    leg = ROOT.TLegend(0.7,0.65,1.0,0.85)
 
-# Loop over files
-for ifile in flist :
+    # Process data files
+
     # Getting files
-    print 'processing MC file',ifile[0]
-    f_ = ROOT.TFile(prepend+ifile[0])
-    # Find the color of the sample type
-    sample_type = ifile[3]
-    icolor = GetSampleColor(sample_type) # need to write a sub routine that return color given sample type
+    data_input = hist_prepend+datafile[0]+'_validation_plots.root'
+    print 'processing data file',data_input
+    fdata = ROOT.TFile(data_input)
+    # Calculate weight for data 
+    nevts_data = fdata.Get('cutflow').GetBinContent(1)
+    data_weight = data_lumi*1.0/datafile[2]
 
-    # Calculate weight for this channel
-    nevts_total = int(f_.Get('cutflow').GetBinContent(1))
-    fraction = nevts_total*1.0/ifile[4]
-    cross_section_NLO = ifile[2]
-    nevts_gen = ifile[1]*fraction
-    weight = data_lumi*cross_section_NLO/nevts_gen  
-
-    # Determine if we want to add an entry to legend
-    if sample_type not in sample_types: 
-        add_legend = 1
-        sample_types.append(sample_type)
-        # debug
-        if options.verbose == 'yes' : print 'Adding new sample type',sample_type 
-    else : add_legend = 0
-
-    many_hists = []
-
-    # Loop over histograms and make stacks 
-    for ihist in stacklist:
-        ihist_name = ihist[0]
-        istack = ihist[1]
-        ih = f_.Get(ihist_name)    
-
+    data_hists = []
+    # Get histograms from data
+    for ihist in hlist :
+        ih = fdata.Get(ihist)
+        ih.SetDirectory(0)
+        ih.Scale(data_weight)
+        ih.SetName(ih.GetName()+'_data')
         # rebin some histograms
         # if ihist in rebinlist: ih.Rebin(Nbin)
-
-        # Delink the hist from the tmp file f_
-        ih.SetDirectory(0)
-        ih.Scale(weight) 
-        ih.SetFillColor(icolor)
-        ih.SetLineColor(icolor)
-        ih.SetMarkerStyle(21)
-
-        istack.Add(ih) 
-        # Keep scaled histgrams in a list for later use
-        many_hists.append(ih)
-
-    all_hists.append(many_hists)
-        
-    # Add entries to legend
-    if add_legend : 
-        leg.AddEntry(many_hists[0],sample_type,"F")
-        if options.verbose == 'yes' : print 'Adding a new legend entry for type:',sample_type
+        data_hists.append(ih)
+    # Add data entry to legend
+    leg.AddEntry(data_hists[0],'data')
 
     # write some informations about current sample
-    info_ = 'Sample name : '+ifile[0]+'\n'+'Type: '+sample_type+'\n'+'Events weight : '+str(weight)+'\n'
-    info_ += 'Nevts : '+str(nevts_total)+'\n'+'Fraction of sample used : %.2f'%fraction+'\n\n'
+    info_ = 'Sample type : data'+'\n'+'Events weight %.2f : '%data_weight +'\n\n'
     f_info.write(info_)
 
-    # for debugging
-    if options.verbose == 'yes' :
-        print 'weight is:',weight   
-    
+    ############ Make stack histograms for MC samples
 
-##### end loop over files ######
+    sample_types = []
+    # Loop over files
+    for ifile in flist :
+        # Getting files
+        tmp_fname = hist_prepend+ifile[0]+'_validation_plots.root'
+        print 'processing MC file',tmp_fname
+        tmp_file = ROOT.TFile(tmp_fname)
+        # Find the color of the sample type
+        sample_type = ifile[1]
+        icolor = GetSampleColor(sample_type) # GetSampleColor is defined in ttbar_utility
 
-# Plot and save
-mc_stacks = [istack for name,istack in stacklist]   # This is a list of stackplots
+        # Calculate weight for this channel
+        nevts_total = int(tmp_file.Get('cutflow').GetBinContent(1))
+        fraction = nevts_total*1.0/ifile[4]
+        cross_section_NLO = ifile[2]
+        nevts_gen = ifile[1]*fraction
+        weight = data_lumi*cross_section_NLO/nevts_gen  
 
-stack_cutflow = mc_stacks[0]
-data_cutflow = data_hists[0]
-data_cutflow.SetMinimum(2000)
+        # Determine if we want to add an entry to legend
+        if sample_type not in sample_types: 
+            add_legend = 1
+            sample_types.append(sample_type)
+            # debug
+            if options.verbose == 'yes' : print 'Adding new sample type',sample_type 
+        else : add_legend = 0
 
-# this is an ugly fix in order to get correct yields....
-stack_cutflow_0 = stack_cutflow.Clone()
-data_cutflow_0 = data_cutflow.Clone()
+        many_hists = []
 
-stack_cutflow_norm = normstack(stack_cutflow)
-data_cutflow_norm = norm(data_cutflow)
-data_cutflow_norm.SetMinimum(0.00002)
+        # Loop over histograms and make stacks 
+        for ihist in stacklist:
+            ihist_name = ihist[0]
+            istack = ihist[1]
+            ih = tmp_file.Get(ihist_name)    
+            # rebin some histograms
+            # if ihist in rebinlist: ih.Rebin(Nbin)
+            # Delink the hist from the tmp_file
+            ih.SetDirectory(0)
+            ih.Scale(weight) 
+            ih.SetFillColor(icolor)
+            ih.SetLineColor(icolor)
+            ih.SetMarkerStyle(21)
+            istack.Add(ih) 
+            
+        # Add entries to legend
+        if add_legend : 
+            leg.AddEntry(many_hists[0],sample_type,"F")
+            if options.verbose == 'yes' : print 'Adding a new legend entry for type:',sample_type
 
-#mc_stacks.append(stack_cutflow_norm)
-#data_hists.append(data_cutflow_norm)
+        # write some informations about current sample
+        info_ = 'Sample name : '+ifile[0]+'\n'+'Type: '+sample_type+'\n'+'Events weight : '+str(weight)+'\n'
+        info_ += 'Nevts : '+str(nevts_total)+'\n'+'Fraction of sample used : %.2f'%fraction+'\n\n'
+        f_info.write(info_)
 
-# Create the output root file
-plotting([],dir_name,'not dump','not log',None,'','recreate')
-# Plot MC stacks
-if options.plotMConly == 'yes' :
-    print 'Plotting MC stackplots without data comparison'
-    plotting(mc_stacks,dir_name,'not dump','not log',leg) 
-    plotting([stack_cutflow,stack_cutflow_norm],dir_name,options.dumpplots,'log',leg)
+        # for debugging
+        if options.verbose == 'yes' :
+            print 'weight is:',weight           
 
-print 'Plotting comparison plots'
+    ##### end loop over files ######
 
-# Make data MC comparison plots
-data_mc = zip(mc_stacks,data_hists)
-data_mc_norm = [[stack_cutflow_norm,data_cutflow_norm]]
+    # Plot and save
+    mc_stacks = [istack for name,istack in stacklist]   # This is a list of stackplots
 
-for item in data_mc :
-    comparison_plot(item[0],item[1],leg,dir_name)
-for item in data_mc_norm :
-    comparison_plot(item[0],item[1],leg,dir_name,'not dump','notlog','p')
+    stack_cutflow = mc_stacks[0]
+    data_cutflow = data_hists[0]
+    data_cutflow.SetMinimum(2000)
 
-data_mc_log = ([stack_cutflow,data_cutflow],[stack_cutflow_norm,data_cutflow_norm])
+    # this is an ugly fix in order to get correct yields....
+    stack_cutflow_0 = stack_cutflow.Clone()
+    data_cutflow_0 = data_cutflow.Clone()
 
-for item in data_mc_log :
-    comparison_plot(item[0],item[1],leg,dir_name,'not dump','log','p')
+    #mc_stacks.append(stack_cutflow_norm)
+    #data_hists.append(data_cutflow_norm)
 
-# Dump plots to web
-print 'Uploading all plots to web'
-plotting([],dir_name,'dump')
+    # Create the output root file
+    plotting([],dir_name,'not dump','not log',None,'','recreate')
+    # Plot MC stacks
+    if options.plotMConly == 'yes' :
+        print 'Plotting MC stackplots without data comparison'
+        plotting(mc_stacks,dir_name,'not dump','not log',leg) 
+        plotting([stack_cutflow,stack_cutflow_norm],dir_name,options.dumpplots,'log',leg)
 
-############ Save MC stackplots and data histograms into an root files    
-savelist = mc_stacks+data_hists+[leg]
-saving(savelist,dir_name)
+    print 'Plotting comparison plots'
 
-# Getting yields for MC and data
-sample_yields = []
-for ihist in stack_cutflow_0.GetHists():
-    type_ = GetSampleType(ihist.GetFillColor())
-    sample_yields.append([type_]+GetBinEntry(ihist))
+    # Make data MC comparison plots
+    data_mc = zip(mc_stacks,data_hists)
 
-MC_yields = []
+    for item in data_mc :
+        comparison_plot(item[0],item[1],leg,dir_name)
 
-all_types = GetListChoices([ sample[0] for sample in sample_yields])
+    data_mc_log = ([stack_cutflow,data_cutflow])
 
-for itype in all_types :
-    ilist = [ sample for sample in sample_yields if sample[0] == itype]
-    MC_yields.append(SumColumn(ilist))
+    for item in data_mc_log :
+        comparison_plot(item[0],item[1],leg,dir_name,'not dump','log','p')
 
-mc_total_yields = SumColumn(MC_yields)
-mc_total_yields.pop(0)
-MC_yields.append(['MC']+mc_total_yields)
+    # Dump plots to web
+    print 'Uploading all plots to web'
+    plotting([],dir_name,'dump')
 
-# Yields for data
-data_yields = ['data']+GetBinEntry(data_cutflow_0)
-# Write into yields output files
-f_yields.write('sample,nocut, el selection, loose mu veto, dilep veto, jets selection, b-tagging, MET \n')
-for row in MC_yields :
-    for item in row :
+    ############ Save MC stackplots and data histograms into an root files    
+    savelist = mc_stacks+data_hists+[leg]
+    saving(savelist,dir_name)
+
+    #################################################################
+    #               Making yields table                             #
+    #################################################################
+
+    # Make an txt files for some information output
+    f_info = open('info_stackplots.txt','w')
+    f_yields = open('yields.txt','w')
+
+    sample_yields = []
+    for ihist in stack_cutflow_0.GetHists():
+        type_ = GetSampleType(ihist.GetFillColor())
+        sample_yields.append([type_]+GetBinEntry(ihist))
+
+    MC_yields = []
+
+    all_types = GetListChoices([ sample[0] for sample in sample_yields])
+
+    for itype in all_types :
+        ilist = [ sample for sample in sample_yields if sample[0] == itype]
+        MC_yields.append(SumColumn(ilist))
+
+    mc_total_yields = SumColumn(MC_yields)
+    mc_total_yields.pop(0)
+    MC_yields.append(['MC']+mc_total_yields)
+
+    # Yields for data
+    data_yields = ['data']+GetBinEntry(data_cutflow_0)
+    # Write into yields output files
+    f_yields.write('sample,nocut, el selection, loose mu veto, dilep veto, jets selection, b-tagging, MET \n')
+    for row in MC_yields :
+        for item in row :
+            f_yields.write(str(item)+',')
+        f_yields.write('\n')
+    for item in data_yields :
         f_yields.write(str(item)+',')
-    f_yields.write('\n')
-for item in data_yields :
-    f_yields.write(str(item)+',')
 
-# file closure
-f_info.close()
-f_yields.close()
-fdata.Close()  
+    # file closure
+    f_info.close()
+    f_yields.close()
+    fdata.Close()  

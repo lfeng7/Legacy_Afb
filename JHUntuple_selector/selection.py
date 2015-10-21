@@ -369,13 +369,13 @@ def selection(patfile):
         for i in range(len(jets_p4)):
             if jets_p4[i].pt()>30 and abs(jets_p4[i].eta())<2.5: 
                 if options.mcordata == 'mc' : 
-                    jets_cand.append((jets_p4[i],jets_csv[i],jets_PartonFlavor[i]))
+                    jets_cand.append((jets_p4[i].pt(),jets_p4[i],jets_csv[i],jets_PartonFlavor[i]))
                 elif options.mcordata == 'data' :
-                    jets_cand.append((jets_p4[i],jets_csv[i]))
+                    jets_cand.append((jets_p4[i].pt(),jets_p4[i],jets_csv[i]))
                 else :
                     print 'The sample is neither mc or data! Serious bug!'
                     break
-        jets_cand_p4 = [ ijet[0] for ijet in jets_cand ]
+        jets_cand_p4 = [ ijet[1] for ijet in jets_cand ]
  
         #### Signal events selection ####
 
@@ -392,7 +392,7 @@ def selection(patfile):
         h_cutflow.Fill('jets',1)
 
         # Do b-tagging. Work for both MC and data
-        bjets = [ jet for jet in jets_cand if jet[1] > csv_cut ]
+        bjets = [ jet for jet in jets_cand if jet[2] > csv_cut ]
 
         # cut on btags
         if not len(bjets) >= 2: continue
@@ -403,14 +403,18 @@ def selection(patfile):
         ######## Finish event selection #########
 
         ######## Fill TTree ########
+
         # jets
+        # First sort jets by pT
+        jets_cand.sort()
+        
         for ijet in jets_cand :
-            icsv = ijet[1]
-            ip4 = ijet[0]
+            icsv = ijet[2]
+            ip4 = ijet[1]
             jets_csv_vec.push_back(icsv)
             jets_pt.push_back(ip4.pt()); jets_eta.push_back(ip4.eta()); jets_phi.push_back(ip4.phi()); jets_mass.push_back(ip4.mass())                        
             if options.mcordata == 'mc' :
-                iflavor = ijet[2]
+                iflavor = ijet[3]
                 jets_flavor.push_back(iflavor)
         # lep
         lepp4 = el_cand[0][0]
