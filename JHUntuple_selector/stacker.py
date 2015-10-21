@@ -29,7 +29,7 @@ parser.add_option('--upload', metavar='F', type='string', action='store',
                   help='if you want to dump plots to MY webpage! Unless you modify fwlite_boilerplate >_<')
 
 parser.add_option('--verbose', metavar='F', type='string', action='store',
-                  default = 'no',
+                  default = 'yes',
                   dest='verbose',
                   help='If you want more information than you usually need.')
 
@@ -39,12 +39,12 @@ parser.add_option('--MCplots', metavar='F', type='string', action='store',
                   help='If you want stack plots without data comparison')
 
 parser.add_option('--makehists', metavar='F', type='string', action='store',
-                  default = 'no',
+                  default = 'yes',
                   dest='makehists',
                   help='If you want to remake all histograms from selection files')
 
 parser.add_option('--makeplots', metavar='F', type='string', action='store',
-                  default = 'yes',
+                  default = 'no',
                   dest='makeplots',
                   help='If you want to make data MC comparison plots')
 
@@ -70,7 +70,7 @@ flist = []
 #    0,         1         2        3         4           
 # (filepath, nevts_gen, xsec_NLO, type, nevts_total_ntuple)
 # Single Top
-# flist.append(['T_s_v2_selection_output_all','singletop'，259961,3.79,259176] )
+# flist.append(['T_s_v2_selection_output_all','singletop',259961,3.79,259176] )
 # flist.append(['T_t_v2_selection_output_all.root','singletop',3758227,56.4,3748155] )
 # flist.append(['T_tW_v2_selection_output_all.root','singletop',497658,11.1,495559])
 # flist.append(['Tbar_s_v2_selection_output_all.root','singletop',139974, 1.76,139604])
@@ -115,8 +115,9 @@ def MakeHistograms():
         for ifile in selected_samples : print ifile
     # Loop over all selection root files
     for ifile in flist:
-        isample_name = ifile[0]
-        ifilename = prepend+isample_name+'.root'
+        event_type = ifile[0]
+        ifilename = prepend+event_type+'.root'
+        print 'Reading root file:',ifilename
         tmpfile = ROOT.TFile(ifilename)
         tmptree = tmpfile.Get('selected')
         h_cutflow = tmpfile.Get('cutflow')
@@ -346,3 +347,6 @@ def MakeComparisonPlots():
     f_info.close()
     f_yields.close()
     fdata.Close()  
+
+
+main()

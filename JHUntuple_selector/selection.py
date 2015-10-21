@@ -412,7 +412,7 @@ def selection(rootfiles):
 
         # jets
         # First sort jets by pT
-        jets_cand.sort()
+        jets_cand.sort(reverse = True)
 
         for ijet in jets_cand :
             icsv = ijet[2]
