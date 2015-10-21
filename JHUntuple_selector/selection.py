@@ -130,10 +130,18 @@ def main():
 
 
 # selection is the function to do selection. patfile should be EDM PATtuple files
-def selection(patfile):
+def selection(rootfiles):
 
     # Get input root files
-    files = patfile
+    files = rootfiles
+
+    # Make a output root file
+    if options.grid == 'yes' :
+        print '\nRunning in grid mode. Creating outputfile in current dir\n'
+        gridsaving([],event_type,f_index,'recreate')
+    else :
+        print '\nRunning in interactive mode. Creating outputfile to the output dir \n'
+        saving([],event_type,f_index,'recreate')
 
     # Set sample type
     event_type = options.evtType
@@ -407,7 +415,7 @@ def selection(patfile):
         # jets
         # First sort jets by pT
         jets_cand.sort()
-        
+
         for ijet in jets_cand :
             icsv = ijet[2]
             ip4 = ijet[1]
@@ -451,10 +459,10 @@ def selection(patfile):
     else :
         if options.grid == 'yes' :
             print '\nSaving output into root files for grid use\n'
-            gridsaving(histlist,event_type,f_index)
+            gridsaving(histlist+[outputtree],event_type,f_index,'update')
         else :
             print '\nSaving output into root files to local dir \n'
-            saving(histlist+[outputtree],event_type,f_index)
+            saving(histlist+[outputtree],event_type,f_index,'update')
 
     # Stop our timer
     timer.Stop()

@@ -139,7 +139,7 @@ def comparison_plot(mc_,data_,legend,event_type='MC',upload = False,logy=False,o
 
 
 # Save histograms to root files. Use for interactive run only
-def saving(histlist,event_type='MC',index = 0000):
+def saving(histlist,event_type='MC',index = 0000,createmode='recreate'):
     prefix = './output_rootfiles/'
     # check if plotting dir is made. If not , make it now
     if not os.path.exists(prefix):
@@ -151,7 +151,7 @@ def saving(histlist,event_type='MC',index = 0000):
         os.mkdir(savedir)
         print 'Creating new dir '+savedir
     # Saving root files
-    fout = ROOT.TFile(savedir+event_type+'_selection_output_'+str(index)+'.root','recreate')
+    fout = ROOT.TFile(savedir+event_type+'_selection_output_'+str(index)+'.root',createmode)
     print 'saving output into file: '+savedir+event_type+'_selection_output_'+str(index)+'.root'
     for ihist in histlist:
         ihist.Write()
@@ -160,7 +160,7 @@ def saving(histlist,event_type='MC',index = 0000):
     fout.Close()
 
 # A more general function that saves a list of objects into a single root file
-def savetoroot(objects,outputdir='histograms',event_type='test',fname=''):
+def savetoroot(objects,outputdir='histograms',event_type='test',fname='',createmode='recreate'):
     prefix = outputdir
     # check if plotting dir is made. If not , make it now
     if not os.path.exists(prefix):
@@ -173,7 +173,7 @@ def savetoroot(objects,outputdir='histograms',event_type='test',fname=''):
         print 'Creating new dir '+savedir
     # Saving root files
     fout_name = savedir+event_type+fname+'.root'
-    fout = ROOT.TFile(fout_name,'recreate')
+    fout = ROOT.TFile(fout_name,createmode)
     print 'saving output into file: '+fout_name
     fout.cd()
     for iobj in objects:
@@ -183,9 +183,9 @@ def savetoroot(objects,outputdir='histograms',event_type='test',fname=''):
     fout.Close()    
 
 # Save histograms to root files in current directory. Can be used in grid jobs
-def gridsaving(histlist,event_type='MC',index = 0000):
+def gridsaving(histlist,event_type='MC',index = 0000,createmode='recreate'):
     # Saving root files
-    fout = ROOT.TFile(event_type+'_selection_output_'+str(index)+'.root','recreate')
+    fout = ROOT.TFile(event_type+'_selection_output_'+str(index)+'.root',createmode)
     print 'saving output into file: '+event_type+'_selection_output_'+str(index)+'.root'
     for ihist in histlist:
         ihist.Write()
