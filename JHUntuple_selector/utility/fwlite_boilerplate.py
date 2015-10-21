@@ -167,7 +167,7 @@ def savetoroot(objects,outputdir='histograms',event_type='test',fname='',createm
         os.mkdir(prefix)
         print 'Making '+prefix
     # Set the dir to put all output rootfiles
-    savedir = prefix+event_type+'/'
+    savedir = prefix+'/'+event_type+'/'
     if not os.path.exists(savedir) : 
         os.mkdir(savedir)
         print 'Creating new dir '+savedir

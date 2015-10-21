@@ -114,8 +114,8 @@ def MakeHistograms():
         print 'Making histograms for these samples:'
         for ifile in selected_samples : print ifile
     # Loop over all selection root files
-    for ifile in flist:
-        event_type = ifile[0]
+    for ifile in selected_samples:
+        event_type = ifile
         ifilename = prepend+event_type+'.root'
         print 'Reading root file:',ifilename
         tmpfile = ROOT.TFile(ifilename)
@@ -156,7 +156,8 @@ def MakeHistograms():
 
         # Save histograms into root files
         print 'Saving',isample_name,' histograms into root file..'
-        savetoroot(tmplist,'selected_hists','test','_validation_plots')
+        #        will save to selected_hists/test/event_type_control_plots.root
+        savetoroot(tmplist,'selected_hists','test',event_type+'_control_plots')
 
 def MakeComparisonPlots():
 
@@ -180,7 +181,7 @@ def MakeComparisonPlots():
     # Process data files
 
     # Getting files
-    data_input = hist_prepend+datafile[0]+'_validation_plots.root'
+    data_input = hist_prepend+datafile[0]+'_control_plots.root'
     print 'processing data file',data_input
     fdata = ROOT.TFile(data_input)
     # Calculate weight for data 
@@ -211,7 +212,7 @@ def MakeComparisonPlots():
     # Loop over files
     for ifile in flist :
         # Getting files
-        tmp_fname = hist_prepend+ifile[0]+'_validation_plots.root'
+        tmp_fname = hist_prepend+ifile[0]+'_control_plots.root'
         print 'processing MC file',tmp_fname
         tmp_file = ROOT.TFile(tmp_fname)
         # Find the color of the sample type
