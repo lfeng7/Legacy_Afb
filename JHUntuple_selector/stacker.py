@@ -60,7 +60,7 @@ csvm = 0.679
 Nbin = 2
 
 # Get input files
-prepend = './output_rootfiles/all_selected/'   # dir of output files to make histograms
+prepend = './selected_files/v2_test1/all/'   # dir of output files to make histograms
 hist_prepend = './selected_hists/test/' 
 postfix='_selected'
   
