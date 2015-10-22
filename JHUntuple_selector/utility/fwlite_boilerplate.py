@@ -304,7 +304,18 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     minx = 1.0-1.1*maxxdeviations
     h_res.GetYaxis().SetRangeUser(minx,maxx)
     h_res.GetYaxis().SetNdivisions(503)
+    h_res.GetXaxis().SetTitle(data_.GetXaxis().GetTitle())
+    # cosmetics
+    h_res.SetLineStyle(0)
+    h_res.SetMarkerStyle(20)
+    h_res.SetMarkerSize(0.4)
 
+    # Some cosmetics for data
+    data_.GetYaxis().SetTitle('Events')
+    data_.GetYaxis().SetTitleOffset(1.0)
+    data_.SetMarkerStyle(20)
+    data_.SetMarkerSize(0.5)
+    data_.SetLineStyle(0)
 
     #Build the lines that go at 1 on the residuals plots
     xline = ROOT.TLine(h_res.GetXaxis().GetXmin(),1.0,h_res.GetXaxis().GetXmax(),1.0); xline.SetLineWidth(2); xline.SetLineStyle(2)
