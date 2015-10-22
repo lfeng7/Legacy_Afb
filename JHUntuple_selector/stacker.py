@@ -171,11 +171,12 @@ def MakeComparisonPlots():
     hlist = ['cutflow','jets_pt','Njets','m3','lep_pt','MET','jets_eta','lep_eta','Nbjets','lep_charge']
     rebinlist = ['jets_pt','m3','el_cand_pt','MET','jets_eta','el_cand_eta']
 
+    stacks = []
     # Booking stack histograms 
     for hist in hlist:
-        hlist_.append(ROOT.THStack(hist,hist))
+        stacks.append(ROOT.THStack(hist,hist))
     # put the name of histogram in the stack and the stack histograms in a list
-    stacklist = zip(hlist,hlist_)
+    stacklist = zip(hlist,stacks)
 
     # Make a legend
     leg = ROOT.TLegend(0.7,0.65,1.0,0.85)
