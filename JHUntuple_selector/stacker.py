@@ -188,7 +188,7 @@ def MakeComparisonPlots():
     print 'processing data file',data_input
     fdata = ROOT.TFile(data_input)
     # Calculate weight for data 
-    data_fraction = 20./205
+    data_fraction = 1.0
     nevts_data = fdata.Get('cutflow').GetBinContent(1)
     data_weight = data_lumi*1.0/(datafile[2]*data_fraction)
 
@@ -206,6 +206,7 @@ def MakeComparisonPlots():
     leg.AddEntry(data_hists[0],'data')
 
     # write some informations about current sample
+    f_info = open('info_stackplots.txt','w')
     info_ = 'Sample type : data'+'\n'+'Events weight %.2f : '%data_weight +'\n\n'
     f_info.write(info_)
 
@@ -318,7 +319,6 @@ def MakeComparisonPlots():
     #################################################################
 
     # Make an txt files for some information output
-    f_info = open('info_stackplots.txt','w')
     f_yields = open('yields.txt','w')
 
     sample_yields = []
