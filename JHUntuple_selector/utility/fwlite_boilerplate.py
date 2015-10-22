@@ -291,6 +291,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
             res = 0 ; res_err = 0
         # Find maximum residual
         maxxdeviations = max(maxxdeviations,max(abs(res+res_err-1.0),abs(res-res_err-1.0)))
+        print 'maxxdeviations',maxxdeviations
         # Set residual histograms
         h_res.SetBinContent(ibin,res)
         h_res.SetBinError(ibin,res_err)
