@@ -288,14 +288,14 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
             # Calculate error of residual, delta(res) = residual*sqrt(1/data+1/mc)
             res_err = res*math.sqrt(1.0/databin+1.0/mcbin)
         else :
-            res = 0 ; res_err = 0
+            res = 1 ; res_err = 0
         # Find maximum residual
         maxxdeviations = max(maxxdeviations,max(abs(res+res_err-1.0),abs(res-res_err-1.0)))
-        print 'maxxdeviations',maxxdeviations
         # Set residual histograms
         h_res.SetBinContent(ibin,res)
         h_res.SetBinError(ibin,res_err)
-    # Setup residual histograms
+    print 'maxxdeviations',maxxdeviations
+   # Setup residual histograms
     h_res.SetStats(0)
     h_res.GetXaxis().SetLabelSize((0.05*0.72)/0.28); h_res.GetXaxis().SetTitleOffset(0.8)
     h_res.GetYaxis().SetLabelSize((0.05*0.72)/0.28); h_res.GetYaxis().SetTitleOffset(0.4)
