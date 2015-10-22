@@ -275,7 +275,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     h_data = data_
     h_stack = mc_.GetStack().Last() # This is the combined histogram in stack
     # Make residual histogram
-    h_res = ROOT.TH1D(event_type+'_residuals',';; data/MC',h_data.GetNbinsX(),h_data.GetXaxis().GetXmin(),h_data.GetXaxis().GetXmax())
+    h_res = ROOT.TH1D(event_type+'_residuals',';; Data/MC',h_data.GetNbinsX(),h_data.GetXaxis().GetXmin(),h_data.GetXaxis().GetXmax())
     h_res.GetXaxis().SetName(h_data.GetXaxis().GetName())
 
     maxxdeviations = 0.0
@@ -294,7 +294,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
         # Set residual histograms
         h_res.SetBinContent(ibin,res)
         h_res.SetBinError(ibin,res_err)
-    print 'maxxdeviations',maxxdeviations
+    # print 'maxxdeviations',maxxdeviations
    # Setup residual histograms
     h_res.SetStats(0)
     h_res.GetXaxis().SetLabelSize((0.05*0.72)/0.28); h_res.GetXaxis().SetTitleOffset(0.8)
@@ -309,7 +309,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     # cosmetics
     h_res.SetLineStyle(0)
     h_res.SetMarkerStyle(20)
-    h_res.SetMarkerSize(0.4)
+    h_res.SetMarkerSize(0.5)
 
     # Some cosmetics for data
     data_.GetYaxis().SetTitle('Events')
