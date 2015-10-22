@@ -310,12 +310,12 @@ def MakeComparisonPlots():
     data_mc = zip(mc_stacks,data_hists)
 
     for item in data_mc :
-        comparison_plot(item[0],item[1],leg,dir_name)
+        comparison_plot_v1(item[0],item[1],leg,dir_name)
 
     data_mc_log = ([stack_cutflow,data_cutflow],[mc_stacks[0],data_hists[0]])
 
     for item in data_mc_log :
-        comparison_plot(item[0],item[1],leg,dir_name,'not dump','log','p')
+        comparison_plot_v1(item[0],item[1],leg,dir_name,'not dump','log','p')
 
     # Dump plots to web
     print 'Uploading all plots to web'
