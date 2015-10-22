@@ -124,20 +124,28 @@ def MakeHistograms():
         tmptree = tmpfile.Get('selected')
         h_cutflow = tmpfile.Get('cutflow')
         h_cutflow_norm = tmpfile.Get('cutflow_norm')
+        # Make an output file for histograms
+        savetoroot([],'selected_hists','test',event_type+'_control_plots')
         # Book Histograms
         h_lep_pt = ROOT.TH1D('lep_pt',event_type+' selected lepton pT;pT (GeV);events',nbins,0.,200.)
         h_lep_eta = ROOT.TH1D('lep_eta',event_type+' selected lepton eta;eta;events',nbins,-2.7,2.7)
-        h_lep_charge = ROOT.TH1D('lep_charge',event_type+' charge of the selected lepton ;charge;events',10,-2,2)
-        h_m3 = ROOT.TH1D('m3',event_type+' M3;m3;events',nbins,0.,500.)
+        h_lep_charge = ROOT.TH1D('lep_charge',event_type+' charge of the selected lepton ;charge;events',20,-2,2)
+        h_m3 = ROOT.TH1D('m3',event_type+' M3;m3;events',nbins,0.,1000.)
         h_Njets = ROOT.TH1D('Njets',event_type+' Num selected jets;Njets;events',5,3,8)
-        h_jets_pt = ROOT.TH1D('jets_pt',event_type+' selected jets pT;pT (GeV);events',nbins,0.,300.)
+        h_jets_pt = ROOT.TH1D('jets_pt',event_type+' selected jets pT;pT (GeV);events',nbins,30.,400.)
         h_jets_eta = ROOT.TH1D('jets_eta',event_type+' selected jets eta;eta;events',nbins,-2.7,2.7)
         h_MET = ROOT.TH1D('MET',event_type+' MET;MET;events',nbins,0.,200.)
         h_Nbjets = ROOT.TH1D('Nbjets',event_type+' Num tagged bjets;Nbjets;events',5,1,6)
         # Make a list of histograms for write
         tmplist = [h_cutflow,h_cutflow_norm,h_lep_pt,h_lep_eta,h_lep_charge, h_m3,h_Njets,h_jets_pt,h_jets_eta,h_MET,h_Nbjets]
+
+        # Remove the attachement of histograms from input root file, debug only
+        for ihist in tmplist : ihist.SetDirectory(0)
+
         # Fill Histograms
         for i in range(tmptree.GetEntries()):
+            # Progress report
+            if i%10000 == 0 : print 'processing event',i
             tmptree.GetEntry(i)
             # Jets
             num_jets = tmptree.jets_pt.size()
@@ -159,7 +167,9 @@ def MakeHistograms():
         # Save histograms into root files
         print 'Saving',event_type,' histograms into root file..'
         #        will save to selected_hists/test/event_type_control_plots.root
-        savetoroot(tmplist,'selected_hists','test',event_type+'_control_plots')
+        savetoroot(tmplist,'selected_hists','test',event_type+'_control_plots','update')
+        # Close selected root file
+        tmpfile.Close()
 
 def MakeComparisonPlots():
 
