@@ -87,7 +87,7 @@ Fraction of sample used : 1.00
 
 Sample name : TT_CT10_TuneZ2star_8TeV
 Type: ttbar
-Events weight : 42.0778736972
-Nevts : 114789
-Fraction of sample used : 0.01
+Events weight : 0.224028414876
+Nevts : 21560109
+Fraction of sample used : 1.00
 
