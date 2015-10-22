@@ -254,6 +254,7 @@ def MakeComparisonPlots():
             ih.SetLineColor(icolor)
             ih.SetMarkerStyle(21)
             istack.Add(ih) 
+            many_hists.append(ih)
             
         # Add entries to legend
         if add_legend : 
@@ -301,7 +302,7 @@ def MakeComparisonPlots():
     for item in data_mc :
         comparison_plot(item[0],item[1],leg,dir_name)
 
-    data_mc_log = ([stack_cutflow,data_cutflow])
+    data_mc_log = ([stack_cutflow,data_cutflow],[mc_stacks[0],data_hists[0]])
 
     for item in data_mc_log :
         comparison_plot(item[0],item[1],leg,dir_name,'not dump','log','p')
