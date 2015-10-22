@@ -226,8 +226,8 @@ def MakeComparisonPlots():
         # Calculate weight for this channel
         nevts_total = int(tmp_file.Get('cutflow').GetBinContent(1))
         fraction = nevts_total*1.0/ifile[4]
-        cross_section_NLO = ifile[2]
-        nevts_gen = ifile[1]*fraction
+        cross_section_NLO = ifile[3]
+        nevts_gen = ifile[2]*fraction
         weight = data_lumi*cross_section_NLO/nevts_gen  
 
         # Determine if we want to add an entry to legend
