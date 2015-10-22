@@ -74,7 +74,7 @@ def plotting(histlist,event_type='MC',upload = False,logy=False,legend = None,op
 
     # plotting
     for ihist in histlist:
-        c1 = ROOT.TCanvas()
+        c1 = ROOT.TCanvas(ihist.GetName())
         if logy == "log" : 
             c1.SetLogy()
             name = plotdir+event_type+'_'+ihist.GetName()+'_log.png'
@@ -109,7 +109,7 @@ def comparison_plot(mc_,data_,legend,event_type='MC',upload = False,logy=False,o
     fout = ROOT.TFile(plotdir+event_type+'_plots.root',createmode)
 
     # plotting
-    c1 = ROOT.TCanvas()
+    c1 = ROOT.TCanvas(data_.GetName())
     if logy == "log" : 
         c1.SetLogy()
         name = plotdir+event_type+'_'+mc_.GetName()+'_compare_log.png'
@@ -122,9 +122,9 @@ def comparison_plot(mc_,data_,legend,event_type='MC',upload = False,logy=False,o
     data_.SetMaximum(max_)
     data_.SetTitle("")
     # Draw two histgrams
-    data_.Draw(options_)
+    data_.Draw('PE')
     mc_.Draw('same')
-    data_.Draw(options_+' same')
+    data_.Draw('SAME PE')
     legend.Draw()
 
     # Saving
@@ -139,7 +139,7 @@ def comparison_plot(mc_,data_,legend,event_type='MC',upload = False,logy=False,o
 
 
 # Save histograms to root files. Use for interactive run only
-def saving(histlist,event_type='MC',index = 0000):
+def saving(histlist,event_type='MC',index = 0000,createmode='recreate'):
     prefix = './output_rootfiles/'
     # check if plotting dir is made. If not , make it now
     if not os.path.exists(prefix):
@@ -151,7 +151,7 @@ def saving(histlist,event_type='MC',index = 0000):
         os.mkdir(savedir)
         print 'Creating new dir '+savedir
     # Saving root files
-    fout = ROOT.TFile(savedir+event_type+'_selection_output_'+str(index)+'.root','recreate')
+    fout = ROOT.TFile(savedir+event_type+'_selection_output_'+str(index)+'.root',createmode)
     print 'saving output into file: '+savedir+event_type+'_selection_output_'+str(index)+'.root'
     for ihist in histlist:
         ihist.Write()
@@ -159,10 +159,33 @@ def saving(histlist,event_type='MC',index = 0000):
     # file closure
     fout.Close()
 
-# Save histograms to root files in current directory. Can be used in grid jobs
-def gridsaving(histlist,event_type='MC',index = 0000):
+# A more general function that saves a list of objects into a single root file
+def savetoroot(objects,outputdir='histograms',event_type='test',fname='',createmode='recreate'):
+    prefix = outputdir
+    # check if plotting dir is made. If not , make it now
+    if not os.path.exists(prefix):
+        os.mkdir(prefix)
+        print 'Making '+prefix
+    # Set the dir to put all output rootfiles
+    savedir = prefix+'/'+event_type+'/'
+    if not os.path.exists(savedir) : 
+        os.mkdir(savedir)
+        print 'Creating new dir '+savedir
     # Saving root files
-    fout = ROOT.TFile(event_type+'_selection_output_'+str(index)+'.root','recreate')
+    fout_name = savedir+fname+'.root'
+    fout = ROOT.TFile(fout_name,createmode)
+    print 'saving output into file: '+fout_name
+    fout.cd()
+    for iobj in objects:
+        iobj.Write()
+    fout.Write()
+    # file closure
+    fout.Close()    
+
+# Save histograms to root files in current directory. Can be used in grid jobs
+def gridsaving(histlist,event_type='MC',index = 0000,createmode='recreate'):
+    # Saving root files
+    fout = ROOT.TFile(event_type+'_selection_output_'+str(index)+'.root',createmode)
     print 'saving output into file: '+event_type+'_selection_output_'+str(index)+'.root'
     for ihist in histlist:
         ihist.Write()
@@ -236,7 +259,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     fout = ROOT.TFile(plotdir+event_type+'_plots.root',createmode)
 
     # plotting
-    c1 = ROOT.TCanvas()
+    c1 = ROOT.TCanvas(data_.GetName())
     if logy == "log" : 
         c1.SetLogy()
         name = plotdir+event_type+'_'+mc_.GetName()+'_compare_log.png'
@@ -252,7 +275,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     h_data = data_
     h_stack = mc_.GetStack().Last() # This is the combined histogram in stack
     # Make residual histogram
-    h_res = ROOT.TH1D(event_type+'_residuals',';; data/MC',h_data.GetNbinsX(),h_data.GetXaxis().GetXmin(),h_data.GetXaxis().GetXmax())
+    h_res = ROOT.TH1D(event_type+'_residuals',';; Data/MC',h_data.GetNbinsX(),h_data.GetXaxis().GetXmin(),h_data.GetXaxis().GetXmax())
     h_res.GetXaxis().SetName(h_data.GetXaxis().GetName())
 
     maxxdeviations = 0.0
@@ -264,14 +287,15 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
             res = databin*1.0/mcbin
             # Calculate error of residual, delta(res) = residual*sqrt(1/data+1/mc)
             res_err = res*math.sqrt(1.0/databin+1.0/mcbin)
+            # Find maximum residual
+            maxxdeviations = max(maxxdeviations,max(abs(res+res_err-1.0),abs(res-res_err-1.0)))
         else :
             res = 0 ; res_err = 0
-        # Find maximum residual
-        maxxdeviations = max(maxxdeviations,max(abs(res+res_err-1.0),abs(res-res_err-1.0)))
         # Set residual histograms
         h_res.SetBinContent(ibin,res)
         h_res.SetBinError(ibin,res_err)
-    # Setup residual histograms
+    # print 'maxxdeviations',maxxdeviations
+   # Setup residual histograms
     h_res.SetStats(0)
     h_res.GetXaxis().SetLabelSize((0.05*0.72)/0.28); h_res.GetXaxis().SetTitleOffset(0.8)
     h_res.GetYaxis().SetLabelSize((0.05*0.72)/0.28); h_res.GetYaxis().SetTitleOffset(0.4)
@@ -281,7 +305,18 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     minx = 1.0-1.1*maxxdeviations
     h_res.GetYaxis().SetRangeUser(minx,maxx)
     h_res.GetYaxis().SetNdivisions(503)
+    h_res.GetXaxis().SetTitle(data_.GetXaxis().GetTitle())
+    # cosmetics
+    h_res.SetLineStyle(0)
+    h_res.SetMarkerStyle(20)
+    h_res.SetMarkerSize(0.5)
 
+    # Some cosmetics for data
+    data_.GetYaxis().SetTitle('Events')
+    data_.GetYaxis().SetTitleOffset(1.0)
+    data_.SetMarkerStyle(20)
+    data_.SetMarkerSize(0.5)
+    data_.SetLineStyle(0)
 
     #Build the lines that go at 1 on the residuals plots
     xline = ROOT.TLine(h_res.GetXaxis().GetXmin(),1.0,h_res.GetXaxis().GetXmax(),1.0); xline.SetLineWidth(2); xline.SetLineStyle(2)
@@ -290,6 +325,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     channame = event_type
     # Make and adjust pads
     x_histo_pad=ROOT.TPad(channame+'_x_histo_pad',channame+'_x_histo_pad',0,0.25,1,1)
+    if logy == 'log': x_histo_pad.SetLogy()
     x_resid_pad=ROOT.TPad(channame+'_x_residuals_pad',channame+'_x_residuals_pad',0,0,1.,0.25)
     x_histo_pad.SetCanvas(c1); x_resid_pad.SetCanvas(c1)
     x_histo_pad.SetLeftMargin(0.16); x_histo_pad.SetRightMargin(0.05) 

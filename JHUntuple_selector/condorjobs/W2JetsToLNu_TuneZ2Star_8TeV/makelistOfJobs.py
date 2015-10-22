@@ -2,8 +2,8 @@ fout = open('ana.listOfJobs','w')
 num_files = 149 
 filesperjob =  10
 startfile = 0
-txtfile = 'W2JetsToLNu.txt'
-sampletype = 'W2JetsToLNu'
+txtfile = 'W2JetsToLNu_TuneZ2Star_8TeV.txt'
+sampletype = 'W2JetsToLNu_TuneZ2Star_8TeV'
 mcordata = 'mc'
 while startfile < num_files :
 	toprint = 'python ./tardir/selection.py --txtfiles tardir/inputfiles/'+txtfile+' --makeplots no --mcordata '+mcordata
