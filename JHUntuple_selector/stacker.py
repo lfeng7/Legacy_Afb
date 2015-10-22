@@ -29,7 +29,7 @@ parser.add_option('--upload', metavar='F', type='string', action='store',
                   help='if you want to dump plots to MY webpage! Unless you modify fwlite_boilerplate >_<')
 
 parser.add_option('--verbose', metavar='F', type='string', action='store',
-                  default = 'yes',
+                  default = 'no',
                   dest='verbose',
                   help='If you want more information than you usually need.')
 
@@ -39,12 +39,12 @@ parser.add_option('--MCplots', metavar='F', type='string', action='store',
                   help='If you want stack plots without data comparison')
 
 parser.add_option('--makehists', metavar='F', type='string', action='store',
-                  default = 'yes',
+                  default = 'no',
                   dest='makehists',
                   help='If you want to remake all histograms from selection files')
 
 parser.add_option('--makeplots', metavar='F', type='string', action='store',
-                  default = 'no',
+                  default = 'yes',
                   dest='makeplots',
                   help='If you want to make data MC comparison plots')
 
@@ -62,6 +62,7 @@ Nbin = 2
 # Get input files
 prepend = './output_rootfiles/all_selected/'   # dir of output files to make histograms
 hist_prepend = './selected_hists/test/' 
+postfix='_selected'
   
 # initialization and declaration
 flist = []
@@ -71,30 +72,30 @@ flist = []
 #    0,         1         2        3         4           
 # (filepath, nevts_gen, xsec_NLO, type, nevts_total_ntuple)
 # Single Top
-# flist.append(['T_s_v2_selection_output_all','singletop',259961,3.79,259176] )
-# flist.append(['T_t_v2_selection_output_all.root','singletop',3758227,56.4,3748155] )
-# flist.append(['T_tW_v2_selection_output_all.root','singletop',497658,11.1,495559])
-# flist.append(['Tbar_s_v2_selection_output_all.root','singletop',139974, 1.76,139604])
-# flist.append(['Tbar_t_v2_selection_output_all.root','singletop',1935072, 30.7,1930185])
-# flist.append(['Tbar_tW_v2_selection_output_all.root','singletop',493460,11.1,491463])
-# # Wjets
-# flist.append(['W1JetsToLNu_v2.root','wjets',23141598,6662.8,23038253])
-# flist.append(['W2JetsToLNu_v2.root','wjets',34044921,2159.2,33993463])
-# flist.append(['W3Jets_v2_selection_output_all.root','wjets',15539503,640.4,15507852])
-# flist.append(['W4Jets_v2_selection_output_all.root','wjets',13382803,246.0,13326400])
-# # DYjets
-# flist.append(['DY1JetsToLL_v2.root','zjets',24045248,660.6,23802736])
-# flist.append(['DY2JetsToLL_v2.root','zjets',2352304,215.1,2345857])
-# flist.append(['DY3Jets_v2_selection_output_all.root','zjets',11015445,65.79,10655325])
-# flist.append(['DY4Jets_v2_selection_output_all.root','zjets',6402827,28.59,5843425])
+flist.append(['T_s','singletop',259961,3.79,259176] )
+flist.append(['T_t','singletop',3758227,56.4,3748155] )
+flist.append(['T_tW','singletop',497658,11.1,495559])
+flist.append(['Tbar_s','singletop',139974, 1.76,139604])
+flist.append(['Tbar_t','singletop',1935072, 30.7,1930185])
+flist.append(['Tbar_tW','singletop',493460,11.1,491463])
+# Wjets
+flist.append(['W1JetsToLNu_TuneZ2Star_8TeV','wjets',23141598,6662.8,23038253])
+flist.append(['W2JetsToLNu_TuneZ2Star_8TeV','wjets',34044921,2159.2,33993463])
+flist.append(['W3JetsToLNu_TuneZ2Star_8TeV','wjets',15539503,640.4,15507852])
+flist.append(['W4JetsToLNu_TuneZ2Star_8TeV','wjets',13382803,246.0,13326400])
+# DYjets
+flist.append(['DY1JetsToLL_M','zjets',24045248,660.6,23802736])
+flist.append(['DY2JetsToLL_M','zjets',2352304,215.1,2345857])
+flist.append(['DY3JetsToLL_M','zjets',11015445,65.79,10655325])
+flist.append(['DY4JetsToLL_M','zjets',6402827,28.59,5843425])
 # signal
 flist.append(['TT_CT10_TuneZ2star_8TeV','ttbar',21675970,245.9,21560109])
 
 #### Set up data input files
 #    0,         1                   2             
 # (filepath,   type,   sample_integrated_lumi
-datafile = ['SingleEl_Run2012A_v1',888,19748,'data',11212832]
-#datafile = ['SingleEl_Run2012ABCD_v2.root','data',19748]
+# datafile = ['SingleEl_Run2012A_v1',888,19748,'data',11212832]
+datafile = ['SingleEl_Run2012ABCD','data',19748]
 
 def main():
     if options.makehists == 'yes':
@@ -117,7 +118,7 @@ def MakeHistograms():
     # Loop over all selection root files
     for ifile in selected_samples:
         event_type = ifile
-        ifilename = prepend+event_type+'.root'
+        ifilename = prepend+event_type+postfix+'.root'
         print '\nReading root file:',ifilename
         tmpfile = ROOT.TFile(ifilename)
         tmptree = tmpfile.Get('selected')
