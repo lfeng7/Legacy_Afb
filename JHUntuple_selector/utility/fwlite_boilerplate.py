@@ -74,7 +74,7 @@ def plotting(histlist,event_type='MC',upload = False,logy=False,legend = None,op
 
     # plotting
     for ihist in histlist:
-        c1 = ROOT.TCanvas()
+        c1 = ROOT.TCanvas(ihist.GetName())
         if logy == "log" : 
             c1.SetLogy()
             name = plotdir+event_type+'_'+ihist.GetName()+'_log.png'
@@ -109,7 +109,7 @@ def comparison_plot(mc_,data_,legend,event_type='MC',upload = False,logy=False,o
     fout = ROOT.TFile(plotdir+event_type+'_plots.root',createmode)
 
     # plotting
-    c1 = ROOT.TCanvas()
+    c1 = ROOT.TCanvas(data_.GetName())
     if logy == "log" : 
         c1.SetLogy()
         name = plotdir+event_type+'_'+mc_.GetName()+'_compare_log.png'
@@ -122,9 +122,9 @@ def comparison_plot(mc_,data_,legend,event_type='MC',upload = False,logy=False,o
     data_.SetMaximum(max_)
     data_.SetTitle("")
     # Draw two histgrams
-    data_.Draw(options_)
+    data_.Draw('PE')
     mc_.Draw('same')
-    data_.Draw(options_+' same')
+    data_.Draw('SAME PE')
     legend.Draw()
 
     # Saving
@@ -259,7 +259,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     fout = ROOT.TFile(plotdir+event_type+'_plots.root',createmode)
 
     # plotting
-    c1 = ROOT.TCanvas()
+    c1 = ROOT.TCanvas(data_.GetName())
     if logy == "log" : 
         c1.SetLogy()
         name = plotdir+event_type+'_'+mc_.GetName()+'_compare_log.png'
@@ -287,10 +287,10 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
             res = databin*1.0/mcbin
             # Calculate error of residual, delta(res) = residual*sqrt(1/data+1/mc)
             res_err = res*math.sqrt(1.0/databin+1.0/mcbin)
+            # Find maximum residual
+            maxxdeviations = max(maxxdeviations,max(abs(res+res_err-1.0),abs(res-res_err-1.0)))
         else :
-            res = 1 ; res_err = 0
-        # Find maximum residual
-        maxxdeviations = max(maxxdeviations,max(abs(res+res_err-1.0),abs(res-res_err-1.0)))
+            res = 0 ; res_err = 0
         # Set residual histograms
         h_res.SetBinContent(ibin,res)
         h_res.SetBinError(ibin,res_err)
@@ -325,6 +325,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     channame = event_type
     # Make and adjust pads
     x_histo_pad=ROOT.TPad(channame+'_x_histo_pad',channame+'_x_histo_pad',0,0.25,1,1)
+    if logy == 'log': x_histo_pad.SetLogy()
     x_resid_pad=ROOT.TPad(channame+'_x_residuals_pad',channame+'_x_residuals_pad',0,0,1.,0.25)
     x_histo_pad.SetCanvas(c1); x_resid_pad.SetCanvas(c1)
     x_histo_pad.SetLeftMargin(0.16); x_histo_pad.SetRightMargin(0.05) 

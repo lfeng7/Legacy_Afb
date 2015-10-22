@@ -23,7 +23,7 @@ argv = []
 
 # Get files
 if options.inputfiles != '':
-    files = glob.glob(inputfiles)
+    files = glob.glob(options.inputfiles)
 
 for ifile in files:
     print 'Plotting for file',ifile
