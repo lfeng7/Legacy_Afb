@@ -9,6 +9,9 @@
 # Add a grid option
 # Mostly instead of outputting to local dir, directlly write outputfiles to current dir
 # Maybe I can add some functionallity to rename to output dir as the --type?
+# Edit log
+# Start the v2 development.
+
 
 from utility import *
 import os
@@ -56,7 +59,7 @@ parser.add_option('--grid', metavar='F', type='string', action='store',
                   help='If will run on grid using condor')
 
 parser.add_option('--maxfiles', metavar='F', type='int', action='store',
-                  default = 10,
+                  default = -1,
                   dest='maxfiles',
                   help='max number of input ntuple files')
 
@@ -77,7 +80,7 @@ parser.add_option('--type', metavar='F', type='string', action='store',
 
 # if want to make plots, use multiple input patfiles instead of looping over each files
 parser.add_option('--makeplots', metavar='F', type='string', action='store',
-                  default = 'yes',
+                  default = 'no',
                   dest='makeplots',
                   help='If we want to make plots directly. This is for testing purpose mostly, which enables plotting directly.')
 
@@ -127,28 +130,33 @@ def main():
 
 
 # selection is the function to do selection. patfile should be EDM PATtuple files
-def selection(patfile):
+def selection(rootfiles):
 
-    # Get input root files
-    files = patfile
+    # Get input files
+    files = rootfiles
+    events = Events(files)
+    print 'Getting',events.size(),'events'    
 
     # Set sample type
     event_type = options.evtType
 
-    # Get input
-    events = Events(files)
-    print 'Getting',events.size(),'events'
+    # Make a output root file
+    if options.grid == 'yes' :
+        print '\nRunning in grid mode. Creating outputfile in current dir\n'
+        gridsaving([],event_type,f_index,'recreate')
+    else :
+        print '\nRunning in interactive mode. Creating outputfile to the output dir \n'
+        saving([],event_type,f_index,'recreate')
 
     ######## Define handles here ########
 
     # leptons
     el_hndl = Handle('vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > >')
     el_iso_hndl = Handle('vector<double>')
-    el_charge_hndl = Handle('vector<double>')
+    el_charge_hndl = Handle('vector<int>')
     el_isLoose_hndl = Handle('vector<unsigned int>')
     el_isTight_hndl = Handle('vector<unsigned int>')
     el_isModTight_hndl = Handle('vector<unsigned int>')
-    el_PFloose_hndl =  Handle('vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > >')
 
     mu_hndl = Handle('vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > >')
     mu_label = ("jhuMuonPFlow", "muon")
@@ -197,41 +205,67 @@ def selection(patfile):
     h_cutflow = ROOT.TH1D('cutflow',event_type+' cutflow;cuts;events',7,0.,7.)
     h_cutflow.SetBit(ROOT.TH1.kCanRebin)
 
-    # for selection validation
-    h_el_cand_pt = ROOT.TH1D('el_cand_pt',event_type+' electron candidates pT;pT (GeV);events',100,0.,200.)
-    h_el_cand_eta = ROOT.TH1D('el_cand_eta',event_type+' electron candidates eta;eta;events',100,0.,3.0)
-    h_m3 = ROOT.TH1D('m3',event_type+' M3;m3;events',100,0.,500.)
-    h_Njets = ROOT.TH1D('Njets',event_type+' Num candidate jets;Njets;events',5,3,8)
-    h_jets_pt = ROOT.TH1D('jets_pt',event_type+' jet candidates pT;pT (GeV);events',100,0.,300.)
-    h_jets_eta = ROOT.TH1D('jets_eta',event_type+' jet candidates eta;eta;events',100,0.,3.0)
-    h_MET = ROOT.TH1D('MET',event_type+' MET;MET;events',100,0.,200.)
-    h_Nbjets = ROOT.TH1D('Nbjets',event_type+' Num candidate bjets;Nbjets;events',5,1,6)
-
     # generator level info
     h_num_gen_b = ROOT.TH1D('NGenbjets',event_type+' Num Gen bjets;Nbjets;events',5,1,6)
-    h_num_gen_jets = ROOT.TH1D('NGenJets',event_type+' Num Gen jets;Njets;events',9,1,10)  
+    h_num_gen_jets = ROOT.TH1D('NGenJets',event_type+' Num Gen jets;Njets;events',9,1,10) 
 
-    # features of jets
-    h_csv_all_jets = ROOT.TH1D('csv_all_jets',event_type+' CSV of all jets;csv;events',100,0,1)
-    h_csv_jetCands = ROOT.TH1D('csv_jetCands',event_type+' CSV of selected jet candidates;csv;events',100,0,1)
+    # Making ttree
+    outputtree = ROOT.TTree('selected','selected')
+    # Setup container
 
-    # study of b-tagging
-    h_number_bjets_partonflavor =  ROOT.TH1D('number_bjets_partonflavor',event_type+' Num bjets from partonflavor;Nbjets;events',6,0,6) 
-    h_number_tagged_bjets =  ROOT.TH1D('number_btagging',event_type+' Num b-tagged jets;Nbjets;events',6,0,6)
-    h_bjets_csv = ROOT.TH1D('csv_bjets',event_type+' CSV of bjets;csv;events',100,0,1) 
+    # branches for data and mc
+    jets_pt = ROOT.vector('float')()
+    jets_eta = ROOT.vector('float')()
+    jets_phi = ROOT.vector('float')()
+    jets_mass = ROOT.vector('float')()
+    jets_csv_vec = ROOT.vector('float')()
 
-    # Some cosmetics on histograms
-    h_list1 = [h_el_cand_pt,h_m3,h_jets_pt,h_MET]
-    for ihist in h_list1: ihist.GetXaxis().SetNdivisions(505)
-    h_Njets.GetXaxis().SetNdivisions(6)
-    h_Nbjets.GetXaxis().SetNdivisions(5)
-    h_num_gen_b.GetXaxis().SetNdivisions(5)
-    h_num_gen_jets.GetXaxis().SetNdivisions(9)
+    lep_pt = ROOT.vector('float')()
+    lep_eta = ROOT.vector('float')()
+    lep_phi = ROOT.vector('float')()
+    lep_mass = ROOT.vector('float')()
+    lep_charge = ROOT.vector('int')()
 
-    # This is to prevent hists been destroyed after file closes 
-    tmp_hlist = [h_el_cand_pt,h_el_cand_eta,h_m3,h_cutflow,h_Njets,h_num_gen_b,h_num_gen_jets,h_jets_pt,h_csv_jetCands,h_jets_eta]
-    tmp_hlist.extend([h_MET,h_Nbjets,h_csv_all_jets,h_number_bjets_partonflavor,h_number_tagged_bjets,h_bjets_csv])
-    for ihist in tmp_hlist : ihist.SetDirectory(0)
+    met_pt_vec = ROOT.vector('float')()
+    met_phi_vec = ROOT.vector('float')()
+
+    # branches only for MC samples
+    jets_flavor = ROOT.vector('int')()
+
+    gen_whad = ROOT.vector('TLorentzVector')()
+    gen_whad_pdgid = ROOT.vector('int')()
+
+    gen_wlep = ROOT.vector('TLorentzVector')()
+    gen_wlep_pdgid = ROOT.vector('int')()
+
+    gen_thad = ROOT.vector('TLorentzVector')()
+    gen_thad_pdgid = ROOT.vector('int')()
+
+    gen_tlep = ROOT.vector('TLorentzVector')()
+    gen_tlep_pdgid = ROOT.vector('int')()
+
+    gen_q = ROOT.vector('TLorentzVector')()
+    gen_q_pdgid = ROOT.vector('int')()
+
+    gen_qbar = ROOT.vector('TLorentzVector')()
+    gen_qbar_pdgid = ROOT.vector('int')()
+
+    all_vecs = [jets_pt,jets_eta,jets_phi,jets_mass,jets_csv_vec,lep_pt,lep_eta,lep_phi,lep_mass,lep_charge,met_pt_vec,met_phi_vec]
+    all_mc_vecs = [jets_flavor]
+
+    # Set up branches
+    branch_names = ['jets_pt','jets_eta','jets_phi','jets_mass','jets_csv','lep_pt','lep_eta','lep_phi','lep_mass','lep_charge','met_pt','met_phi']
+    mc_branch_names = ['jets_flavor']
+
+    all_branches = zip(branch_names,all_vecs)
+    all_mc_branches = zip(mc_branch_names,all_mc_vecs)
+
+    if options.mcordata == 'mc':
+        all_vecs = all_vecs+all_mc_vecs
+        all_branches = all_branches+all_mc_branches
+
+    for ibranch in all_branches:
+        outputtree.Branch(ibranch[0],ibranch[1])
 
     # Start main event loop
     for evt in events:
@@ -245,20 +279,27 @@ def selection(patfile):
             break
         n_evt += 1
 
+        # Reset all vector containers
+        for ivec in all_vecs: ivec.clear()
+
         # Read objects in nTuple
         evt.getByLabel(el_prefix,'electron',el_hndl)
         evt.getByLabel(el_prefix,'electroniso',el_iso_hndl)
         evt.getByLabel(el_prefix,'electronisloose',el_isLoose_hndl)
         evt.getByLabel(el_prefix,'electronistight',el_isTight_hndl)
         evt.getByLabel(el_prefix,'electronmodtight',el_isModTight_hndl)
+        evt.getByLabel(el_prefix,'electroncharge',el_charge_hndl)
 
         evt.getByLabel('jhuMuonPFlow','muon',mu_hndl)
         evt.getByLabel('jhuMuonPFlow','muoniso',mu_iso_hndl)
         evt.getByLabel('jhuMuonPFlow','muonisloose',mu_isLoose_hndl)
       
         evt.getByLabel(met_label,met_hndl)
+        evt.getByLabel(met_phi_label,met_phi_hndl)
+
         evt.getByLabel(jet_p4_label, jet_p4_hndl)
         evt.getByLabel(jet_csv_label, jet_csv_hndl)
+
         if options.mcordata == 'mc' :
             evt.getByLabel(jet_PartonFlavor_label, jet_PartonFlavor_hndl)  # not for data
 
@@ -267,12 +308,15 @@ def selection(patfile):
         el_isLoose = el_isLoose_hndl.product()
         el_isTight = el_isTight_hndl.product()
         el_isModTight = el_isModTight_hndl.product()
+        el_charge = el_charge_hndl.product()
 
         mu_p4 = mu_hndl.product()
         mu_is_loose = mu_isLoose_hndl.product()
         mu_iso = mu_iso_hndl.product()
 
-        met = met_hndl.product()
+        met_pt = met_hndl.product()
+        met_phi = met_phi_hndl.product()
+
         jets_p4 = jet_p4_hndl.product()
         jets_csv = jet_csv_hndl.product()
 
@@ -301,9 +345,6 @@ def selection(patfile):
             # Determine if this event is e+jets event
             if len(gen_el) == 1 and len(gen_el)+len(gen_mu)+len(gen_tau) == 1 : 
                 Is_ejets = True
-            # Keep information about jets at generator level
-            h_num_gen_b.Fill(len(gen_b))
-            h_num_gen_jets.Fill(len(gen_jets))
 
         ################ Find all physics objects for reconstruction ###################
 
@@ -311,12 +352,13 @@ def selection(patfile):
         el_loose,el_cand = [],[]
         for i in range(len(el_p4)):
             el = el_p4[i]
+            icharge = el_charge[i]
             # PFelectrons passed loose selection
             # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Veto
-            if el_isLoose[i] and el_iso[i]<0.15 and el.pt()>20 and math.fabs(el.eta())<2.5 : el_loose.append(el)
+            if el_isLoose[i] and el_iso[i]<0.15 and el.pt()>20 and math.fabs(el.eta())<2.5 : el_loose.append((el,icharge))
             # PFelectrons passed tight selection
             # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Signal
-            if el_isTight[i] and not el_isModTight[i] and el_iso[i]<0.1 and el.pt()>30 and abs(el.eta())<2.5: el_cand.append(el)
+            if el_isTight[i] and not el_isModTight[i] and el_iso[i]<0.1 and el.pt()>30 and abs(el.eta())<2.5: el_cand.append((el,icharge))
         el_extra = list( ipar for ipar in el_loose if ipar not in el_cand)
 
         #### PF muons ####
@@ -328,21 +370,18 @@ def selection(patfile):
 
         ##### AK5 jets ####
 
-        # CSV of all jets
-        for jet in jets_csv: h_csv_all_jets.Fill(jet)
-
-        # candidate jets Selection       https://twiki.cern.ch/twiki/bin/view/CMS/TopJMERun1#Jets
+        # jets Selection       https://twiki.cern.ch/twiki/bin/view/CMS/TopJMERun1#Jets
         jets_cand = []
         for i in range(len(jets_p4)):
             if jets_p4[i].pt()>30 and abs(jets_p4[i].eta())<2.5: 
                 if options.mcordata == 'mc' : 
-                    jets_cand.append((jets_p4[i],jets_csv[i],jets_PartonFlavor[i]))
+                    jets_cand.append((jets_p4[i].pt(),jets_p4[i],jets_csv[i],jets_PartonFlavor[i]))
                 elif options.mcordata == 'data' :
-                    jets_cand.append((jets_p4[i],jets_csv[i]))
+                    jets_cand.append((jets_p4[i].pt(),jets_p4[i],jets_csv[i]))
                 else :
                     print 'The sample is neither mc or data! Serious bug!'
                     break
-        jets_cand_p4 = [ ijet[0] for ijet in jets_cand ]
+        jets_cand_p4 = [ ijet[1] for ijet in jets_cand ]
  
         #### Signal events selection ####
 
@@ -350,32 +389,16 @@ def selection(patfile):
         h_cutflow.Fill("step0",1)
  
         if not len(el_cand)==1 : continue # continue
-        h_cutflow.Fill('el_cand',1)
+        h_cutflow.Fill('el',1)
         if len(mu_loose) > 0 : continue
         h_cutflow.Fill('loose mu veto',1)
         if len(el_extra) > 0 : continue
-        h_cutflow.Fill('dilepton veto',1)
+        h_cutflow.Fill('dilep veto',1)
         if not len(jets_cand) >= 4 : continue
-        h_cutflow.Fill('jets_cand',1)
-
-        #### Some features of jet candidates after previous cuts ####
-
-        # Use parton flavor to find bjets.  Only works for MC samples.
-        if options.mcordata == 'mc' :
-            bjets_flavor = [ jet for jet in jets_cand if abs(jet[2]) == 5]
-            # plotting csv of real b jets by using parton flavor
-            for jet in bjets_flavor : h_bjets_csv.Fill(jet[1])
-            # Number of b jets according to parton flavor
-            h_number_bjets_partonflavor.Fill(len(bjets_flavor))
-        
-        for ijet in jets_cand : 
-            h_csv_jetCands.Fill(ijet[1])    
-
-        #### Continue event selection ####
+        h_cutflow.Fill('jets',1)
 
         # Do b-tagging. Work for both MC and data
-        bjets = [ jet for jet in jets_cand if jet[1] > csv_cut ]
-        h_number_tagged_bjets.Fill(len(bjets))
+        bjets = [ jet for jet in jets_cand if jet[2] > csv_cut ]
 
         # cut on btags
         if not len(bjets) >= 2: continue
@@ -385,17 +408,31 @@ def selection(patfile):
 
         ######## Finish event selection #########
 
-        ######## Fill histograms ########
+        ######## Fill TTree ########
 
-        h_el_cand_pt.Fill(el_cand[0].pt())
-        h_el_cand_eta.Fill(abs(el_cand[0].eta()))
-        h_MET.Fill(met[0])
-        h_Njets.Fill(len(jets_cand))
-        h_Nbjets.Fill(len(bjets))
-        h_m3.Fill(M3(jets_cand_p4))    
-        for ijet in jets_cand_p4: 
-            h_jets_pt.Fill(ijet.pt())
-            h_jets_eta.Fill(abs(ijet.eta()))
+        # jets
+        # First sort jets by pT
+        jets_cand.sort(reverse = True)
+
+        for ijet in jets_cand :
+            icsv = ijet[2]
+            ip4 = ijet[1]
+            jets_csv_vec.push_back(icsv)
+            jets_pt.push_back(ip4.pt()); jets_eta.push_back(ip4.eta()); jets_phi.push_back(ip4.phi()); jets_mass.push_back(ip4.mass())                        
+            if options.mcordata == 'mc' :
+                iflavor = ijet[3]
+                jets_flavor.push_back(iflavor)
+        # lep
+        lepp4 = el_cand[0][0]
+        lepcharge = el_cand[0][1]
+        lep_pt.push_back(lepp4.pt());lep_eta.push_back(lepp4.eta());lep_phi.push_back(lepp4.phi());lep_mass.push_back(lepp4.mass())
+        lep_charge.push_back(lepcharge)
+        # MET
+        met_pt_vec.push_back(met_pt[0])
+        met_phi_vec.push_back(met_phi[0])
+
+        # Fill all branches
+        outputtree.Fill()
 
     ######## end main event loop ########
 
@@ -407,15 +444,8 @@ def selection(patfile):
        
     ## Make and save plots
 
-    # histogram for candidate events
-    histlist = [h_el_cand_pt,h_MET,h_Njets,h_Nbjets,h_m3,h_jets_pt,h_csv_jetCands,h_number_tagged_bjets,h_jets_eta,h_el_cand_eta]
     # cutflows
-    histlist.extend([h_cutflow,h_cutflow_norm])
-    # all events
-    histlist.extend([h_csv_all_jets])
-    # histograms that exists only for MC
-    if options.mcordata == 'mc':
-        histlist.extend([h_num_gen_jets,h_num_gen_b,h_bjets_csv,h_number_bjets_partonflavor])
+    histlist = [h_cutflow,h_cutflow_norm]
 
     if options.makeplots == 'yes' and options.grid != 'yes':
         print '\nPlot and saven'
@@ -427,10 +457,10 @@ def selection(patfile):
     else :
         if options.grid == 'yes' :
             print '\nSaving output into root files for grid use\n'
-            gridsaving(histlist,event_type,f_index)
+            gridsaving(histlist+[outputtree],event_type,f_index,'update')
         else :
             print '\nSaving output into root files to local dir \n'
-            saving(histlist,event_type,f_index)
+            saving(histlist+[outputtree],event_type,f_index,'update')
 
     # Stop our timer
     timer.Stop()

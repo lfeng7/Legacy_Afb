@@ -1,92 +1,91 @@
 Sample type : data
 Events weight 1.00 : 
-Fraction of sample used : 1.00
 
-Sample name : T_s_v2_selection_output_all.root
+Sample name : T_s
 Type: singletop
 Events weight : 0.287908263163
 Nevts : 259176
 Fraction of sample used : 1.00
 
-Sample name : T_t_v2_selection_output_all.root
+Sample name : T_t
 Type: singletop
 Events weight : 0.296359746231
 Nevts : 3748155
 Fraction of sample used : 1.00
 
-Sample name : T_tW_v2_selection_output_all.root
+Sample name : T_tW
 Type: singletop
 Events weight : 0.440468755651
 Nevts : 495559
 Fraction of sample used : 1.00
 
-Sample name : Tbar_s_v2_selection_output_all.root
+Sample name : Tbar_s
 Type: singletop
-Events weight : 0.248306685527
-Nevts : 139604
-Fraction of sample used : 1.00
+Events weight : 0.0301982807965
+Nevts : 1147900
+Fraction of sample used : 8.22
 
-Sample name : Tbar_t_v2_selection_output_all.root
+Sample name : Tbar_t
 Type: singletop
 Events weight : 0.313302864183
 Nevts : 1930185
 Fraction of sample used : 1.00
 
-Sample name : Tbar_tW_v2_selection_output_all.root
+Sample name : Tbar_tW
 Type: singletop
 Events weight : 0.444215944555
 Nevts : 491463
 Fraction of sample used : 1.00
 
-Sample name : W1JetsToLNu_v2.root
+Sample name : W1JetsToLNu_TuneZ2Star_8TeV
 Type: wjets
-Events weight : 33.73609135
-Nevts : 3882767
-Fraction of sample used : 0.17
+Events weight : 5.68573416581
+Nevts : 23038253
+Fraction of sample used : 1.00
 
-Sample name : W2JetsToLNu_v2.root
+Sample name : W2JetsToLNu_TuneZ2Star_8TeV
 Type: wjets
-Events weight : 10.4375546495
-Nevts : 4079062
-Fraction of sample used : 0.12
+Events weight : 1.25245940797
+Nevts : 33993463
+Fraction of sample used : 1.00
 
-Sample name : W3Jets_v2_selection_output_all.root
+Sample name : W3JetsToLNu_TuneZ2Star_8TeV
 Type: wjets
-Events weight : 0.824034174836
-Nevts : 15315943
-Fraction of sample used : 0.99
+Events weight : 0.813836787444
+Nevts : 15507852
+Fraction of sample used : 1.00
 
-Sample name : W4Jets_v2_selection_output_all.root
+Sample name : W4JetsToLNu_TuneZ2Star_8TeV
 Type: wjets
 Events weight : 0.363003774321
 Nevts : 13326400
 Fraction of sample used : 1.00
 
-Sample name : DY1JetsToLL_v2.root
+Sample name : DY1JetsToLL_M
 Type: zjets
-Events weight : 3.55623131232
-Nevts : 3631360
-Fraction of sample used : 0.15
+Events weight : 0.542541148794
+Nevts : 23802722
+Fraction of sample used : 1.00
 
-Sample name : DY2JetsToLL_v2.root
+Sample name : DY2JetsToLL_M
 Type: zjets
 Events weight : 1.80580180113
 Nevts : 2345857
 Fraction of sample used : 1.00
 
-Sample name : DY3Jets_v2_selection_output_all.root
+Sample name : DY3JetsToLL_M
 Type: zjets
-Events weight : 0.819708828779
-Nevts : 1533162
-Fraction of sample used : 0.14
+Events weight : 0.117945386682
+Nevts : 10655325
+Fraction of sample used : 1.00
 
-Sample name : DY4Jets_v2_selection_output_all.root
+Sample name : DY4JetsToLL_M
 Type: zjets
-Events weight : 0.341576929074
-Nevts : 1508497
-Fraction of sample used : 0.26
+Events weight : 0.0881790684021
+Nevts : 5843425
+Fraction of sample used : 1.00
 
-Sample name : TT_CT10_v2_selection_output_all.root
+Sample name : TT_CT10_TuneZ2star_8TeV
 Type: ttbar
 Events weight : 0.224028414876
 Nevts : 21560109

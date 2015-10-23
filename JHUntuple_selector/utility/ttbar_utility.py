@@ -1,10 +1,13 @@
 import ROOT
 
-def M3(jets):
-    if not len(jets)>= 3: return 0
-    jets_pt = list(ipar.pt() for ipar in jets)
-    jets_pt.sort()
-    return jets_pt[0]+jets_pt[1]+jets_pt[2]
+def M3(pt,eta,phi,mass):
+    if not len(pt)>= 3: return 0
+    m3_vec = ROOT.TLorentzVector()
+    for i in range(3):
+        ijet = ROOT.TLorentzVector()
+        ijet.SetPtEtaPhiM(pt[i],eta[i],phi[i],mass[i])
+        m3_vec += ijet
+    return m3_vec.M()
 
 def GetSampleColor(sample_type):
     if sample_type == 'singletop': return ROOT.kMagenta
