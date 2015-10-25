@@ -50,7 +50,7 @@ events = Events(files)
 
 # Control constants
 nevt_cut = 10000
-sampletype = 'test'
+event_type  = 'test'
 
 # Handles and labels
 hndl1 = Handle('vector<double>')
@@ -79,7 +79,7 @@ jet_flavor_label =("jhuAk5","AK5PartonFlavour")
 # Book histograms
 h1 = ROOT.TH1D('jetspt','jetspt;pt GeV;events',50,0.,300.0)
 # cutflows
-h_cutflow = ROOT.TH1D('cutflow_MC',event_type+' cutflow;cuts;events',3,0.,3.)
+h_cutflow = ROOT.TH1D('cutflow_TTbar',event_type+' cutflow;cuts;events',3,0.,3.)
 h_cutflow.SetBit(ROOT.TH1.kCanRebin)
 
 # h3 = ROOT.TH1D('csv_all_jets', type+' CSV of all jets;csv;events',100,0,1)
@@ -103,11 +103,16 @@ for evt in events:
 
     evt.getByLabel(trig_label,trig_hndl)
     trig_ = trig_hndl.product()
-
     iev = evt.object()
     triggerNames = iev.triggerNames(trig_)
-    pathName='HLT_Ele27_WP80_v10'
-    passTrig=trig_.accept(triggerNames.triggerIndex(pathName))
+    pathName='HLT_Ele27_WP80_v'
+    trigName = ''
+    for itrig in triggerNames.triggerNames():
+        if pathName in itrig : trigName = itrig
+    if pathName not in trigName :
+        print 'No trigger',pathName,'found in evt',n_evt,'! Will skip this event.'
+    passTrig=trig_.accept(triggerNames.triggerIndex(trigName))
+    
 
     if not passTrig : continue
     h_cutflow.Fill('trigger',1)
@@ -121,5 +126,5 @@ print 'break at event',n_evt
 # Plotting and saving 
 histlist = [h_cutflow]
 
-plotting(histlist,sampletype,"dump")
+plotting(histlist,event_type,"dump")
   
