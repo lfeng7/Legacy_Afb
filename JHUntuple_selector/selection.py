@@ -52,6 +52,11 @@ parser.add_option('--txtfiles', metavar='F', type='string', action='store',
                   dest='txtfiles',
                   help='Input txt files')
 
+parser.add_option('--applyHLT', metavar='F', type='string', action='store',
+                  default = "no",
+                  dest='applyHLT',
+                  help='If apply HLT as first selection cut.')
+
 parser.add_option('--mcordata', metavar='F', type='string', action='store',
                   default = "mc",
                   dest='mcordata',
@@ -404,6 +409,13 @@ def selection(rootfiles):
         passTrig=trig_.accept(triggerNames.triggerIndex(trigName))   
         trigger_vec.push_back(passTrig)     
 
+        # Initialize cutflow histogram
+        h_cutflow.Fill("no cut",1)
+        # Apply trigger 
+        if options.applyHLT == 'yes' :
+            if not passTrig : continue
+            h_cutflow.Fill('HLT',1)
+
         # Informations for MC only     
         if options.mcordata == 'mc' :
 
@@ -430,7 +442,9 @@ def selection(rootfiles):
             gen_b = list(ipar for ipar in final_par if abs(ipar.pdgId()) == 5)
             gen_jets = list(ipar for ipar in final_par if abs(ipar.pdgId()) in pdg_jets)
 
-        ################ Find all physics objects for reconstruction ###################
+        ################################################################ 
+        #       Physics objects picking and event selections           # 
+        ################################################################
 
         #### PF electrons ####
         el_loose,el_cand = [],[]
@@ -452,6 +466,14 @@ def selection(rootfiles):
             mu = mu_p4[i]
             if mu_is_loose[i] and mu_iso[i]< 0.2 and mu.pt()>10 and abs(mu.eta())<2.5: mu_loose.append(mu)
 
+        # Selection on leptons        
+        if not len(el_cand)==1 : continue # continue
+        h_cutflow.Fill('el',1)
+        if len(mu_loose) > 0 : continue
+        h_cutflow.Fill('loose mu veto',1)
+        if len(el_extra) > 0 : continue
+        h_cutflow.Fill('dilep veto',1)            
+
         ##### AK5 jets ####
 
         # jets Selection       https://twiki.cern.ch/twiki/bin/view/CMS/TopJMERun1#Jets
@@ -467,32 +489,23 @@ def selection(rootfiles):
                     break
         jets_cand_p4 = [ ijet[1] for ijet in jets_cand ]
  
-        #### Signal events selection ####
-
-        # Initialize cutflow histogram
-        h_cutflow.Fill("step0",1)
- 
-        if not len(el_cand)==1 : continue # continue
-        h_cutflow.Fill('el',1)
-        if len(mu_loose) > 0 : continue
-        h_cutflow.Fill('loose mu veto',1)
-        if len(el_extra) > 0 : continue
-        h_cutflow.Fill('dilep veto',1)
+        # Selection on jets
         if not len(jets_cand) >= 4 : continue
         h_cutflow.Fill('jets',1)
 
         # Do b-tagging. Work for both MC and data
         bjets = [ jet for jet in jets_cand if jet[2] > csv_cut ]
 
-        # cut on btags
+        # Selection on b-tagging
         if not len(bjets) >= 2: continue
         h_cutflow.Fill('b-tagging',1)
 
         n_evts_passed += 1
 
-        ######## Finish event selection #########
 
-        ######## Fill TTree ########
+        ################################################################
+        #                    Fill TTree                                # 
+        ################################################################
 
         # jets
         # First sort jets by pT
@@ -691,14 +704,16 @@ def selection(rootfiles):
 
     ######## end main event loop ########
 
+    ################################################################
+    #                   Make and save plots                        # 
+    ################################################################
+
     h_cutflow_norm = norm(h_cutflow)
     h_cutflow_log = h_cutflow.Clone()
     h_cutflow_log.SetName(h_cutflow.GetName()+'_log')
     h_cutflow_norm_log = h_cutflow_norm.Clone()
     h_cutflow_norm_log.SetName(h_cutflow_norm.GetName()+'_log')
        
-    ## Make and save plots
-
     # cutflows
     histlist = [h_cutflow,h_cutflow_norm]
 
@@ -735,6 +750,7 @@ def selection(rootfiles):
     print '\n'
 
 
-
-#########################  Actual process  ##############################
+################################################################
+#                    Run main program                          #
+################################################################
 main()
