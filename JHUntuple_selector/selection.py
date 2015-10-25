@@ -78,7 +78,7 @@ parser.add_option('--startfile', metavar='F', type='int', action='store',
                   help='starting file index of input ntuple files')
 
 parser.add_option('--maxevts', metavar='F', type='int', action='store',
-                  default = 100000,
+                  default = 10000,
                   dest='maxEvts',
                   help='max number of input ntuple files')
 
@@ -105,7 +105,7 @@ argv = []
 
 def main():
     # Get the file list with all input files.
-    if options.inputFiles:
+    if options.inputFiles != '':
         allfiles = glob.glob( options.inputFiles )
     elif options.txtfiles:
         allfiles = []
@@ -121,6 +121,8 @@ def main():
     # Only keep certain number of input files for fexibility
     files = GetSomeFiles(allfiles,options.startfile,options.maxfiles)
 
+    # debug only
+    #files = ['ntuples/sample_jhudiffmo/TT_jhutester_numEvent1000_99.root']
     # Print out information on the input files
     print 'Getting these files:'
     for ifile in files : print ifile
@@ -253,7 +255,7 @@ def selection(rootfiles):
     # branches only for MC samples
     jets_flavor = ROOT.vector('int')()
 
-    if options.isSignal = 'yes' :
+    if options.isSignal == 'yes' :
         # The sequence of storage in each vector would be :
         #   0      1     2     3     4     5
         # init1, init2, top1, top2, w1, w2
@@ -271,13 +273,13 @@ def selection(rootfiles):
 
     all_vecs = [jets_pt,jets_eta,jets_phi,jets_mass,jets_csv_vec,lep_pt,lep_eta,lep_phi,lep_mass,lep_charge,met_pt_vec,met_phi_vec,trigger_vec]
     all_mc_vecs = [jets_flavor]
-    if options.isSignal :
+    if options.isSignal == 'yes':
         all_mc_vecs += [gen_pt,gen_eta,gen_phi,gen_mass,gen_pdgid,gen_side,gen_type,gen_is_ejets]
 
     # Set up branches
     branch_names = ['jets_pt','jets_eta','jets_phi','jets_mass','jets_csv','lep_pt','lep_eta','lep_phi','lep_mass','lep_charge','met_pt','met_phi','trigger']
     mc_branch_names = ['jets_flavor']
-    if options.isSignal:
+    if options.isSignal == 'yes':
         mc_branch_names += ['gen_pt','gen_eta','gen_phi','gen_mass','gen_pdgid','gen_side','gen_type','gen_is_ejets']
 
     all_branches = zip(branch_names,all_vecs)
@@ -302,9 +304,9 @@ def selection(rootfiles):
     # PU weights
 
     # Set up pileup distribution files used in pileup reweighting
-    data_pufile = TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/data_pileup_distribution.root')
+    data_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/data_pileup_distribution.root')
     data_pu_dist = data_pufile.Get('pileup')
-    mc_pufile = TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/dumped_Powheg_TT.root') 
+    mc_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/dumped_Powheg_TT.root') 
     MC_pu_dist   = mc_pufile.Get('pileup')
     data_pu_dist.Scale(1.0/data_pu_dist.Integral())
     MC_pu_dist.Scale(1.0/MC_pu_dist.Integral())
@@ -332,8 +334,8 @@ def selection(rootfiles):
     corrections_vecs.append(pileup_events)
     corrections_branch_names.append('pileup_events')
 
-    mc_corrections_vecs.append(mc_pileup_events,weight_pileup,weight_top_pT,weight_btag_eff,weight_btag_eff_err)
-    mc_corrections_branch_names.append('mc_pileup_events','weight_pileup','weight_top_pT','weight_btag_eff','weight_btag_eff_err')
+    mc_corrections_vecs += [mc_pileup_events,weight_pileup,weight_top_pT,weight_btag_eff,weight_btag_eff_err]
+    mc_corrections_branch_names += ['mc_pileup_events','weight_pileup','weight_top_pT','weight_btag_eff','weight_btag_eff_err']
 
 
     # Start main event loop
@@ -521,15 +523,15 @@ def selection(rootfiles):
         w_PU = 1.0 ; w_top_pT = 1.0 ; w_btag,w_btag_err = 1.0 , 0
 
         # PU
-        event.getByLabel(dataPileupLabel,dataPileupHandle)
+        evt.getByLabel(dataPileupLabel,dataPileupHandle)
         if not dataPileupHandle.isValid() :
             continue
         data_pileup_number = dataPileupHandle.product()
         pileup_events.push_back(1.0*data_pileup_number[0])
 
-        if options.mcordata = 'mc' :
+        if options.mcordata == 'mc' :
             #pileup reweighting
-            event.getByLabel(npvRealTrueLabel,npvRealTrueHandle)
+            evt.getByLabel(npvRealTrueLabel,npvRealTrueHandle)
             if not npvRealTrueHandle.isValid() :
                 continue
             npvRealTrue = npvRealTrueHandle.product()
@@ -543,8 +545,8 @@ def selection(rootfiles):
         if options.mcordata == 'mc' :
             # b-tagging corrections
             selected_jets = []
-            for i in jets_pt.size():
-                selected_jets += (jets_pt[i],jets_eta[i],jets_flavor[i],jets_csv[i])
+            for i in range(jets_pt.size()):
+                selected_jets.append( (jets_pt[i],jets_eta[i],jets_flavor[i],jets_csv[i]))
 
             w_result = get_weight_btag(selected_jets,options.sampletype)
             w_btag     = w_result[0]
@@ -568,11 +570,11 @@ def selection(rootfiles):
                 gentops = []  
                 genWs = []
                 w_daughters = []       
-                for ig in genpars():
+                for ig in genpars:
                     # Get initial particles
                     if ig.pt()<0: continue
                     # Look through all the particles for protons; append their first daughters to the list
-                    if ig.pdgId() == 2212: init_pars.append(ig.daughters(0))
+                    if ig.pdgId() == 2212: init_pars.append(ig.daughter(0))
                     # Look through particles for all ts
                     if math.fabs(ig.pdgId()) == 6 and ig.status() == 3 :
                         # By default t is in had side, unless the W from this t decays leptonically

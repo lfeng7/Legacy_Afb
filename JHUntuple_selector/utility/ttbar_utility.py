@@ -1,4 +1,5 @@
 import ROOT
+import math
 
 def M3(pt,eta,phi,mass):
     if not len(pt)>= 3: return 0
@@ -37,7 +38,7 @@ def GetBinEntry(hist) :
 def GetTopPtWeights(a,b,pt1,pt2):
     pt_w = 1.0
     if pt1<400 and pt2<400 :
-        pt_w = math.exp(a+b*(pt1+p2)/2)
+        pt_w = math.exp(a+b*(pt1+pt2)/2)
     return pt_w
 
 
@@ -47,13 +48,13 @@ def get_btag_eff (pt,eta,jet_flavor,sampletype):
 
     #Set up btag efficiency files
     eff_files = []
-    eff_files += ('ttbar','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/TT_CT10_TuneZ2star_8TeV-powheg-tauola_AK5PF_CSVM_bTaggingEfficiencyMap.root')
-    eff_files += ('wjets','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_AK5PF_CSVM_bTaggingEfficiencyMap.root')
-    eff_files += ('zjets','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_AK5PF_CSVM_bTaggingEfficiencyMap.root')
-    eff_files += ('singletop','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/T_t-channel_TuneZ2star_8TeV-powheg-tauola_AK5PF_CSVM_bTaggingEfficiencyMap.root')
-    eff_files += ('singletopbar','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola_AK5PF_CSVM_bTaggingEfficiencyMap.root')
+    eff_files += [('ttbar','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/TT_CT10_TuneZ2star_8TeV-powheg-tauola_AK5PF_CSVM_bTaggingEfficiencyMap.root')]
+    eff_files += [('wjets','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_AK5PF_CSVM_bTaggingEfficiencyMap.root')]
+    eff_files += [('zjets','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_AK5PF_CSVM_bTaggingEfficiencyMap.root')]
+    eff_files += [('singletop','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/T_t-channel_TuneZ2star_8TeV-powheg-tauola_AK5PF_CSVM_bTaggingEfficiencyMap.root')]
+    eff_files += [('singletopbar','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola_AK5PF_CSVM_bTaggingEfficiencyMap.root')]
     
-    F_eff = ''
+    # F_eff = ''
     for ifile in eff_files:
         if sampletype == ifile[0] :
             F_eff = ifile[1]
@@ -61,22 +62,25 @@ def get_btag_eff (pt,eta,jet_flavor,sampletype):
     efficiency_b = file_tmp.Get('efficiency_b')
     efficiency_c = file_tmp.Get('efficiency_c')
     efficiency_udsg = file_tmp.Get('efficiency_udsg')    
+    
+     #Debug only
+#    print 'eff hist name',efficiency_udsg.GetName()
     # x,y of TH2F of efficiency are pt and eta
     if jet_flavor == 5 :
         binx = efficiency_b.GetXaxis().FindBin(pt)
         biny = efficiency_b.GetYaxis().FindBin(eta)
-        bin = efficiency_b.GetBin(binx,biny)
-        return efficiency_b.GetBinContent(bin)
+        bins = efficiency_b.GetBin(binx,biny)
+        return efficiency_b.GetBinContent(bins)
     elif jet_flavor == 4 :
         binx = efficiency_c.GetXaxis().FindBin(pt)
         biny = efficiency_c.GetYaxis().FindBin(eta)
-        bin = efficiency_c.GetBin(binx,biny)
-        return efficiency_c.GetBinContent(bin)  
+        bins = efficiency_c.GetBin(binx,biny)
+        return efficiency_c.GetBinContent(bins)  
     else :
         binx = efficiency_udsg.GetXaxis().FindBin(pt)
         biny = efficiency_udsg.GetYaxis().FindBin(eta)
-        bin = efficiency_udsg.GetBin(binx,biny)
-        return efficiency_udsg.GetBinContent(bin)   
+        bins = efficiency_udsg.GetBin(binx,biny)
+        return efficiency_udsg.GetBinContent(bins)   
 
 def getptbin_for_btag(pt):  
     if(pt<30) : pt_bin = 0;
@@ -129,7 +133,7 @@ def get_SF_btag(ptJet,etaJet,flavJet):      # checked
         0.0598311]
 
     x = ptJet # the pt of the jet 
-    eta = fabs(etaJet); # abs(eta) 
+    eta = abs(etaJet); # abs(eta) 
 
     result = []         # the first is SF, second is SF error
     if(eta>2.4) :
