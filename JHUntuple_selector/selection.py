@@ -209,6 +209,13 @@ def selection(rootfiles):
     trig_hndl = Handle('edm::TriggerResults')
     trig_label = ("TriggerResults","","HLT")
 
+    # PU
+    dataPileupHandle = Handle('unsigned int')
+    dataPileupLabel  = ('jhuGen','npv')
+    # MC PU
+    npvRealTrueHandle = Handle('unsigned int')
+    npvRealTrueLabel  = ('jhuGen','npvTrue')   
+      
     # gen info
     gen_hndl = Handle('vector<reco::GenParticle>  ') 
     gen_label = "prunedGenParticles"
@@ -250,10 +257,15 @@ def selection(rootfiles):
     met_pt_vec = ROOT.vector('float')()
     met_phi_vec = ROOT.vector('float')()
 
-    trigger_vec = ROOT.vector('bool')()
+    trigger_vec = ROOT.vector('bool')()   
+
+    pileup_events = ROOT.vector('float')()
 
     # branches only for MC samples
+
     jets_flavor = ROOT.vector('int')()
+
+    mc_pileup_events = ROOT.vector('float')()
 
     if options.isSignal == 'yes' :
         # The sequence of storage in each vector would be :
@@ -271,14 +283,19 @@ def selection(rootfiles):
         # if this event is e+jets event
         gen_is_ejets = ROOT.vector('int')()
 
-    all_vecs = [jets_pt,jets_eta,jets_phi,jets_mass,jets_csv_vec,lep_pt,lep_eta,lep_phi,lep_mass,lep_charge,met_pt_vec,met_phi_vec,trigger_vec]
-    all_mc_vecs = [jets_flavor]
+    # Set up vectors for MC and data vars
+    all_vecs = [jets_pt,jets_eta,jets_phi,jets_mass,jets_csv_vec,lep_pt,lep_eta,lep_phi,lep_mass,lep_charge,met_pt_vec,met_phi_vec]
+    all_vecs += [trigger_vec,pileup_events]
+
+    all_mc_vecs = [jets_flavor,mc_pileup_events]
+
     if options.isSignal == 'yes':
         all_mc_vecs += [gen_pt,gen_eta,gen_phi,gen_mass,gen_pdgid,gen_side,gen_type,gen_is_ejets]
 
     # Set up branches
-    branch_names = ['jets_pt','jets_eta','jets_phi','jets_mass','jets_csv','lep_pt','lep_eta','lep_phi','lep_mass','lep_charge','met_pt','met_phi','trigger']
-    mc_branch_names = ['jets_flavor']
+    branch_names = ['jets_pt','jets_eta','jets_phi','jets_mass','jets_csv','lep_pt','lep_eta','lep_phi','lep_mass','lep_charge','met_pt','met_phi']
+    branch_names += ['trigger','pileup_events']
+    mc_branch_names = ['jets_flavor','mc_pileup_events']
     if options.isSignal == 'yes':
         mc_branch_names += ['gen_pt','gen_eta','gen_phi','gen_mass','gen_pdgid','gen_side','gen_type','gen_is_ejets']
 
@@ -298,30 +315,9 @@ def selection(rootfiles):
 
     corrections_vecs = []
     corrections_branch_names = []
-    mc_corrections_vecs = []
-    mc_corrections_branch_names = []
 
     # PU weights
-
-    # Set up pileup distribution files used in pileup reweighting
-    data_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/data_pileup_distribution.root')
-    data_pu_dist = data_pufile.Get('pileup')
-    mc_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/dumped_Powheg_TT.root') 
-    MC_pu_dist   = mc_pufile.Get('pileup')
-    data_pu_dist.Scale(1.0/data_pu_dist.Integral())
-    MC_pu_dist.Scale(1.0/MC_pu_dist.Integral())
-
-    # Handles and lables for PU
-    # pileup for data
-    dataPileupHandle = Handle('unsigned int')
-    dataPileupLabel  = ('jhuGen','npv')
-    # mc PU
-    npvRealTrueHandle = Handle('unsigned int')
-    npvRealTrueLabel  = ('jhuGen','npvTrue')
-    # Set branch for PU
     weight_pileup = ROOT.vector('float')()
-    pileup_events = ROOT.vector('float')()
-    mc_pileup_events = ROOT.vector('float')()
 
     # Top pT weights
     weight_top_pT = ROOT.vector('float')()
@@ -330,15 +326,19 @@ def selection(rootfiles):
     weight_btag_eff = ROOT.vector('float')()
     weight_btag_eff_err = ROOT.vector('float')()
 
-    # Set branches for corrections
-    corrections_vecs.append(pileup_events)
-    corrections_branch_names.append('pileup_events')
+    # Set vectors for corrections
+    corrections_vecs += [weight_pileup,weight_top_pT,weight_btag_eff,weight_btag_eff_err]
+    corrections_branch_names += ['weight_pileup','weight_top_pT','weight_btag_eff','weight_btag_eff_err']
+    all_corrections = zip(corrections_branch_names,corrections_vecs)
+    # Add branches for corrections to ttree
+    if options.mcordata == 'mc':
+        for ibranch in all_corrections:
+            outputtree.Branch(ibranch[0],ibranch[1])
 
-    mc_corrections_vecs += [mc_pileup_events,weight_pileup,weight_top_pT,weight_btag_eff,weight_btag_eff_err]
-    mc_corrections_branch_names += ['mc_pileup_events','weight_pileup','weight_top_pT','weight_btag_eff','weight_btag_eff_err']
+    ################################################################
+    #                       Start main event loop                  # 
+    ################################################################
 
-
-    # Start main event loop
     for evt in events:
         # progrss reporting
         if n_evt%5000 == 1: print 'Loop over',n_evt,'event',', selected',n_evts_passed,'candidate events'
@@ -515,19 +515,12 @@ def selection(rootfiles):
         met_pt_vec.push_back(met_pt[0])
         met_phi_vec.push_back(met_phi[0])
 
-        ############################################################
-        #               Get all correction weights                 #
-        ############################################################
-
-        # Initialize all weights
-        w_PU = 1.0 ; w_top_pT = 1.0 ; w_btag,w_btag_err = 1.0 , 0
-
-        # PU
+        # NPV
         evt.getByLabel(dataPileupLabel,dataPileupHandle)
         if not dataPileupHandle.isValid() :
             continue
         data_pileup_number = dataPileupHandle.product()
-        pileup_events.push_back(1.0*data_pileup_number[0])
+        pileup_events.push_back(1.0*data_pileup_number[0]) 
 
         if options.mcordata == 'mc' :
             #pileup reweighting
@@ -535,28 +528,46 @@ def selection(rootfiles):
             if not npvRealTrueHandle.isValid() :
                 continue
             npvRealTrue = npvRealTrueHandle.product()
-            w_PU = data_pu_dist.GetBinContent(data_pu_dist.FindFixBin(1.0*npvRealTrue[0]))/MC_pu_dist.GetBinContent(MC_pu_dist.FindFixBin(1.0*npvRealTrue[0]))
             mc_pileup_events.push_back(1.0*npvRealTrue[0])  
+
+
+        ############################################################
+        #               Get all correction weights for MC          #
+        ############################################################
+
+        # Initialize all weights
+        w_PU = 1.0 ; w_top_pT = 1.0 ; w_btag,w_btag_err = 1.0 , 0
+
+        if options.mcordata == 'mc' :
+
+            # PU weights
+
+            # Set up pileup distribution files used in pileup reweighting
+            data_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/data_pileup_distribution.root')
+            data_pu_dist = data_pufile.Get('pileup')
+            mc_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/dumped_Powheg_TT.root') 
+            MC_pu_dist   = mc_pufile.Get('pileup')
+            data_pu_dist.Scale(1.0/data_pu_dist.Integral())
+            MC_pu_dist.Scale(1.0/MC_pu_dist.Integral())        
+            # Calculate PU corrections based on npvRealTrue
+            w_PU = data_pu_dist.GetBinContent(data_pu_dist.FindFixBin(1.0*npvRealTrue[0]))/MC_pu_dist.GetBinContent(MC_pu_dist.FindFixBin(1.0*npvRealTrue[0]))
             weight_pileup.push_back(w_PU)  
 
 
-        # b-tagging corrections
-
-        if options.mcordata == 'mc' :
             # b-tagging corrections
             selected_jets = []
             for i in range(jets_pt.size()):
                 selected_jets.append( (jets_pt[i],jets_eta[i],jets_flavor[i],jets_csv[i]))
 
             w_result = get_weight_btag(selected_jets,options.sampletype)
-            w_btag     = w_result[0]
+            w_btag   = w_result[0]
             w_btag_err = w_result[1]
             weight_btag_eff.push_back(w_btag)
             weight_btag_eff_err.push_back(w_btag_err) 
 
-        # GenParticles info for signal MC only
 
-        if options.mcordata == 'mc' :
+            # GenParticles info for signal MC only
+
             # Look into genparticel info and get Gen Top, W's and initial particles (qqbar, gg etc)
             if options.isSignal == 'yes':
                 is_ejets = 0
