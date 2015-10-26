@@ -48,21 +48,31 @@ parser.add_option('--makeplots', metavar='F', type='string', action='store',
                   dest='makeplots',
                   help='If you want to make data MC comparison plots')
 
+parser.add_option('--toppt', metavar='F', type='string', action='store',
+                  default = 'no',
+                  dest='toppt',
+                  help='If do top pt reweighting')
+
+parser.add_option('--correction', metavar='F', type='string', action='store',
+                  default = 'no',
+                  dest='correction',
+                  help='If use correction')
+
 (options, args) = parser.parse_args()
 
 argv = []
 
 # Some preset constants
 data_lumi = 19748 
-dir_name = 'controlplots'
 csvm = 0.679
 
-Nbin = 2
-
 # Get input files
-prepend = './selected_files/v2_test1/all/'   # dir of output files to make histograms
-hist_prepend = './selected_hists/test/' 
+prepend = './selected_files/v2_test2/'   # dir of output files to make histograms
 postfix='_selected'
+# Set up output histogram files
+template_type = 'corrected'
+hist_prepend = './selected_hists/'+template_type+'/' 
+dir_name = 'controlplots'+template_type # name of the dir for control plots, such as corrected, topPT, un_corrected
   
 # initialization and declaration
 flist = []
@@ -72,30 +82,30 @@ flist = []
 #    0,         1         2        3         4           
 # (filepath, nevts_gen, xsec_NLO, type, nevts_total_ntuple)
 # Single Top
-flist.append(['T_s','singletop',259961,3.79,259176] )
+# flist.append(['T_s','singletop',259961,3.79,259176] )
 flist.append(['T_t','singletop',3758227,56.4,3748155] )
-flist.append(['T_tW','singletop',497658,11.1,495559])
-flist.append(['Tbar_s','singletop',139974, 1.76,139604])
-flist.append(['Tbar_t','singletop',1935072, 30.7,1930185])
-flist.append(['Tbar_tW','singletop',493460,11.1,491463])
-# Wjets
-flist.append(['W1JetsToLNu_TuneZ2Star_8TeV','wjets',23141598,6662.8,23038253])
-flist.append(['W2JetsToLNu_TuneZ2Star_8TeV','wjets',34044921,2159.2,33993463])
-flist.append(['W3JetsToLNu_TuneZ2Star_8TeV','wjets',15539503,640.4,15507852])
-flist.append(['W4JetsToLNu_TuneZ2Star_8TeV','wjets',13382803,246.0,13326400])
-# DYjets
-flist.append(['DY1JetsToLL_M','zjets',24045248,660.6,23802736])
-flist.append(['DY2JetsToLL_M','zjets',2352304,215.1,2345857])
-flist.append(['DY3JetsToLL_M','zjets',11015445,65.79,10655325])
-flist.append(['DY4JetsToLL_M','zjets',6402827,28.59,5843425])
+# flist.append(['T_tW','singletop',497658,11.1,495559])
+# flist.append(['Tbar_s','singletop',139974, 1.76,139604])
+# flist.append(['Tbar_t','singletop',1935072, 30.7,1930185])
+# flist.append(['Tbar_tW','singletop',493460,11.1,491463])
+# # Wjets
+# flist.append(['W1JetsToLNu_TuneZ2Star_8TeV','wjets',23141598,6662.8,23038253])
+# flist.append(['W2JetsToLNu_TuneZ2Star_8TeV','wjets',34044921,2159.2,33993463])
+# flist.append(['W3JetsToLNu_TuneZ2Star_8TeV','wjets',15539503,640.4,15507852])
+# flist.append(['W4JetsToLNu_TuneZ2Star_8TeV','wjets',13382803,246.0,13326400])
+# # DYjets
+# flist.append(['DY1JetsToLL_M','zjets',24045248,660.6,23802736])
+# flist.append(['DY2JetsToLL_M','zjets',2352304,215.1,2345857])
+# flist.append(['DY3JetsToLL_M','zjets',11015445,65.79,10655325])
+# flist.append(['DY4JetsToLL_M','zjets',6402827,28.59,5843425])
 # signal
 flist.append(['TT_CT10_TuneZ2star_8TeV','ttbar',21675970,245.9,21560109])
 
 #### Set up data input files
 #    0,         1                   2             
 # (filepath,   type,   sample_integrated_lumi
-# datafile = ['SingleEl_Run2012A_v1',888,19748,'data',11212832]
-datafile = ['SingleEl_Run2012ABCD','data',19748]
+datafile = ['SingleEl_Run2012A_v1','data',888]
+# datafile = ['SingleEl_Run2012ABCD','data',19748]
 
 def main():
     if options.makehists == 'yes':
@@ -108,16 +118,18 @@ def main():
 
 def MakeHistograms():
     #### Making histograms for MC samples
+    htitle = '19.7 fb^{-1} @ 8 TeV'
     nbins = 50
     # Get a list of MC and data input file names
-    selected_samples = [ifile[0] for ifile in flist]+[datafile[0]]
+    selected_samples = [(ifile[0],ifile[1]) for ifile in flist]+[(datafile[0],datafile[1)]
     # debug
     if options.verbose =='yes':
         print 'Making histograms for these samples:'
         for ifile in selected_samples : print ifile
     # Loop over all selection root files
     for ifile in selected_samples:
-        event_type = ifile
+        event_type = ifile[0] # Name of the sample
+        sample_type = ifile[1] # type of the sample, data, ttbar ,etc
         ifilename = prepend+event_type+postfix+'.root'
         print '\nReading root file:',ifilename
         tmpfile = ROOT.TFile(ifilename)
@@ -125,8 +137,9 @@ def MakeHistograms():
         h_cutflow = tmpfile.Get('cutflow')
         h_cutflow_norm = tmpfile.Get('cutflow_norm')
         # Make an output file for histograms
-        savetoroot([],'selected_hists','test',event_type+'_control_plots')
-        # Book Histograms
+        savetoroot([],'selected_hists',template_type,event_type+'_control_plots')
+
+        # Physics objects
         h_lep_pt = ROOT.TH1D('lep_pt',event_type+' selected lepton pT;pT(GeV);events',nbins,0.,200.)
         h_lep_eta = ROOT.TH1D('lep_eta',event_type+' selected lepton eta;eta;events',nbins,-2.7,2.7)
         h_lep_charge = ROOT.TH1D('lep_charge',event_type+' charge of the selected lepton ;charge;events',20,-2,2)
@@ -136,38 +149,104 @@ def MakeHistograms():
         h_jets_eta = ROOT.TH1D('jets_eta',event_type+' selected jets eta;eta;events',nbins,-2.7,2.7)
         h_MET = ROOT.TH1D('MET',event_type+' MET;MET(GeV);events',nbins,0.,200.)
         h_Nbjets = ROOT.TH1D('Nbjets',event_type+' Num tagged bjets;Nbjets;events',5,1,6)
+        h_npv = ROOT.TH1D('npv',htitle+';Number of Primary Vertices;Events',35,0,35)
+
         # Make a list of histograms for write
-        tmplist = [h_cutflow,h_cutflow_norm,h_lep_pt,h_lep_eta,h_lep_charge, h_m3,h_Njets,h_jets_pt,h_jets_eta,h_MET,h_Nbjets]
+        tmplist = [h_cutflow,h_cutflow_norm,h_lep_pt,h_lep_eta,h_lep_charge, h_m3,h_Njets,h_jets_pt,h_jets_eta,h_MET,h_Nbjets,h_npv]
 
         # Remove the attachement of histograms from input root file, debug only
         for ihist in tmplist : ihist.SetDirectory(0)
 
-        # Fill Histograms
-        for i in range(tmptree.GetEntries()):
-            # Progress report
-            if i%10000 == 0 : print 'processing event',i
-            tmptree.GetEntry(i)
-            # Jets
-            num_jets = tmptree.jets_pt.size()
-            h_Njets.Fill(num_jets)
-            for ijet in tmptree.jets_pt: h_jets_pt.Fill(ijet)
-            for ijet in tmptree.jets_eta: h_jets_eta.Fill(ijet)
-            bjets = []
-            for ijet in tmptree.jets_csv:
-                if ijet>csvm : bjets.append(ijet)
-            h_Nbjets.Fill(len(bjets))
-            h_m3.Fill(M3(tmptree.jets_pt,tmptree.jets_eta,tmptree.jets_phi,tmptree.jets_mass))
-            # leptons
-            h_lep_pt.Fill(tmptree.lep_pt[0])
-            h_lep_eta.Fill(tmptree.lep_eta[0])
-            h_lep_charge.Fill(tmptree.lep_charge[0])
-            #MET
-            h_MET.Fill(tmptree.met_pt[0])
+        if sample_type == 'data':
+            # Fill Histograms
+            for i in range(tmptree.GetEntries()):
+                # Progress report
+                if i%10000 == 0 : print 'processing event',i
+                tmptree.GetEntry(i)
+                # Jets
+                num_jets = tmptree.jets_pt.size()
+                h_Njets.Fill(num_jets)
+                for ijet in tmptree.jets_pt: h_jets_pt.Fill(ijet)
+                for ijet in tmptree.jets_eta: h_jets_eta.Fill(ijet)
+                bjets = []
+                for ijet in tmptree.jets_csv:
+                    if ijet>csvm : bjets.append(ijet)
+                h_Nbjets.Fill(len(bjets))
+                h_m3.Fill(M3(tmptree.jets_pt,tmptree.jets_eta,tmptree.jets_phi,tmptree.jets_mass))
+                # leptons
+                h_lep_pt.Fill(tmptree.lep_pt[0])
+                h_lep_eta.Fill(tmptree.lep_eta[0])
+                h_lep_charge.Fill(tmptree.lep_charge[0])
+                #MET
+                h_MET.Fill(tmptree.met_pt[0])
+                #npv
+                h_npv.Fill(tmptree.pileup_events[0])
+        else:
+            # MC            
+            h_npv_true = ROOT.TH1D('npv_true',htitle+';Number of True Primary Vertices;Events',35,0,35)
+            # corrections
+            h_w_PU = ROOT.TH1D('w_PU',htitle+';PU weight;Events',nbins,0,2.0)
+            h_w_top_pt = ROOT.TH1D('w_top_pt',htitle+';top pT weight;Events',nbins,0.6,1.3)
+            h_w_btag = ROOT.TH1D('w_btag',htitle+';b-tagging weight;Events',nbins,0.8,1.5)
+            h_err_btag = ROOT.TH1D('err_btag',htitle+';b-tagging weight error;Events',nbins,0.,0.2)
+
+            tmplist += [h_npv_true,h_w_PU,h_w_top_pt,h_w_btag,h_err_btag]
+
+            # Fill Histograms
+            # Get the correct normalization of topPt reweights
+            for i in range(tmptree.GetEntries()):
+                w_top_pt = tmptree.weight_top_pT[0]
+                h_w_top_pt.Fill(w_top_pt)
+            topPtScale = h_w_top_pt.Integral()*1.0/tmptree.GetEntries()
+            print 'topPtScale = ',topPtScale
+
+            for i in range(tmptree.GetEntries()):
+                # Progress report
+                if i%10000 == 0 : print 'processing event',i
+                tmptree.GetEntry(i)
+
+                # weights
+                w_PU = tmptree.weight_pileup[0]
+                w_btag = tmptree.weight_btag_eff[0]
+                w_top_pt = tmptree.weight_top_pT[0]
+                # errors
+                err_btag = tmptree.weight_btag_eff_err[0]
+                # book all weights
+                all_weights = [w_PU,w_btag,w_top_pt]
+                # Get final weight
+                event_weight = 1.0
+                if options.correction == 'yes':
+                    for iw in all_weights : event_weight *= iw
+                # Fill control plots
+                # Jets
+                num_jets = tmptree.jets_pt.size()
+                h_Njets.Fill(num_jets)
+                for ijet in tmptree.jets_pt: h_jets_pt.Fill(ijet,event_weight)
+                for ijet in tmptree.jets_eta: h_jets_eta.Fill(ijet,event_weight)
+                bjets = []
+                for ijet in tmptree.jets_csv:
+                    if ijet>csvm : bjets.append(ijet,event_weight)
+                h_Nbjets.Fill(len(bjets))
+                h_m3.Fill(M3(tmptree.jets_pt,tmptree.jets_eta,tmptree.jets_phi,tmptree.jets_mass),event_weight)
+                # leptons
+                h_lep_pt.Fill(tmptree.lep_pt[0],event_weight)
+                h_lep_eta.Fill(tmptree.lep_eta[0],event_weight)
+                h_lep_charge.Fill(tmptree.lep_charge[0],event_weight)
+                # MET
+                h_MET.Fill(tmptree.met_pt[0],event_weight)
+                # npv
+                h_npv.Fill(tmptree.pileup_events[0],event_weight)
+
+                # corrections
+                h_npv_true.Fill(tmptree.mc_pileup_events[0])
+                h_w_PU.Fill(w_PU)
+                h_w_btag.Fill(w_btag)
+                h_err_btag.Fill(err_btag)
 
         # Save histograms into root files
         print 'Saving',event_type,' histograms into root file..'
         #        will save to selected_hists/test/event_type_control_plots.root
-        savetoroot(tmplist,'selected_hists','test',event_type+'_control_plots','update')
+        savetoroot(tmplist,'selected_hists',template_type,event_type+'_control_plots','update')
         # Close selected root file
         tmpfile.Close()
 
