@@ -121,7 +121,7 @@ def MakeHistograms():
     htitle = '19.7 fb^{-1} @ 8 TeV'
     nbins = 50
     # Get a list of MC and data input file names
-    selected_samples = [(ifile[0],ifile[1]) for ifile in flist]+[(datafile[0],datafile[1)]
+    selected_samples = [(ifile[0],ifile[1]) for ifile in flist]+[(datafile[0],datafile[1])]
     # debug
     if options.verbose =='yes':
         print 'Making histograms for these samples:'
@@ -195,6 +195,7 @@ def MakeHistograms():
             # Fill Histograms
             # Get the correct normalization of topPt reweights
             for i in range(tmptree.GetEntries()):
+                tmptree.GetEntry(i)
                 w_top_pt = tmptree.weight_top_pT[0]
                 h_w_top_pt.Fill(w_top_pt)
             topPtScale = h_w_top_pt.Integral()*1.0/tmptree.GetEntries()
@@ -225,8 +226,8 @@ def MakeHistograms():
                 for ijet in tmptree.jets_eta: h_jets_eta.Fill(ijet,event_weight)
                 bjets = []
                 for ijet in tmptree.jets_csv:
-                    if ijet>csvm : bjets.append(ijet,event_weight)
-                h_Nbjets.Fill(len(bjets))
+                    if ijet>csvm : bjets.append(ijet)
+                h_Nbjets.Fill(len(bjets),event_weight)
                 h_m3.Fill(M3(tmptree.jets_pt,tmptree.jets_eta,tmptree.jets_phi,tmptree.jets_mass),event_weight)
                 # leptons
                 h_lep_pt.Fill(tmptree.lep_pt[0],event_weight)
