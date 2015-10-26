@@ -191,14 +191,22 @@ def MakeHistograms():
             h_err_btag = ROOT.TH1D('err_btag',htitle+';b-tagging weight error;Events',nbins,0.,0.2)
 
             tmplist += [h_npv_true,h_w_PU,h_w_top_pt,h_w_btag,h_err_btag]
+            for ihist in tmplist : ihist.SetDirectory(0)
 
             # Fill Histograms
             # Get the correct normalization of topPt reweights
+            h_MET_tmp_0 = h_MET.Clone()
+            h_MET_tmp_1 = h_MET.Clone()
+            h_MET_tmp_0.SetDirectory(0)
+            h_MET_tmp_1.SetDirectory(0)
+
             for i in range(tmptree.GetEntries()):
                 tmptree.GetEntry(i)
                 w_top_pt = tmptree.weight_top_pT[0]
-                h_w_top_pt.Fill(w_top_pt)
-            topPtScale = h_w_top_pt.Integral()*1.0/tmptree.GetEntries()
+                h_MET_tmp_0.Fill(tmptree.met_pt[0])
+                h_MET_tmp_0.Fill(tmptree.met_pt[0],w_top_pt)
+
+            topPtScale = h_MET_tmp_1.Integral()*1.0/h_MET_tmp_0.Integral()
             print 'topPtScale = ',topPtScale
 
             for i in range(tmptree.GetEntries()):
