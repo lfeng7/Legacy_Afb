@@ -167,8 +167,9 @@ def selection(rootfiles):
         fout = gridsaving([],event_type,f_index,'recreate')
     else :
         print '\nRunning in interactive mode. Creating outputfile to the output dir \n'
-        fout = saving([],event_type,f_index,'recreate')
-    fout.cd()
+        saving([],event_type,f_index,'recreate')
+
+    tmpf = ROOT.TFile('tmpf.root','recreate')
 
     ######## Define handles here ########
 
@@ -706,7 +707,8 @@ def selection(rootfiles):
         outputtree.Fill()         
 
     ######## end main event loop ########
-
+    print outputtree.GetDirectory()
+ 
     ################################################################
     #                   Make and save plots                        # 
     ################################################################
@@ -733,12 +735,8 @@ def selection(rootfiles):
 #            gridsaving(histlist+[outputtree],event_type,f_index,'update')
         else :
             print '\nSaving output into root files to local dir \n'
-#            saving(histlist+[outputtree],event_type,f_index,'update')
-
-    for item in histlist+[outputtree] :
-        item.Write()
-    fout.Write()
-    fout.Close()
+            saving(histlist+[outputtree],event_type,f_index,'update')
+    print outputtree.GetDirectory()
 
     # Stop our timer
     timer.Stop()
