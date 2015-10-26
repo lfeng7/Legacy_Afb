@@ -58,6 +58,11 @@ parser.add_option('--correction', metavar='F', type='string', action='store',
                   dest='correction',
                   help='If use correction')
 
+parser.add_option('--tmptype', metavar='F', type='string', action='store',
+                  default = 'uncorrected',
+                  dest='tmptype',
+                  help='If use correction')
+
 (options, args) = parser.parse_args()
 
 argv = []
@@ -70,7 +75,7 @@ csvm = 0.679
 prepend = './selected_files/v2_test2/'   # dir of output files to make histograms
 postfix='_selected'
 # Set up output histogram files
-template_type = 'corrected'
+template_type = options.tmptype
 hist_prepend = './selected_hists/'+template_type+'/' 
 dir_name = 'controlplots'+template_type # name of the dir for control plots, such as corrected, topPT, un_corrected
   
@@ -194,20 +199,23 @@ def MakeHistograms():
             for ihist in tmplist : ihist.SetDirectory(0)
 
             # Fill Histograms
-            # Get the correct normalization of topPt reweights
-            h_MET_tmp_0 = h_MET.Clone()
-            h_MET_tmp_1 = h_MET.Clone()
-            h_MET_tmp_0.SetDirectory(0)
-            h_MET_tmp_1.SetDirectory(0)
 
-            for i in range(tmptree.GetEntries()):
-                tmptree.GetEntry(i)
-                w_top_pt = tmptree.weight_top_pT[0]
-                h_MET_tmp_0.Fill(tmptree.met_pt[0])
-                h_MET_tmp_0.Fill(tmptree.met_pt[0],w_top_pt)
-
-            topPtScale = h_MET_tmp_1.Integral()*1.0/h_MET_tmp_0.Integral()
-            print 'topPtScale = ',topPtScale
+            # Find topPtScale if we want to apply topPt reweighting
+            # To avoid the top pt weight change the overall normalization 
+            topPtScale = 1.0
+            if sample_type == 'ttbar' :
+                # Get the correct normalization of topPt reweights
+                h_MET_tmp_0 = h_MET.Clone()
+                h_MET_tmp_1 = h_MET.Clone()
+                h_MET_tmp_0.SetDirectory(0)
+                h_MET_tmp_1.SetDirectory(0)
+                for i in range(tmptree.GetEntries()):
+                    tmptree.GetEntry(i)
+                    w_top_pt = tmptree.weight_top_pT[0]
+                    h_MET_tmp_0.Fill(tmptree.met_pt[0])
+                    h_MET_tmp_1.Fill(tmptree.met_pt[0],w_top_pt)
+                topPtScale = h_MET_tmp_1.Integral()*1.0/h_MET_tmp_0.Integral()
+                print 'topPtScale = ',topPtScale
 
             for i in range(tmptree.GetEntries()):
                 # Progress report
@@ -217,15 +225,17 @@ def MakeHistograms():
                 # weights
                 w_PU = tmptree.weight_pileup[0]
                 w_btag = tmptree.weight_btag_eff[0]
-                w_top_pt = tmptree.weight_top_pT[0]
+                w_top_pt = tmptree.weight_top_pT[0]/topPtScale
                 # errors
                 err_btag = tmptree.weight_btag_eff_err[0]
                 # book all weights
-                all_weights = [w_PU,w_btag,w_top_pt]
+                all_weights = [w_PU,w_btag]
                 # Get final weight
                 event_weight = 1.0
                 if options.correction == 'yes':
                     for iw in all_weights : event_weight *= iw
+                    if options.toppt == 'yes':
+                        event_weight *= w_top_pt
                 # Fill control plots
                 # Jets
                 num_jets = tmptree.jets_pt.size()
