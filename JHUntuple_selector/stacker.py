@@ -49,17 +49,17 @@ parser.add_option('--makeplots', metavar='F', type='string', action='store',
                   help='If you want to make data MC comparison plots')
 
 parser.add_option('--toppt', metavar='F', type='string', action='store',
-                  default = 'no',
+                  default = 'yes',
                   dest='toppt',
                   help='If do top pt reweighting')
 
 parser.add_option('--correction', metavar='F', type='string', action='store',
-                  default = 'no',
+                  default = 'yes',
                   dest='correction',
                   help='If use correction')
 
 parser.add_option('--tmptype', metavar='F', type='string', action='store',
-                  default = 'uncorrected',
+                  default = 'corrected',
                   dest='tmptype',
                   help='If use correction')
 
@@ -72,12 +72,12 @@ data_lumi = 19748
 csvm = 0.679
 
 # Get input files
-prepend = './selected_files/v2_test2/'   # dir of output files to make histograms
+prepend = './selected_files/v2_beta1/all/'   # dir of output files to make histograms
 postfix='_selected'
 # Set up output histogram files
 template_type = options.tmptype
 hist_prepend = './selected_hists/'+template_type+'/' 
-dir_name = 'controlplots'+template_type # name of the dir for control plots, such as corrected, topPT, un_corrected
+dir_name = 'controlplots_'+template_type # name of the dir for control plots, such as corrected, topPT, un_corrected
   
 # initialization and declaration
 flist = []
@@ -87,30 +87,30 @@ flist = []
 #    0,         1         2        3         4           
 # (filepath, nevts_gen, xsec_NLO, type, nevts_total_ntuple)
 # Single Top
-# flist.append(['T_s','singletop',259961,3.79,259176] )
+flist.append(['T_s','singletop',259961,3.79,259176] )
 flist.append(['T_t','singletop',3758227,56.4,3748155] )
-# flist.append(['T_tW','singletop',497658,11.1,495559])
-# flist.append(['Tbar_s','singletop',139974, 1.76,139604])
-# flist.append(['Tbar_t','singletop',1935072, 30.7,1930185])
-# flist.append(['Tbar_tW','singletop',493460,11.1,491463])
-# # Wjets
-# flist.append(['W1JetsToLNu_TuneZ2Star_8TeV','wjets',23141598,6662.8,23038253])
-# flist.append(['W2JetsToLNu_TuneZ2Star_8TeV','wjets',34044921,2159.2,33993463])
-# flist.append(['W3JetsToLNu_TuneZ2Star_8TeV','wjets',15539503,640.4,15507852])
-# flist.append(['W4JetsToLNu_TuneZ2Star_8TeV','wjets',13382803,246.0,13326400])
-# # DYjets
-# flist.append(['DY1JetsToLL_M','zjets',24045248,660.6,23802736])
-# flist.append(['DY2JetsToLL_M','zjets',2352304,215.1,2345857])
-# flist.append(['DY3JetsToLL_M','zjets',11015445,65.79,10655325])
-# flist.append(['DY4JetsToLL_M','zjets',6402827,28.59,5843425])
+flist.append(['T_tW','singletop',497658,11.1,495559])
+flist.append(['Tbar_s','singletop',139974, 1.76,139604])
+flist.append(['Tbar_t','singletop',1935072, 30.7,1930185])
+flist.append(['Tbar_tW','singletop',493460,11.1,491463])
+# Wjets
+flist.append(['W1JetsToLNu_TuneZ2Star_8TeV','wjets',23141598,6662.8,23038253])
+flist.append(['W2JetsToLNu_TuneZ2Star_8TeV','wjets',34044921,2159.2,33993463])
+flist.append(['W3JetsToLNu_TuneZ2Star_8TeV','wjets',15539503,640.4,15507852])
+flist.append(['W4JetsToLNu_TuneZ2Star_8TeV','wjets',13382803,246.0,13326400])
+# DYjets
+flist.append(['DY1JetsToLL_M','zjets',24045248,660.6,23802736])
+flist.append(['DY2JetsToLL_M','zjets',2352304,215.1,2345857])
+flist.append(['DY3JetsToLL_M','zjets',11015445,65.79,10655325])
+flist.append(['DY4JetsToLL_M','zjets',6402827,28.59,5843425])
 # signal
 flist.append(['TT_CT10_TuneZ2star_8TeV','ttbar',21675970,245.9,21560109])
 
 #### Set up data input files
 #    0,         1                   2             
 # (filepath,   type,   sample_integrated_lumi
-datafile = ['SingleEl_Run2012A_v1','data',888]
-# datafile = ['SingleEl_Run2012ABCD','data',19748]
+#datafile = ['SingleEl_Run2012A_v1','data',888]
+datafile = ['SingleEl_Run2012ABCD','data',19748]
 
 def main():
     if options.makehists == 'yes':
@@ -276,7 +276,7 @@ def MakeComparisonPlots():
     ########################################################
 
     # list of histogram to make stack plots
-    hlist = ['cutflow','jets_pt','Njets','m3','lep_pt','MET','jets_eta','lep_eta','Nbjets','lep_charge']
+    hlist = ['cutflow','jets_pt','Njets','m3','lep_pt','MET','jets_eta','lep_eta','Nbjets','lep_charge','npv']
     rebinlist = ['jets_pt','m3','el_cand_pt','MET','jets_eta','el_cand_eta']
 
     stacks = []
@@ -421,7 +421,7 @@ def MakeComparisonPlots():
 
     ############ Save MC stackplots and data histograms into an root files    
     savelist = mc_stacks+data_hists+[leg]
-    saving(savelist,dir_name)
+  #  saving(savelist,dir_name)
 
     #################################################################
     #               Making yields table                             #
@@ -450,7 +450,7 @@ def MakeComparisonPlots():
     # Yields for data
     data_yields = ['data']+GetBinEntry(data_cutflow_0)
     # Write into yields output files
-    f_yields.write('sample,nocut, el selection, loose mu veto, dilep veto, jets selection, b-tagging, MET \n')
+    f_yields.write('sample,nocut, HLT,  el selection, loose mu veto, dilep veto, jets selection, b-tagging \n')
     for row in MC_yields :
         for item in row :
             f_yields.write(str(item)+',')
