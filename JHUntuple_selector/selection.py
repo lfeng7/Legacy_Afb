@@ -164,13 +164,11 @@ def selection(rootfiles):
     # Make a output root file
     if options.grid == 'yes' :
         print '\nRunning in grid mode. Creating outputfile in current dir\n'
-        gridsaving([],event_type,f_index,'recreate')
+        outname = gridsaving([],event_type,f_index,'recreate')
     else :
         print '\nRunning in interactive mode. Creating outputfile to the output dir \n'
-        saving([],event_type,f_index,'recreate')
-
-    # Make a tmp file for store tmp ttree and histograms
-    tmpf = ROOT.TFile('tmpf.root','recreate')
+        outname = saving([],event_type,f_index,'recreate')
+    fout = ROOT.TFile(outname,'update')
 
     ######## Define handles here ########
 
@@ -241,9 +239,6 @@ def selection(rootfiles):
     # cutflows
     h_cutflow = ROOT.TH1D('cutflow',event_type+' cutflow;cuts;events',7,0.,7.)
     h_cutflow.SetBit(ROOT.TH1.kCanRebin)
-    # generator level info
-    h_num_gen_b = ROOT.TH1D('NGenbjets',event_type+' Num Gen bjets;Nbjets;events',5,1,6)
-    h_num_gen_jets = ROOT.TH1D('NGenJets',event_type+' Num Gen jets;Njets;events',9,1,10) 
 
     ################################################################ 
     #                   Making TTree                               #
@@ -714,10 +709,6 @@ def selection(rootfiles):
     ################################################################
 
     h_cutflow_norm = norm(h_cutflow)
-    h_cutflow_log = h_cutflow.Clone()
-    h_cutflow_log.SetName(h_cutflow.GetName()+'_log')
-    h_cutflow_norm_log = h_cutflow_norm.Clone()
-    h_cutflow_norm_log.SetName(h_cutflow_norm.GetName()+'_log')
        
     # cutflows
     histlist = [h_cutflow,h_cutflow_norm]
@@ -732,11 +723,15 @@ def selection(rootfiles):
     else :
         if options.grid == 'yes' :
             print '\nSaving output into root files for grid use\n'
-            gridsaving(histlist+[outputtree],event_type,f_index,'update')
+    #        gridsaving(histlist+[outputtree],event_type,f_index,'update')
         else :
             print '\nSaving output into root files to local dir \n'
-            saving(histlist+[outputtree],event_type,f_index,'update')
+    #        saving(histlist+[outputtree],event_type,f_index)#,'update')
 
+    for item in histlist+[outputtree]:
+        item.SetDirectory(fout) 
+    fout.Write()
+    fout.Close()
     # Stop our timer
     timer.Stop()
 

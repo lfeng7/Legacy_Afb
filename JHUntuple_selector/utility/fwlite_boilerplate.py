@@ -157,7 +157,7 @@ def saving(histlist,event_type='MC',index = 0000,createmode='recreate'):
     for ihist in histlist:
         ihist.SetDirectory(fout)
         ihist.Write()
-    fout.Write()
+    #fout.Write()
     # file closure
     fout.Close()
     # return output names  
