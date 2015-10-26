@@ -385,6 +385,7 @@ def MakeComparisonPlots():
 
     stack_cutflow = mc_stacks[0]
     data_cutflow = data_hists[0]
+
     data_cutflow.SetMinimum(2000)
 
     # this is an ugly fix in order to get correct yields....
@@ -428,7 +429,17 @@ def MakeComparisonPlots():
     #################################################################
 
     # Make an txt files for some information output
-    f_yields = open('yields.txt','w')
+    f_yields = open('yields.csv','w')
+    f_corrected_yields = open('yields_corr.csv','w')
+
+    stack_met = mc_stacks[5]
+    data_met = data_hists[5]
+    for ihist in stack_met:
+        type_ = GetSampleType(ihist.GetFillColor())
+        integral_ = ihist.Integral()
+        f_corrected_yields.write(type_+str(integral_)+'\n')
+    f_corrected_yields.write('data'+str(data_met.Integral()))
+    f_corrected_yields.close()
 
     sample_yields = []
     for ihist in stack_cutflow_0.GetHists():
