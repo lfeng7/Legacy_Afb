@@ -418,7 +418,7 @@ def MakeComparisonPlots():
 
     # Dump plots to web
     print 'Uploading all plots to web'
-    plotting([],dir_name,'dump')
+    plotting([],dir_name,options.dumpplots)
 
     ############ Save MC stackplots and data histograms into an root files    
     savelist = mc_stacks+data_hists+[leg]
@@ -432,13 +432,15 @@ def MakeComparisonPlots():
     f_yields = open('yields.csv','w')
     f_corrected_yields = open('yields_corr.csv','w')
 
-    stack_met = mc_stacks[5]
-    data_met = data_hists[5]
-    for ihist in stack_met:
+    tmp_stack = mc_stacks[7]
+    tmp_data = data_hists[7]
+
+    for ihist in tmp_stack.GetHists():
         type_ = GetSampleType(ihist.GetFillColor())
         integral_ = ihist.Integral()
-        f_corrected_yields.write(type_+str(integral_)+'\n')
-    f_corrected_yields.write('data'+str(data_met.Integral()))
+        f_corrected_yields.write(type_+' '+str(integral_)+'\n')
+
+    f_corrected_yields.write('data'+' '+str(tmp_data.Integral()))
     f_corrected_yields.close()
 
     sample_yields = []
