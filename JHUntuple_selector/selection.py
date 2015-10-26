@@ -164,11 +164,12 @@ def selection(rootfiles):
     # Make a output root file
     if options.grid == 'yes' :
         print '\nRunning in grid mode. Creating outputfile in current dir\n'
-        fout = gridsaving([],event_type,f_index,'recreate')
+        gridsaving([],event_type,f_index,'recreate')
     else :
         print '\nRunning in interactive mode. Creating outputfile to the output dir \n'
         saving([],event_type,f_index,'recreate')
 
+    # Make a tmp file for store tmp ttree and histograms
     tmpf = ROOT.TFile('tmpf.root','recreate')
 
     ######## Define handles here ########
@@ -707,7 +708,6 @@ def selection(rootfiles):
         outputtree.Fill()         
 
     ######## end main event loop ########
-    print outputtree.GetDirectory()
  
     ################################################################
     #                   Make and save plots                        # 
@@ -732,11 +732,10 @@ def selection(rootfiles):
     else :
         if options.grid == 'yes' :
             print '\nSaving output into root files for grid use\n'
-#            gridsaving(histlist+[outputtree],event_type,f_index,'update')
+            gridsaving(histlist+[outputtree],event_type,f_index,'update')
         else :
             print '\nSaving output into root files to local dir \n'
             saving(histlist+[outputtree],event_type,f_index,'update')
-    print outputtree.GetDirectory()
 
     # Stop our timer
     timer.Stop()

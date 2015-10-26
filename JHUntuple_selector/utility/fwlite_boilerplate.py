@@ -151,14 +151,16 @@ def saving(histlist,event_type='MC',index = 0000,createmode='recreate'):
         os.mkdir(savedir)
         print 'Creating new dir '+savedir
     # Saving root files
-    outname = savedir+event_type+'_selection_output_'+str(index)+'.root'
-    fout = ROOT.TFile(savedir+event_type+'_selection_output_'+str(index)+'.root',createmode)
-    print 'saving output into file: '+savedir+event_type+'_selection_output_'+str(index)+'.root'
+    outname = savedir+event_type+'_selection_output_'+str(index)+'.root'  
+    fout = ROOT.TFile(outname,createmode)
+    print 'saving output into file: ',outname
     for ihist in histlist:
+        ihist.SetDirectory(fout)
         ihist.Write()
     fout.Write()
     # file closure
     fout.Close()
+    # return output names  
     return outname
 
 # A more general function that saves a list of objects into a single root file
@@ -188,14 +190,16 @@ def savetoroot(objects,outputdir='histograms',event_type='test',fname='',createm
 def gridsaving(histlist,event_type='MC',index = 0000,createmode='recreate'):
     # Saving root files
     outname = event_type+'_selection_output_'+str(index)+'.root'
-    fout = ROOT.TFile(event_type+'_selection_output_'+str(index)+'.root',createmode)
-    print 'saving output into file: '+event_type+'_selection_output_'+str(index)+'.root'
+    fout = ROOT.TFile(outname,createmode)
+    print 'saving output into file: ',outname
     for ihist in histlist:
+        ihist.SetDirectory(fout)
         ihist.Write()
     fout.Write()
-    return outname
     # file closure
     fout.Close()
+    return outname
+
 
 # Print pdgIds of all daughter particles
 def check_daus( gen ):
