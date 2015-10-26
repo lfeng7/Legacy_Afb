@@ -168,6 +168,7 @@ def selection(rootfiles):
     else :
         print '\nRunning in interactive mode. Creating outputfile to the output dir \n'
         fout = saving([],event_type,f_index,'recreate')
+    fout.cd()
 
     ######## Define handles here ########
 
@@ -234,19 +235,23 @@ def selection(rootfiles):
     timer = ROOT.TStopwatch()
     timer.Start()
 
+    # Book histograms
     # cutflows
     h_cutflow = ROOT.TH1D('cutflow',event_type+' cutflow;cuts;events',7,0.,7.)
     h_cutflow.SetBit(ROOT.TH1.kCanRebin)
-
     # generator level info
     h_num_gen_b = ROOT.TH1D('NGenbjets',event_type+' Num Gen bjets;Nbjets;events',5,1,6)
     h_num_gen_jets = ROOT.TH1D('NGenJets',event_type+' Num Gen jets;Njets;events',9,1,10) 
 
-    # Making ttree
-    outputtree = ROOT.TTree('selected','selected')
-    # Setup container
+    ################################################################ 
+    #                   Making TTree                               #
+    ################################################################
 
-    # branches for data and mc
+    outputtree = ROOT.TTree('selected','selected')
+
+    # Data
+
+    # set up vector containers
     jets_pt = ROOT.vector('float')()
     jets_eta = ROOT.vector('float')()
     jets_phi = ROOT.vector('float')()
@@ -266,79 +271,77 @@ def selection(rootfiles):
 
     pileup_events = ROOT.vector('float')()
 
-    # branches only for MC samples
-
-    jets_flavor = ROOT.vector('int')()
-
-    mc_pileup_events = ROOT.vector('float')()
-
-    if options.isSignal == 'yes' or options.sampletype == 'ttbar':
-        # The sequence of storage in each vector would be :
-        #   0      1     2     3     4     5
-        # init1, init2, top1, top2, w1, w2
-        gen_pt = ROOT.vector('float')()
-        gen_eta = ROOT.vector('float')()
-        gen_phi = ROOT.vector('float')()
-        gen_mass = ROOT.vector('float')()
-        gen_pdgid = ROOT.vector('int')()
-        # wether the W and/or top is on 'had' or 'lep' side,  or 'NA' 
-        gen_side = ROOT.vector('string')() 
-        # if this event is hadronic, dilep or e_jets,mu_jets,tau_jets        
-        gen_type = ROOT.vector('string')() 
-        # if this event is e+jets event
-        gen_is_ejets = ROOT.vector('int')()
-
-    # Set up vectors for MC and data vars
-    all_vecs = [jets_pt,jets_eta,jets_phi,jets_mass,jets_csv_vec,lep_pt,lep_eta,lep_phi,lep_mass,lep_charge,met_pt_vec,met_phi_vec]
-    all_vecs += [trigger_vec,pileup_events]
-
-    all_mc_vecs = [jets_flavor,mc_pileup_events]
-
-    if options.isSignal == 'yes' or options.sampletype == 'ttbar':
-        all_mc_vecs += [gen_pt,gen_eta,gen_phi,gen_mass,gen_pdgid,gen_side,gen_type,gen_is_ejets]
+    data_vecs = [jets_pt,jets_eta,jets_phi,jets_mass,jets_csv_vec,lep_pt,lep_eta,lep_phi,lep_mass,lep_charge,met_pt_vec,met_phi_vec]
+    data_vecs += [trigger_vec,pileup_events]
 
     # Set up branches
     branch_names = ['jets_pt','jets_eta','jets_phi','jets_mass','jets_csv','lep_pt','lep_eta','lep_phi','lep_mass','lep_charge','met_pt','met_phi']
     branch_names += ['trigger','pileup_events']
-    mc_branch_names = ['jets_flavor','mc_pileup_events']
-    if options.isSignal == 'yes' or options.sampletype == 'ttbar':
-        mc_branch_names += ['gen_pt','gen_eta','gen_phi','gen_mass','gen_pdgid','gen_side','gen_type','gen_is_ejets']
 
-    all_branches = zip(branch_names,all_vecs)
-    all_mc_branches = zip(mc_branch_names,all_mc_vecs)
-
-    if options.mcordata == 'mc':
-        all_vecs = all_vecs+all_mc_vecs
-        all_branches = all_branches+all_mc_branches
-
+    all_branches = zip(branch_names,data_vecs)
     for ibranch in all_branches:
         outputtree.Branch(ibranch[0],ibranch[1])
 
-    ################################################################
-    #                   All the corrections                        #
-    ################################################################
+    # Book all vectors for initiation in the event loop
+    all_vecs = []
+    all_vecs += data_vecs
 
-    corrections_vecs = []
-    corrections_branch_names = []
+    # MC samples
 
-    # PU weights
-    weight_pileup = ROOT.vector('float')()
+    if options.mcordata == 'mc' :
 
-    # Top pT weights
-    weight_top_pT = ROOT.vector('float')()
+        # set up vector containers
+        jets_flavor = ROOT.vector('int')()
+        mc_pileup_events = ROOT.vector('float')()
 
-    # b-tagging
-    weight_btag_eff = ROOT.vector('float')()
-    weight_btag_eff_err = ROOT.vector('float')()
+        mc_vecs = [jets_flavor,mc_pileup_events]
+        mc_branch_names = ['jets_flavor','mc_pileup_events']
 
-    # Set vectors for corrections
-    corrections_vecs += [weight_pileup,weight_top_pT,weight_btag_eff,weight_btag_eff_err]
-    corrections_branch_names += ['weight_pileup','weight_top_pT','weight_btag_eff','weight_btag_eff_err']
-    all_corrections = zip(corrections_branch_names,corrections_vecs)
-    # Add branches for corrections to ttree
-    if options.mcordata == 'mc':
-        for ibranch in all_corrections:
+        if options.isSignal == 'yes' or options.sampletype == 'ttbar':
+            # The sequence of storage in each vector would be :
+            #   0      1     2     3     4     5
+            # init1, init2, top1, top2, w1, w2
+            gen_pt = ROOT.vector('float')()
+            gen_eta = ROOT.vector('float')()
+            gen_phi = ROOT.vector('float')()
+            gen_mass = ROOT.vector('float')()
+            gen_pdgid = ROOT.vector('int')()
+            # wether the W and/or top is on 'had' or 'lep' side,  or 'NA' 
+            gen_side = ROOT.vector('string')() 
+            # if this event is hadronic, dilep or e_jets,mu_jets,tau_jets        
+            gen_type = ROOT.vector('string')() 
+            # if this event is e+jets event
+            gen_is_ejets = ROOT.vector('int')()
+            # add gen info into MC branches
+            mc_vecs += [gen_pt,gen_eta,gen_phi,gen_mass,gen_pdgid,gen_side,gen_type,gen_is_ejets]
+            mc_branch_names += ['gen_pt','gen_eta','gen_phi','gen_mass','gen_pdgid','gen_side','gen_type','gen_is_ejets']
+            
+        ################################################################
+        #                   All the corrections                        #
+        ################################################################
+
+        # PU weights
+        weight_pileup = ROOT.vector('float')()
+
+        # Top pT weights
+        weight_top_pT = ROOT.vector('float')()
+
+        # b-tagging
+        weight_btag_eff = ROOT.vector('float')()
+        weight_btag_eff_err = ROOT.vector('float')()
+
+        # Set vectors for corrections
+        mc_vecs += [weight_pileup,weight_top_pT,weight_btag_eff,weight_btag_eff_err]
+        mc_branch_names += ['weight_pileup','weight_top_pT','weight_btag_eff','weight_btag_eff_err']
+
+        # Add MC branches to ttree
+        all_mc_branches = zip(mc_branch_names,mc_vecs)
+        for ibranch in all_mc_branches:
             outputtree.Branch(ibranch[0],ibranch[1])
+
+        # Add MC vectors for intialization
+        all_vecs += mc_vecs
+
 
     ################################################################
     #                       Start main event loop                  # 
@@ -357,7 +360,6 @@ def selection(rootfiles):
 
         # Reset all vector containers
         for ivec in all_vecs: ivec.clear()
-        for ivec in corrections_vecs: ivec.clear()
 
         # Read objects in nTuple
         evt.getByLabel(el_prefix,'electron',el_hndl)
