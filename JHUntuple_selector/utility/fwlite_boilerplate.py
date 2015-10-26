@@ -157,7 +157,8 @@ def saving(histlist,event_type='MC',index = 0000,createmode='recreate'):
         ihist.Write()
     fout.Write()
     # file closure
-    fout.Close()
+    #fout.Close()
+    return fout
 
 # A more general function that saves a list of objects into a single root file
 def savetoroot(objects,outputdir='histograms',event_type='test',fname='',createmode='recreate'):
@@ -190,8 +191,9 @@ def gridsaving(histlist,event_type='MC',index = 0000,createmode='recreate'):
     for ihist in histlist:
         ihist.Write()
     fout.Write()
+    return fout
     # file closure
-    fout.Close()
+    # fout.Close()
 
 # Print pdgIds of all daughter particles
 def check_daus( gen ):

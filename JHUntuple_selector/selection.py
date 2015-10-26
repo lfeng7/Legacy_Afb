@@ -164,10 +164,10 @@ def selection(rootfiles):
     # Make a output root file
     if options.grid == 'yes' :
         print '\nRunning in grid mode. Creating outputfile in current dir\n'
-        gridsaving([],event_type,f_index,'recreate')
+        fout = gridsaving([],event_type,f_index,'recreate')
     else :
         print '\nRunning in interactive mode. Creating outputfile to the output dir \n'
-        saving([],event_type,f_index,'recreate')
+        fout = saving([],event_type,f_index,'recreate')
 
     ######## Define handles here ########
 
@@ -272,7 +272,7 @@ def selection(rootfiles):
 
     mc_pileup_events = ROOT.vector('float')()
 
-    if options.isSignal == 'yes' :
+    if options.isSignal == 'yes' or options.sampletype == 'ttbar':
         # The sequence of storage in each vector would be :
         #   0      1     2     3     4     5
         # init1, init2, top1, top2, w1, w2
@@ -294,14 +294,14 @@ def selection(rootfiles):
 
     all_mc_vecs = [jets_flavor,mc_pileup_events]
 
-    if options.isSignal == 'yes':
+    if options.isSignal == 'yes' or options.sampletype == 'ttbar':
         all_mc_vecs += [gen_pt,gen_eta,gen_phi,gen_mass,gen_pdgid,gen_side,gen_type,gen_is_ejets]
 
     # Set up branches
     branch_names = ['jets_pt','jets_eta','jets_phi','jets_mass','jets_csv','lep_pt','lep_eta','lep_phi','lep_mass','lep_charge','met_pt','met_phi']
     branch_names += ['trigger','pileup_events']
     mc_branch_names = ['jets_flavor','mc_pileup_events']
-    if options.isSignal == 'yes':
+    if options.isSignal == 'yes' or options.sampletype == 'ttbar':
         mc_branch_names += ['gen_pt','gen_eta','gen_phi','gen_mass','gen_pdgid','gen_side','gen_type','gen_is_ejets']
 
     all_branches = zip(branch_names,all_vecs)
@@ -357,6 +357,7 @@ def selection(rootfiles):
 
         # Reset all vector containers
         for ivec in all_vecs: ivec.clear()
+        for ivec in corrections_vecs: ivec.clear()
 
         # Read objects in nTuple
         evt.getByLabel(el_prefix,'electron',el_hndl)
@@ -582,7 +583,7 @@ def selection(rootfiles):
             # GenParticles info for signal MC only
 
             # Look into genparticel info and get Gen Top, W's and initial particles (qqbar, gg etc)
-            if options.isSignal == 'yes':
+            if options.isSignal == 'yes' or options.sampletype == 'ttbar':
                 is_ejets = 0
                 # Determine if this event is e+jets event
                 if len(gen_el) == 1 and len(gen_el)+len(gen_mu)+len(gen_tau) == 1 : 
@@ -727,10 +728,15 @@ def selection(rootfiles):
     else :
         if options.grid == 'yes' :
             print '\nSaving output into root files for grid use\n'
-            gridsaving(histlist+[outputtree],event_type,f_index,'update')
+#            gridsaving(histlist+[outputtree],event_type,f_index,'update')
         else :
             print '\nSaving output into root files to local dir \n'
-            saving(histlist+[outputtree],event_type,f_index,'update')
+#            saving(histlist+[outputtree],event_type,f_index,'update')
+
+    for item in histlist+[outputtree] :
+        item.Write()
+    fout.Write()
+    fout.Close()
 
     # Stop our timer
     timer.Stop()
