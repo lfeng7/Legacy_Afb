@@ -131,6 +131,9 @@ def MakeHistograms():
     if options.verbose =='yes':
         print 'Making histograms for these samples:'
         for ifile in selected_samples : print ifile
+    # Load some SFs
+    EleID_SFs = LoadEleSFs()
+
     # Loop over all selection root files
     for ifile in selected_samples:
         event_type = ifile[0] # Name of the sample
@@ -194,8 +197,12 @@ def MakeHistograms():
             h_w_top_pt = ROOT.TH1D('w_top_pt',htitle+';top pT weight;Events',nbins,0.6,1.3)
             h_w_btag = ROOT.TH1D('w_btag',htitle+';b-tagging weight;Events',nbins,0.8,1.5)
             h_err_btag = ROOT.TH1D('err_btag',htitle+';b-tagging weight error;Events',nbins,0.,0.2)
+            h_w_eleID = ROOT.TH1D('w_eleID',htitle+';electron ID weight;Events',nbins,0.6,1.3)
+            h_w_trigger = ROOT.TH1D('w_trigger',htitle+';HLT efficiency weight;Events',nbins,0.6,1.3)
+            h_err_eleID = ROOT.TH1D('err_eleID',htitle+';electron ID weight error;Events',nbins,0.,0.3)
+            h_err_trigger = ROOT.TH1D('err_trigger',htitle+';HLT efficiency weight error;Events',nbins,0.,0.3)
 
-            tmplist += [h_npv_true,h_w_PU,h_w_top_pt,h_w_btag,h_err_btag]
+            tmplist += [h_npv_true,h_w_PU,h_w_top_pt,h_w_btag,h_err_btag,h_w_eleID,h_w_trigger,h_err_eleID,h_err_trigger]
             for ihist in tmplist : ihist.SetDirectory(0)
 
             # Fill Histograms
@@ -222,20 +229,50 @@ def MakeHistograms():
                 if i%10000 == 0 : print 'processing event',i
                 tmptree.GetEntry(i)
 
-                # weights
+                # Do electron corrections
+                lep_pt_ = tmptree.lep_pt[0]
+                lep_eta_ = tmptree.lep_eta[0]
+                # Get Ele ID efficiency SF                
+                sf_eleID = GetEleSFs(lep_pt_,lep_eta_,EleID_SFs)
+                w_eleID = sf_eleID[0]
+                err_eleID_up = sf_eleID[1]
+                err_eleID_down = sf_eleID[2]
+                w_eleID_up = w_eleID + err_eleID_up
+                w_eleID_down = w_eleID - err_eleID_down
+                # Get HLT efficiency SF
+                sf_trigger = GetTriggerSFs(lep_pt_,lep_eta_)
+                w_trigger = sf_trigger[0]
+                err_trigger_up = sf_trigger[1]
+                err_trigger_down = sf_trigger[2]
+                w_trigger_up = w_trigger + err_trigger_up
+                w_trigger_down = w_trigger- err_trigger_down
+                # Pileup
                 w_PU = tmptree.weight_pileup[0]
+                err_PU_up = 0
+                err_PU_down = 0
+                w_PU_up = w_PU+err_PU_up
+                w_PU_down = w_PU+err_PU_down            
+                # b-tagging efficiency
                 w_btag = tmptree.weight_btag_eff[0]
-                w_top_pt = tmptree.weight_top_pT[0]/topPtScale
-                # errors
                 err_btag = tmptree.weight_btag_eff_err[0]
+                w_btag_up = w_btag + err_btag
+                w_btag_down = w_btag - err_btag              
+                # top pT
+                w_top_pt = tmptree.weight_top_pT[0]/topPtScale
                 # book all weights
-                all_weights = [w_PU,w_btag]
+                all_weights = []
+                if options.tmptype == 'scaled':
+                    all_weights += [w_PU,w_btag,w_eleID,w_trigger,w_top_pt]
+                if options.tmptype == 'scaledup':
+                    all_weights += [w_PU_up,w_btag_up,w_eleID_up,w_trigger_up,w_top_pt]
+                if options.tmptype == 'scaleddown':
+                    all_weights += [w_PU_down,w_btag_down,w_eleID_down,w_trigger_down,w_top_pt]
+                if options.tmptype == 'no_top_pt':
+                    all_weights += [w_PU,w_btag,w_eleID,w_trigger]
                 # Get final weight
                 event_weight = 1.0
-                if options.correction == 'yes':
-                    for iw in all_weights : event_weight *= iw
-                    if options.toppt == 'yes':
-                        event_weight *= w_top_pt
+                for iw in all_weights : event_weight *= iw
+
                 # Fill control plots
                 # Jets
                 num_jets = tmptree.jets_pt.size()
@@ -261,6 +298,10 @@ def MakeHistograms():
                 h_w_PU.Fill(w_PU)
                 h_w_btag.Fill(w_btag)
                 h_err_btag.Fill(err_btag)
+                h_w_eleID.Fill(w_eleID)
+                h_w_trigger.Fill(w_trigger)
+                h_err_eleID.Fill(max(err_eleID_up,err_eleID_down))
+                h_err_trigger.Fill(max(err_trigger_up,err_trigger_down))
 
         # Save histograms into root files
         print 'Saving',event_type,' histograms into root file..'

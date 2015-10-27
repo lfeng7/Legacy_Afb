@@ -41,6 +41,56 @@ def GetTopPtWeights(a,b,pt1,pt2):
         pt_w = math.exp(a+b*(pt1+pt2)/2)
     return pt_w
 
+# Trigger efficiency SF for HLT_Ele27_WP80_v*.
+# https://twiki.cern.ch/twiki/bin/viewauth/CMS/KoPFAElectronTagAndProbe
+def GetTriggerSFs(pt,eta):
+    sf = (1.0,0,0)
+    eta = abs(eta)    
+    if pt in range(30,40):
+        if 0<=eta<=0.8       : sf = (0.987,0.012,0.017)
+        if 0.8<=eta<=1.478   : sf = (0.964,0.002,0.001)
+        if 1.478<=eta<=2.500 : sf = (1.004,0.006,0.006)
+    if pt in range(40,50):
+        if 0<=eta<=0.8       : sf = (0.997,0.001,0.001)
+        if 0.8<=eta<=1.478   : sf = (0.980,0.001,0.001)
+        if 1.478<=eta<=2.500 : sf = (1.033,0.007,0.007)
+    if pt in range(50,200):
+        if 0<=eta<=0.8       : sf = (0.998,0.002,0.002)
+        if 0.8<=eta<=1.478   : sf = (0.988,0.002,0.002)
+        if 1.478<=eta<=2.500 : sf = (0.976,0.015,0.012) 
+    return sf       
+
+# Electron cut-based ID efficiency SF
+# https://twiki.cern.ch/twiki/bin/view/Main/EGammaScaleFactors2012#2012_8_TeV_Jan22_Re_recoed_data
+def LoadEleSFs():
+    with open('sFGsfIdTight.txt','r') as fin:
+        data = fin.readlines()
+    all_SFs = []
+    for line in data:
+        line = line.split('    ')
+        if not len(line) == 8 : continue
+        irow = []
+        for item in line :
+            if item.strip() != '':
+                irow.append(float(item.strip()))
+        all_SFs.append(irow)
+    print 'Electron cut based ID efficiency SFs loaded!'
+    return all_SFs
+
+def GetEleSFs(pt,eta,SFtable):
+    sf = [1.,0,0]
+    eta = abs(eta)
+    for irow in SFtable:
+        pt1 = irow[0]
+        pt2 = irow[1]
+        eta1 = irow[2]
+        eta2 = irow[3]
+        sf_ = irow[4]
+        err_up = irow[5]
+        err_down = irow[6]
+        if pt1 <=pt<=pt2 and eta1<=eta<=eta2 :
+            sf = [sf_,err_up,err_down]
+    return sf
 
 #btagging efficiency
 
