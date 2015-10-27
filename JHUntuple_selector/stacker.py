@@ -24,7 +24,7 @@ parser.add_option('--maxfiles', metavar='F', type='int', action='store',
                   help='max number of input ntuple files')
 
 parser.add_option('--upload', metavar='F', type='string', action='store',
-                  default = 'dump',
+                  default = 'yes',
                   dest='dumpplots',
                   help='if you want to dump plots to MY webpage! Unless you modify fwlite_boilerplate >_<')
 
@@ -452,14 +452,15 @@ def MakeComparisonPlots():
     for item in data_mc :
         comparison_plot_v1(item[0],item[1],leg,dir_name)
 
-    data_mc_log = ([stack_cutflow,data_cutflow],[mc_stacks[0],data_hists[0]])
+    data_mc_log = ([stack_cutflow,data_cutflow],[mc_stacks[1],data_hists[1]])
 
     for item in data_mc_log :
         comparison_plot(item[0],item[1],leg,dir_name,'not dump','log','p')
 
     # Dump plots to web
-    print 'Uploading all plots to web'
-    plotting([],dir_name,options.dumpplots)
+    if options.dumpplots == 'yes':
+        print 'Uploading all plots to web'
+        plotting([],dir_name,'dump')
 
     ############ Save MC stackplots and data histograms into an root files    
     savelist = mc_stacks+data_hists+[leg]
@@ -470,8 +471,8 @@ def MakeComparisonPlots():
     #################################################################
 
     # Make an txt files for some information output
-    f_yields = open('yields.csv','w')
-    f_corrected_yields = open('yields_corr.csv','w')
+    f_yields = open('./csvfiles/cutflow.csv','w')
+    f_corrected_yields = open('./csvfiles/yields_'+options.tmptype+'.csv','w')
 
     tmp_stack = mc_stacks[7]
     tmp_data = data_hists[7]
@@ -515,6 +516,7 @@ def MakeComparisonPlots():
     # file closure
     f_info.close()
     f_yields.close()
+    f_corrected_yields.close()
     fdata.Close()  
 
 

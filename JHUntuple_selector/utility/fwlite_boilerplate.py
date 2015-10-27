@@ -109,11 +109,12 @@ def comparison_plot(mc_,data_,legend,event_type='MC',upload = False,logy=False,o
     fout = ROOT.TFile(plotdir+event_type+'_plots.root',createmode)
 
     # plotting
-    c1 = ROOT.TCanvas(data_.GetName())
     if logy == "log" : 
+        c1 = ROOT.TCanvas(data_.GetName()+'_log')
         c1.SetLogy()
         name = plotdir+event_type+'_'+mc_.GetName()+'_compare_log.png'
     else :
+        c1 = ROOT.TCanvas(data_.GetName())
         name = plotdir+event_type+'_'+mc_.GetName()+'_compare.png'
     # Find the max of both histograms
     max_mc = mc_.GetMaximum()
