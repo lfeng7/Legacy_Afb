@@ -85,6 +85,17 @@ parser.add_option('--fakelep', metavar='F', type='string', action='store',
                   dest='fakelep',
                   help='If select fake leptons')
 
+parser.add_option('--mctype', metavar='F', type='string', action='store',
+                  default = 'test',
+                  dest='sampletype',
+                  help='type of sample files')
+
+# if want to make plots, use multiple input patfiles instead of looping over each files
+parser.add_option('--makeplots', metavar='F', type='string', action='store',
+                  default = 'no',
+                  dest='makeplots',
+                  help='If we want to make plots directly. This is for testing purpose mostly, which enables plotting directly.')
+
 (options, args) = parser.parse_args()
 
 argv = []
