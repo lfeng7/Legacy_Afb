@@ -57,14 +57,13 @@ parser.add_option('--fakelep', metavar='F', type='string', action='store',
 argv = []
 
 # Get input files
-prepend = './selected_files/v2_trigger_removed/all/'   # dir of output files to make histograms
-postfix='_selected'
+prepend = './selected_files/test/'   # dir of output files to make histograms
+postfix='_selected.root'
 input_tree_name = 'selected'
 # Set up output root file dir
 template_type = options.run_type
  
 # initialization and declaration
-flist = []
 
 #### Set up MC input files
 # stucture of a list of files
@@ -91,6 +90,7 @@ flist.append(['DY4JetsToLL_M','zjets',6402827,28.59,5843425])
 # signal
 flist.append(['TT_CT10_TuneZ2star_8TeV','ttbar',21675970,245.9,21560109])
 
+flist = (['TT_CT10_TuneZ2star_8TeV','ttbar'])
 
 def MakeBtaggingEfficiency():
     fout_postfix = '_CSVM_bTaggingEfficiencyMap.root'
@@ -110,7 +110,7 @@ def MakeBtaggingEfficiency():
         # Make output file
         # will save to btagging_efficiency_files/template_type/event_type_control_plots.root
         typename = all_type_names[itype]        
-        foutname = savetoroot([],'btagging_efficiency_files',template_type,typename+'_')
+        foutname = 
         fout = ROOT.TFile(foutname,'update')  
         print 'Making:',fout 
         ################################################################
@@ -160,7 +160,8 @@ def MakeBtaggingEfficiency():
         #           Loop over input files in current type              #
         ################################################################
         for ifile in selected_files[itype] :
-            tmp_f = ROOT.TFile(ifile)
+            tmp_name =  prepend+ifile+postfix
+            tmp_f = ROOT.TFile(tmp_f)
             tmp_tree = tmp_f.Get(input_tree_name)   
             # Loop over entries
             nev = tmp_tree.GetEntries()

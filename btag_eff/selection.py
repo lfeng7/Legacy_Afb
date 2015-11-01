@@ -226,7 +226,7 @@ def selection(rootfiles):
     lep_phi = ROOT.vector('float')()
     lep_mass = ROOT.vector('float')()
     lep_charge = ROOT.vector('int')()
-    lep_iso = ROOT.vector('int')()
+    lep_iso = ROOT.vector('float')()
 
     met_pt_vec = ROOT.vector('float')()
     met_phi_vec = ROOT.vector('float')()
