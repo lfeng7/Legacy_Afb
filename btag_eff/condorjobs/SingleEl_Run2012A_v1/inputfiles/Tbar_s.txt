@@ -1,0 +1,1 @@
+/eos/uscms/store/user/lfeng7/ntuples/jhu_diffmo/TT_CT10_TuneZ2star_8TeV-powheg-tauola/crab_TTBar_Powheg_v1_all/151009_164308/0000/*.root

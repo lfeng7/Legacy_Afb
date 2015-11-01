@@ -24,6 +24,7 @@ import math
 evt_to_run = -1 
 csv_cut = 0.679
 trigger_path='HLT_Ele27_WP80_v'
+lepiso_cut = 0.15
 
 #event_type = 'Powheg_TT_btag'
 events_passed = -1
@@ -96,6 +97,11 @@ parser.add_option('--mctype', metavar='F', type='string', action='store',
                   default = 'test',
                   dest='sampletype',
                   help='type of sample files')
+
+parser.add_option('--fakelep', metavar='F', type='string', action='store',
+                  default = 'no',
+                  dest='fakelep',
+                  help='If select fake leptons')
 
 # if want to make plots, use multiple input patfiles instead of looping over each files
 parser.add_option('--makeplots', metavar='F', type='string', action='store',
@@ -260,6 +266,7 @@ def selection(rootfiles):
     lep_phi = ROOT.vector('float')()
     lep_mass = ROOT.vector('float')()
     lep_charge = ROOT.vector('int')()
+    lep_iso = ROOT.vector('int')()
 
     met_pt_vec = ROOT.vector('float')()
     met_phi_vec = ROOT.vector('float')()
@@ -269,11 +276,11 @@ def selection(rootfiles):
     pileup_events = ROOT.vector('float')()
 
     data_vecs = [jets_pt,jets_eta,jets_phi,jets_mass,jets_csv_vec,lep_pt,lep_eta,lep_phi,lep_mass,lep_charge,met_pt_vec,met_phi_vec]
-    data_vecs += [trigger_vec,pileup_events]
+    data_vecs += [trigger_vec,pileup_events,lep_iso]
 
     # Set up branches
     branch_names = ['jets_pt','jets_eta','jets_phi','jets_mass','jets_csv','lep_pt','lep_eta','lep_phi','lep_mass','lep_charge','met_pt','met_phi']
-    branch_names += ['trigger','pileup_events']
+    branch_names += ['trigger','pileup_events','lep_iso']
 
     all_branches = zip(branch_names,data_vecs)
     for ibranch in all_branches:
@@ -453,10 +460,14 @@ def selection(rootfiles):
             icharge = el_charge[i]
             # PFelectrons passed loose selection
             # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Veto
-            if el_isLoose[i] and el_iso[i]<0.15 and el.pt()>20 and math.fabs(el.eta())<2.5 : el_loose.append((el,icharge))
+            if el_isLoose[i] and el_iso[i]<0.15 and el.pt()>20 and math.fabs(el.eta())<2.5 : el_loose.append((el,icharge,el_iso[i]))
             # PFelectrons passed tight selection
             # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Signal
-            if el_isTight[i] and not el_isModTight[i] and el_iso[i]<0.1 and el.pt()>30 and abs(el.eta())<2.5: el_cand.append((el,icharge))
+            if el_isTight[i] and not el_isModTight[i] and el.pt()>30 and abs(el.eta())<2.5: 
+                if options.fakelep == 'no' and el_iso[i]<0.1:
+                    el_cand.append((el,icharge,el_iso[i]))
+                if options.fakelep == 'yes' and lepiso_cut < el_iso[i] < 1.0 :
+                    el_cand.append((el,icharge,el_iso[i]))
         el_extra = list( ipar for ipar in el_loose if ipar not in el_cand)
 
         #### PF muons ####
@@ -522,8 +533,10 @@ def selection(rootfiles):
         # lep
         lepp4 = el_cand[0][0]
         lepcharge = el_cand[0][1]
+        lepiso = el_cand[0][2]
         lep_pt.push_back(lepp4.pt());lep_eta.push_back(lepp4.eta());lep_phi.push_back(lepp4.phi());lep_mass.push_back(lepp4.mass())
         lep_charge.push_back(lepcharge)
+        lep_iso.push_back(lepiso)
         # MET
         met_pt_vec.push_back(met_pt[0])
         met_phi_vec.push_back(met_phi[0])

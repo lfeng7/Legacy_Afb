@@ -63,6 +63,22 @@ parser.add_option('--tmptype', metavar='F', type='string', action='store',
                   dest='tmptype',
                   help='If use correction')
 
+parser.add_option('--applytrigger', metavar='F', type='string', action='store',
+                  default = 'no',
+                  dest='applytrigger',
+                  help='If apply trigger on MC')
+
+parser.add_option('--fakelep', metavar='F', type='string', action='store',
+                  default = 'no',
+                  dest='fakelep',
+                  help='If run on selected events with fake lepton.')
+
+parser.add_option('--lepisocut', metavar='F', type='int', action='store',
+                  default = 0.15,
+                  dest='lepisocut',
+                  help='Lower bound for fake electron isolation.')
+
+
 (options, args) = parser.parse_args()
 
 argv = []
@@ -77,7 +93,10 @@ postfix='_selected'
 # Set up output histogram files
 template_type = options.tmptype
 hist_prepend = './selected_hists/'+template_type+'/' 
-dir_name = 'controlplots_'+template_type # name of the dir for control plots, such as corrected, topPT, un_corrected
+if options.fakelep == 'yes':
+    dir_name = 'controlplots_'+template_type+'_fakelep' # name of the dir for control plots, such as corrected, topPT, un_corrected
+else:    
+    dir_name = 'controlplots_'+template_type # name of the dir for control plots, such as corrected, topPT, un_corrected
   
 # initialization and declaration
 flist = []
@@ -159,10 +178,10 @@ def MakeHistograms():
         h_Nbjets = ROOT.TH1D('Nbjets',event_type+' Num tagged bjets;Nbjets;events',5,1,6)
         h_npv = ROOT.TH1D('npv',htitle+';Number of Primary Vertices;Events',35,0,35)
         h_5jets_pt = ROOT.TH1D('5jets_pt',event_type+' selected 4 or 5 leading jets pT;pT(GeV);events',nbins,30.,400.)
-
+        h_lep_iso = ROOT.TH1D('lep_iso',htitle+';eta;events',nbins,0,1.0)
         # Make a list of histograms for write
         tmplist = [h_cutflow,h_cutflow_norm,h_lep_pt,h_lep_eta,h_lep_charge, h_m3,h_Njets,h_jets_pt,h_jets_eta,h_MET,h_Nbjets,h_npv]
-        tmplist+= [h_5jets_pt]
+        tmplist+= [h_5jets_pt,h_lep_iso]
 
         # Remove the attachement of histograms from input root file, debug only
         for ihist in tmplist : ihist.SetDirectory(0)
@@ -173,6 +192,9 @@ def MakeHistograms():
                 # Progress report
                 if i%10000 == 0 : print 'processing event',i
                 tmptree.GetEntry(i)
+                # Skip events with additional cut on leption iso if process fake-lepton events
+                lep_iso_ = tmptree.lep_iso[0]
+                if options.fakelep == 'yes' and lep_iso_ < options.lepisocut : continue
                 # Jets
                 num_jets = tmptree.jets_pt.size()
                 h_Njets.Fill(num_jets)
@@ -189,6 +211,7 @@ def MakeHistograms():
                 h_lep_pt.Fill(tmptree.lep_pt[0])
                 h_lep_eta.Fill(tmptree.lep_eta[0])
                 h_lep_charge.Fill(tmptree.lep_charge[0])
+                h_lep_iso.Fill(tmptree.lep_iso[0])
                 #MET
                 h_MET.Fill(tmptree.met_pt[0])
                 #npv
@@ -222,6 +245,8 @@ def MakeHistograms():
                 h_MET_tmp_1.SetDirectory(0)
                 for i in range(tmptree.GetEntries()):
                     tmptree.GetEntry(i)
+                    # Skip events with additional cut on leption iso if process fake-lepton events                
+                    if options.fakelep == 'yes' and lep_iso_ < options.lepisocut : continue                    
                     w_top_pt = tmptree.weight_top_pT[0]
                     h_MET_tmp_0.Fill(tmptree.met_pt[0])
                     h_MET_tmp_1.Fill(tmptree.met_pt[0],w_top_pt)
@@ -236,6 +261,10 @@ def MakeHistograms():
                 # Do electron corrections
                 lep_pt_ = tmptree.lep_pt[0]
                 lep_eta_ = tmptree.lep_eta[0]
+                lep_iso_ = tmptree.lep_iso[0]
+                # Skip events with additional cut on leption iso if process fake-lepton events                
+                if options.fakelep == 'yes' and lep_iso_ < options.lepisocut : continue
+
                 # Get Ele ID efficiency SF                
                 sf_eleID = GetEleSFs(lep_pt_,lep_eta_,EleID_SFs)
                 w_eleID = sf_eleID[0]
@@ -283,6 +312,8 @@ def MakeHistograms():
                 h_Njets.Fill(num_jets)
                 for ijet in tmptree.jets_pt: h_jets_pt.Fill(ijet,event_weight)
                 for ijet in tmptree.jets_eta: h_jets_eta.Fill(ijet,event_weight)
+                if tmptree.jets_pt.size()<=5:
+                    for ijet in tmptree.jets_pt: h_5jets_pt.Fill(ijet,event_weight)
                 bjets = []
                 for ijet in tmptree.jets_csv:
                     if ijet>csvm : bjets.append(ijet)
@@ -292,6 +323,7 @@ def MakeHistograms():
                 h_lep_pt.Fill(tmptree.lep_pt[0],event_weight)
                 h_lep_eta.Fill(tmptree.lep_eta[0],event_weight)
                 h_lep_charge.Fill(tmptree.lep_charge[0],event_weight)
+                h_lep_iso.Fill(tmptree.lep_iso[0],event_weight)
                 # MET
                 h_MET.Fill(tmptree.met_pt[0],event_weight)
                 # npv
@@ -476,7 +508,10 @@ def MakeComparisonPlots():
 
     # Make an txt files for some information output
     f_yields = open('./csvfiles/cutflow.csv','w')
-    f_corrected_yields = open('./csvfiles/yields_'+options.tmptype+'.csv','w')
+    if options.fakelep == 'no':
+        f_corrected_yields = open('./csvfiles/yields_'+options.tmptype+'.csv','w')
+    else :
+        f_corrected_yields = open('./csvfiles/yields_'+options.tmptype+'_fakelep.csv','w')
 
     tmp_stack = mc_stacks[7]
     tmp_data = data_hists[7]
