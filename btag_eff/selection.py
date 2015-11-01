@@ -115,22 +115,17 @@ def main():
     for ifile in files : print ifile
    
     # Run selection function to do selections
-    # If we want to make plots, use many files input form
-    # If not make plots, each PATtuple file will generate a ntuple files, with index go from 0 to maxFiles
-    if options.makeplots == 'True' :
-        selection(files)
-    else :
-        global f_index
-        f_index = 0
-        for ifile in files:
-            # find the index of the input file
-            index_ = ifile.split('jhutester_numEvent1000_')
-            index_ = index_[1].split('.root')
-            f_index = int( index_[0])
-            print 'processing file  '+ifile
-            #print 'current file index is',f_index
-            selection(ifile)
-
+    # Each PATtuple file will generate a ntuple files, with index go from 0 to maxFiles
+    global f_index
+    f_index = 0
+    for ifile in files:
+        # find the index of the input file
+        index_ = ifile.split('jhutester_numEvent1000_')
+        index_ = index_[1].split('.root')
+        f_index = int( index_[0])
+        print 'processing file  '+ifile
+        #print 'current file index is',f_index
+        selection(ifile)
 
 # selection is the function to do selection. patfile should be EDM PATtuple files
 def selection(rootfiles):
