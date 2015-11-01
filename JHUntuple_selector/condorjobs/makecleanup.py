@@ -1,4 +1,4 @@
-prepend = '/uscms_data/d3/lfeng7/Legacy_Afb/analysis/CMSSW_5_3_24/work/selection/JHUntuple_selector/output_rootfiles/v2_cutflow_modified/'
+prepend = '../../selected_files/v2_trigger_removed/'
 fout = open('cleanall.sh','w')
 import glob
 alldir = glob.glob('*')

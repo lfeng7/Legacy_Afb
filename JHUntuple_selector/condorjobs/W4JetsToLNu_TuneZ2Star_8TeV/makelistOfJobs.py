@@ -7,7 +7,7 @@ sampletype = 'W4JetsToLNu_TuneZ2Star_8TeV'
 mcordata = 'mc'
 while startfile < num_files :
 	toprint = 'python ./tardir/selection.py --txtfiles tardir/inputfiles/'+txtfile+' --makeplots no --mcordata '+mcordata
-	toprint += ' --maxevts -1 --type '+sampletype+' --grid yes --maxfiles '+str(filesperjob)+' --startfile '+str(startfile)+'\n'
+	toprint += ' --mctype wjets --maxevts -1 --type '+sampletype+' --grid yes --maxfiles '+str(filesperjob)+' --startfile '+str(startfile)+'\n'
 	fout.write(toprint)
 	startfile += filesperjob
 

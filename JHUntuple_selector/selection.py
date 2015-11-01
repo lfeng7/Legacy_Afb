@@ -11,6 +11,8 @@
 # Maybe I can add some functionallity to rename to output dir as the --type?
 # Edit log
 # Start the v2 development.
+# Finish ttree making in selection
+# Start to include all corrections
 
 
 from utility import *
@@ -18,9 +20,11 @@ import os
 import glob
 import math
 
-# Some control var
+# Some predefined var
 evt_to_run = -1 
 csv_cut = 0.679
+trigger_path='HLT_Ele27_WP80_v'
+
 #event_type = 'Powheg_TT_btag'
 events_passed = -1
 
@@ -48,10 +52,20 @@ parser.add_option('--txtfiles', metavar='F', type='string', action='store',
                   dest='txtfiles',
                   help='Input txt files')
 
+parser.add_option('--applyHLT', metavar='F', type='string', action='store',
+                  default = "no",
+                  dest='applyHLT',
+                  help='If apply HLT as first selection cut.')
+
 parser.add_option('--mcordata', metavar='F', type='string', action='store',
                   default = "mc",
                   dest='mcordata',
                   help='If this run is on data or mc')
+
+parser.add_option('--signal', metavar='F', type='string', action='store',
+                  default = "no",
+                  dest='isSignal',
+                  help='If this run is on signal MC ( TTbar )')
 
 parser.add_option('--grid', metavar='F', type='string', action='store',
                   default = "no",
@@ -69,13 +83,18 @@ parser.add_option('--startfile', metavar='F', type='int', action='store',
                   help='starting file index of input ntuple files')
 
 parser.add_option('--maxevts', metavar='F', type='int', action='store',
-                  default = 100000,
+                  default = 10000,
                   dest='maxEvts',
                   help='max number of input ntuple files')
 
 parser.add_option('--type', metavar='F', type='string', action='store',
                   default = 'test',
                   dest='evtType',
+                  help='type of sample files or the name of the sample, i.e., W4Jets, Data, TT_8TeV etc')
+
+parser.add_option('--mctype', metavar='F', type='string', action='store',
+                  default = 'test',
+                  dest='sampletype',
                   help='type of sample files')
 
 # if want to make plots, use multiple input patfiles instead of looping over each files
@@ -91,7 +110,7 @@ argv = []
 
 def main():
     # Get the file list with all input files.
-    if options.inputFiles:
+    if options.inputFiles != '':
         allfiles = glob.glob( options.inputFiles )
     elif options.txtfiles:
         allfiles = []
@@ -107,6 +126,8 @@ def main():
     # Only keep certain number of input files for fexibility
     files = GetSomeFiles(allfiles,options.startfile,options.maxfiles)
 
+    # debug only
+    #files = ['ntuples/sample_jhudiffmo/TT_jhutester_numEvent1000_99.root']
     # Print out information on the input files
     print 'Getting these files:'
     for ifile in files : print ifile
@@ -143,10 +164,11 @@ def selection(rootfiles):
     # Make a output root file
     if options.grid == 'yes' :
         print '\nRunning in grid mode. Creating outputfile in current dir\n'
-        gridsaving([],event_type,f_index,'recreate')
+        outname = gridsaving([],event_type,f_index,'recreate')
     else :
         print '\nRunning in interactive mode. Creating outputfile to the output dir \n'
-        saving([],event_type,f_index,'recreate')
+        outname = saving([],event_type,f_index,'recreate')
+    fout = ROOT.TFile(outname,'update')
 
     ######## Define handles here ########
 
@@ -169,6 +191,12 @@ def selection(rootfiles):
     mu_isTight_hndl = Handle('vector<unsigned int>')
     mu_isTight_label = ("jhuMuonPFlow","muonistight")
 
+    # define label module names here
+    el_prefix = 'jhuElePFlow'
+    el_loose_prefix = 'jhuElePFlowLoose'
+    mu_prefix = 'jhuMuonPFlow'
+    muloose_prefix = 'jhuMuonPFlowLoose'
+
     # MET
     met_phi_hndl = Handle('double')
     met_hndl = Handle('double')
@@ -183,37 +211,44 @@ def selection(rootfiles):
     jet_PartonFlavor_hndl = Handle('vector<int> ')
     jet_PartonFlavor_label = ( "jhuAk5","AK5PartonFlavour") 
 
+    # Trigger
+    trig_hndl = Handle('edm::TriggerResults')
+    trig_label = ("TriggerResults","","HLT")
+
+    # PU
+    dataPileupHandle = Handle('unsigned int')
+    dataPileupLabel  = ('jhuGen','npv')
+    # MC PU
+    npvRealTrueHandle = Handle('unsigned int')
+    npvRealTrueLabel  = ('jhuGen','npvTrue')   
+      
     # gen info
     gen_hndl = Handle('vector<reco::GenParticle>  ') 
     gen_label = "prunedGenParticles"
 
-    # define label module names here
-    el_prefix = 'jhuElePFlow'
-    el_loose_prefix = 'jhuElePFlowLoose'
-    mu_prefix = 'jhuMuonPFlow'
-    muloose_prefix = 'jhuMuonPFlowLoose'
-
 
     ## Initialization
     pdg_jets = [1,2,3,4,5,21]
+    pdg_leps = [11,13,15]
     n_evt = 0
     n_evts_passed,n_PFel,n_PFel_isloose,n_PFel_istight = 0,0,0,0
     timer = ROOT.TStopwatch()
     timer.Start()
 
+    # Book histograms
     # cutflows
     h_cutflow = ROOT.TH1D('cutflow',event_type+' cutflow;cuts;events',7,0.,7.)
     h_cutflow.SetBit(ROOT.TH1.kCanRebin)
 
-    # generator level info
-    h_num_gen_b = ROOT.TH1D('NGenbjets',event_type+' Num Gen bjets;Nbjets;events',5,1,6)
-    h_num_gen_jets = ROOT.TH1D('NGenJets',event_type+' Num Gen jets;Njets;events',9,1,10) 
+    ################################################################ 
+    #                   Making TTree                               #
+    ################################################################
 
-    # Making ttree
     outputtree = ROOT.TTree('selected','selected')
-    # Setup container
 
-    # branches for data and mc
+    # Data
+
+    # set up vector containers
     jets_pt = ROOT.vector('float')()
     jets_eta = ROOT.vector('float')()
     jets_phi = ROOT.vector('float')()
@@ -229,45 +264,86 @@ def selection(rootfiles):
     met_pt_vec = ROOT.vector('float')()
     met_phi_vec = ROOT.vector('float')()
 
-    # branches only for MC samples
-    jets_flavor = ROOT.vector('int')()
+    trigger_vec = ROOT.vector('bool')()   
 
-    gen_whad = ROOT.vector('TLorentzVector')()
-    gen_whad_pdgid = ROOT.vector('int')()
+    pileup_events = ROOT.vector('float')()
 
-    gen_wlep = ROOT.vector('TLorentzVector')()
-    gen_wlep_pdgid = ROOT.vector('int')()
-
-    gen_thad = ROOT.vector('TLorentzVector')()
-    gen_thad_pdgid = ROOT.vector('int')()
-
-    gen_tlep = ROOT.vector('TLorentzVector')()
-    gen_tlep_pdgid = ROOT.vector('int')()
-
-    gen_q = ROOT.vector('TLorentzVector')()
-    gen_q_pdgid = ROOT.vector('int')()
-
-    gen_qbar = ROOT.vector('TLorentzVector')()
-    gen_qbar_pdgid = ROOT.vector('int')()
-
-    all_vecs = [jets_pt,jets_eta,jets_phi,jets_mass,jets_csv_vec,lep_pt,lep_eta,lep_phi,lep_mass,lep_charge,met_pt_vec,met_phi_vec]
-    all_mc_vecs = [jets_flavor]
+    data_vecs = [jets_pt,jets_eta,jets_phi,jets_mass,jets_csv_vec,lep_pt,lep_eta,lep_phi,lep_mass,lep_charge,met_pt_vec,met_phi_vec]
+    data_vecs += [trigger_vec,pileup_events]
 
     # Set up branches
     branch_names = ['jets_pt','jets_eta','jets_phi','jets_mass','jets_csv','lep_pt','lep_eta','lep_phi','lep_mass','lep_charge','met_pt','met_phi']
-    mc_branch_names = ['jets_flavor']
+    branch_names += ['trigger','pileup_events']
 
-    all_branches = zip(branch_names,all_vecs)
-    all_mc_branches = zip(mc_branch_names,all_mc_vecs)
-
-    if options.mcordata == 'mc':
-        all_vecs = all_vecs+all_mc_vecs
-        all_branches = all_branches+all_mc_branches
-
+    all_branches = zip(branch_names,data_vecs)
     for ibranch in all_branches:
         outputtree.Branch(ibranch[0],ibranch[1])
 
-    # Start main event loop
+    # Book all vectors for initiation in the event loop
+    all_vecs = []
+    all_vecs += data_vecs
+
+    # MC samples
+
+    if options.mcordata == 'mc' :
+
+        # set up vector containers
+        jets_flavor = ROOT.vector('int')()
+        mc_pileup_events = ROOT.vector('float')()
+
+        mc_vecs = [jets_flavor,mc_pileup_events]
+        mc_branch_names = ['jets_flavor','mc_pileup_events']
+
+        if options.isSignal == 'yes' or options.sampletype == 'ttbar':
+            # The sequence of storage in each vector would be :
+            #   0      1     2     3     4     5
+            # init1, init2, top1, top2, w1, w2
+            gen_pt = ROOT.vector('float')()
+            gen_eta = ROOT.vector('float')()
+            gen_phi = ROOT.vector('float')()
+            gen_mass = ROOT.vector('float')()
+            gen_pdgid = ROOT.vector('int')()
+            # wether the W and/or top is on 'had' or 'lep' side,  or 'NA' 
+            gen_side = ROOT.vector('string')() 
+            # if this event is hadronic, dilep or e_jets,mu_jets,tau_jets        
+            gen_type = ROOT.vector('string')() 
+            # if this event is e+jets event
+            gen_is_ejets = ROOT.vector('int')()
+            # add gen info into MC branches
+            mc_vecs += [gen_pt,gen_eta,gen_phi,gen_mass,gen_pdgid,gen_side,gen_type,gen_is_ejets]
+            mc_branch_names += ['gen_pt','gen_eta','gen_phi','gen_mass','gen_pdgid','gen_side','gen_type','gen_is_ejets']
+            
+        ################################################################
+        #                   All the corrections                        #
+        ################################################################
+
+        # PU weights
+        weight_pileup = ROOT.vector('float')()
+
+        # Top pT weights
+        weight_top_pT = ROOT.vector('float')()
+
+        # b-tagging
+        weight_btag_eff = ROOT.vector('float')()
+        weight_btag_eff_err = ROOT.vector('float')()
+
+        # Set vectors for corrections
+        mc_vecs += [weight_pileup,weight_top_pT,weight_btag_eff,weight_btag_eff_err]
+        mc_branch_names += ['weight_pileup','weight_top_pT','weight_btag_eff','weight_btag_eff_err']
+
+        # Add MC branches to ttree
+        all_mc_branches = zip(mc_branch_names,mc_vecs)
+        for ibranch in all_mc_branches:
+            outputtree.Branch(ibranch[0],ibranch[1])
+
+        # Add MC vectors for intialization
+        all_vecs += mc_vecs
+
+
+    ################################################################
+    #                       Start main event loop                  # 
+    ################################################################
+
     for evt in events:
         # progrss reporting
         if n_evt%5000 == 1: print 'Loop over',n_evt,'event',', selected',n_evts_passed,'candidate events'
@@ -320,6 +396,26 @@ def selection(rootfiles):
         jets_p4 = jet_p4_hndl.product()
         jets_csv = jet_csv_hndl.product()
 
+        # Get trigger bits
+        evt.getByLabel(trig_label,trig_hndl)
+        trig_ = trig_hndl.product()
+        iev = evt.object()
+        triggerNames = iev.triggerNames(trig_)        
+        trigName = ''
+        for itrig in triggerNames.triggerNames():
+            if trigger_path in itrig : trigName = itrig
+        if trigger_path not in trigName :
+            print 'No trigger',trigger_path,'found in evt',n_evt,'! Will skip this event.'
+        passTrig=trig_.accept(triggerNames.triggerIndex(trigName))   
+        trigger_vec.push_back(passTrig)     
+
+        # Initialize cutflow histogram
+        h_cutflow.Fill("no cut",1)
+        # Apply trigger 
+        if options.applyHLT == 'yes' :
+            if not passTrig : continue
+            h_cutflow.Fill('HLT',1)
+
         # Informations for MC only     
         if options.mcordata == 'mc' :
 
@@ -327,6 +423,9 @@ def selection(rootfiles):
 
             # Get gen particles and find out the true identy of the PF electron collection
             evt.getByLabel(gen_label,gen_hndl)
+            if not gen_hndl.isValid() :
+                print 'No Genparticles info available!'
+                continue
             genpars = gen_hndl.product()
             # get all final state particles,status = 3,and particles with no daughters(final state partons) 
             # or particles from W's which may have daughters
@@ -342,11 +441,10 @@ def selection(rootfiles):
             gen_tau = list(ipar for ipar in final_par if ipar.status() == 3 and abs(ipar.pdgId()) == 15)
             gen_b = list(ipar for ipar in final_par if abs(ipar.pdgId()) == 5)
             gen_jets = list(ipar for ipar in final_par if abs(ipar.pdgId()) in pdg_jets)
-            # Determine if this event is e+jets event
-            if len(gen_el) == 1 and len(gen_el)+len(gen_mu)+len(gen_tau) == 1 : 
-                Is_ejets = True
 
-        ################ Find all physics objects for reconstruction ###################
+        ################################################################ 
+        #       Physics objects picking and event selections           # 
+        ################################################################
 
         #### PF electrons ####
         el_loose,el_cand = [],[]
@@ -368,6 +466,14 @@ def selection(rootfiles):
             mu = mu_p4[i]
             if mu_is_loose[i] and mu_iso[i]< 0.2 and mu.pt()>10 and abs(mu.eta())<2.5: mu_loose.append(mu)
 
+        # Selection on leptons        
+        if not len(el_cand)==1 : continue # continue
+        h_cutflow.Fill('el',1)
+        if len(mu_loose) > 0 : continue
+        h_cutflow.Fill('loose mu veto',1)
+        if len(el_extra) > 0 : continue
+        h_cutflow.Fill('dilep veto',1)            
+
         ##### AK5 jets ####
 
         # jets Selection       https://twiki.cern.ch/twiki/bin/view/CMS/TopJMERun1#Jets
@@ -383,32 +489,23 @@ def selection(rootfiles):
                     break
         jets_cand_p4 = [ ijet[1] for ijet in jets_cand ]
  
-        #### Signal events selection ####
-
-        # Initialize cutflow histogram
-        h_cutflow.Fill("step0",1)
- 
-        if not len(el_cand)==1 : continue # continue
-        h_cutflow.Fill('el',1)
-        if len(mu_loose) > 0 : continue
-        h_cutflow.Fill('loose mu veto',1)
-        if len(el_extra) > 0 : continue
-        h_cutflow.Fill('dilep veto',1)
+        # Selection on jets
         if not len(jets_cand) >= 4 : continue
         h_cutflow.Fill('jets',1)
 
         # Do b-tagging. Work for both MC and data
         bjets = [ jet for jet in jets_cand if jet[2] > csv_cut ]
 
-        # cut on btags
+        # Selection on b-tagging
         if not len(bjets) >= 2: continue
         h_cutflow.Fill('b-tagging',1)
 
         n_evts_passed += 1
 
-        ######## Finish event selection #########
 
-        ######## Fill TTree ########
+        ################################################################
+        #                    Fill TTree                                # 
+        ################################################################
 
         # jets
         # First sort jets by pT
@@ -431,19 +528,188 @@ def selection(rootfiles):
         met_pt_vec.push_back(met_pt[0])
         met_phi_vec.push_back(met_phi[0])
 
+        # NPV
+        evt.getByLabel(dataPileupLabel,dataPileupHandle)
+        if not dataPileupHandle.isValid() :
+            continue
+        data_pileup_number = dataPileupHandle.product()
+        pileup_events.push_back(1.0*data_pileup_number[0]) 
+
+        if options.mcordata == 'mc' :
+            #pileup reweighting
+            evt.getByLabel(npvRealTrueLabel,npvRealTrueHandle)
+            if not npvRealTrueHandle.isValid() :
+                continue
+            npvRealTrue = npvRealTrueHandle.product()
+            mc_pileup_events.push_back(1.0*npvRealTrue[0])  
+
+
+        ############################################################
+        #               Get all correction weights for MC          #
+        ############################################################
+
+        # Initialize all weights
+        w_PU = 1.0 ; w_top_pT = 1.0 ; w_btag,w_btag_err = 1.0 , 0
+
+        if options.mcordata == 'mc' :
+
+            # PU weights
+
+            # Set up pileup distribution files used in pileup reweighting
+            data_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/data_pileup_distribution.root')
+            data_pu_dist = data_pufile.Get('pileup')
+            mc_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/dumped_Powheg_TT.root') 
+            MC_pu_dist   = mc_pufile.Get('pileup')
+            data_pu_dist.Scale(1.0/data_pu_dist.Integral())
+            MC_pu_dist.Scale(1.0/MC_pu_dist.Integral())        
+            # Calculate PU corrections based on npvRealTrue
+            w_PU = data_pu_dist.GetBinContent(data_pu_dist.FindFixBin(1.0*npvRealTrue[0]))/MC_pu_dist.GetBinContent(MC_pu_dist.FindFixBin(1.0*npvRealTrue[0]))
+            weight_pileup.push_back(w_PU)  
+
+
+            # b-tagging corrections
+            selected_jets = []
+            for i in range(jets_pt.size()):
+                selected_jets.append( (jets_pt[i],jets_eta[i],jets_flavor[i],jets_csv[i]))
+
+            w_result = get_weight_btag(selected_jets,options.sampletype)
+            w_btag   = w_result[0]
+            w_btag_err = w_result[1]
+            weight_btag_eff.push_back(w_btag)
+            weight_btag_eff_err.push_back(w_btag_err) 
+
+
+            # GenParticles info for signal MC only
+
+            # Look into genparticel info and get Gen Top, W's and initial particles (qqbar, gg etc)
+            if options.isSignal == 'yes' or options.sampletype == 'ttbar':
+                is_ejets = 0
+                # Determine if this event is e+jets event
+                if len(gen_el) == 1 and len(gen_el)+len(gen_mu)+len(gen_tau) == 1 : 
+                    is_ejets = 1
+                gen_is_ejets.push_back(is_ejets)
+
+                # Another way to determine the status of this signal event  
+                init_pars = []  
+                gentops = []  
+                genWs = []
+                w_daughters = []       
+                for ig in genpars:
+                    # Get initial particles
+                    if ig.pt()<0: continue
+                    # Look through all the particles for protons; append their first daughters to the list
+                    if ig.pdgId() == 2212: init_pars.append(ig.daughter(0))
+                    # Look through particles for all ts
+                    if math.fabs(ig.pdgId()) == 6 and ig.status() == 3 :
+                        # By default t is in had side, unless the W from this t decays leptonically
+                        whichside = 'had'
+                        #look through all the daughters for top to find W.
+                        for i in range(ig.numberOfDaughters()) :
+                            dau = ig.daughter(i)
+                            if math.fabs(dau.pdgId()) == 24 :
+                                # Look into daughters of this W
+                                # if the W doesn't have two daughters, I don't know what the hell happened.
+                                if dau.numberOfDaughters() != 2 :
+                                    info = 'W without two daughters. PARTICLE: ' + getId(ig.pdgId()) + ', DAUGHTERS : '
+                                    for j in range(ig.numberOfDaughters()) :
+                                        info = info + getId(ig.daughter(i)) + ' '
+                                    print info
+                                    continue  
+                                # append all W daughters into the list and decide if it is leptonic or hadronic W
+                                for j in range(dau.numberOfDaughters()):
+                                    w_daughters.append(dau.daughter(j))
+                                    if abs(dau.daughter(j).pdgId()) in pdg_leps: 
+                                        whichside = 'lep'
+                                # append W
+                                genWs.append((dau,whichside))
+                        # append to gentop 
+                        gentops.append((ig,whichside))
+
+                # Analyse the selected gen particles, write into ttree
+                # The sequence of storage in each vector would be :
+                #   0      1     2     3     4     5
+                # init1, init2, thad, tlep, whad, wlep  
+
+                # Initial particles
+                if not len(init_pars) == 2:
+                    print 'Events with ',len(init_pars),'initial partons..'
+                    continue
+                for i in range(2):
+                    ig = init_pars[i]
+                    gen_pt.push_back(ig.pt())
+                    gen_eta.push_back(ig.eta())
+                    gen_phi.push_back(ig.phi())
+                    gen_mass.push_back(ig.mass())
+                    gen_pdgid.push_back(ig.pdgId())
+                    gen_side.push_back('NA')
+                # GenTops
+                if not len(gentops) == 2 :
+                    print 'Events with ',len(gentops),'gen tops'
+                    continue
+                for i in range(2):
+                    ig = gentops[i][0]
+                    iside = gentops[i][1]
+                    gen_pt.push_back(ig.pt())
+                    gen_eta.push_back(ig.eta())
+                    gen_phi.push_back(ig.phi())
+                    gen_mass.push_back(ig.mass())
+                    gen_pdgid.push_back(ig.pdgId())
+                    gen_side.push_back(iside)
+                # GenWs
+                if not len(genWs) == 2 :
+                    print 'Events with ',len(gentops),'gen Ws'
+                    continue
+                for i in range(2):
+                    ig = genWs[i][0]
+                    iside = genWs[i][1]
+                    gen_pt.push_back(ig.pt())
+                    gen_eta.push_back(ig.eta())
+                    gen_phi.push_back(ig.phi())
+                    gen_mass.push_back(ig.mass())
+                    gen_pdgid.push_back(ig.pdgId())
+                    gen_side.push_back(iside) 
+
+                # Find the decay type of the signal ttbar events
+                if not len(w_daughters) == 4:
+                    print 'Events with ',len(w_daughters),'w daughters'
+                    continue
+                genleps = []
+                for ig in w_daughters:
+                    if abs(ig.pdgId()) in pdg_leps : genleps.append(ig.pdgId())
+                if len(genleps) == 0 : gen_type.push_back('had')
+                elif len(genleps) == 2  and 15 not in genleps and -15 not in genleps: gen_type.push_back('dilep') 
+                elif len(genleps) == 2 and 15 in genleps or -15 in genleps : gen_type.push_back('tau_lep')
+                elif len(genleps) == 1 :
+                    if abs(genleps[0]) == 11 : gen_type.push_back('e_jets')
+                    if abs(genleps[0]) == 13 : gen_type.push_back('mu_jets')
+                    if abs(genleps[0]) == 15 : gen_type.push_back('tau_jets')
+                else:
+                    print 'This event has more than 2 leptons!'
+                    continue
+                    gen_type.push_back('Wrong gen info!')
+
+                # Top pT reweighting
+                if gen_type[0] in ['e_jets','mu_jets'] :
+                    a = 0.159; b = -0.00141;
+                elif gen_type[0] in ['dilep'] :
+                    a = 0.148; b = -0.00129;
+                else :  # for hadronic or weird situations...
+                    a = 0.156; b = -0.00137;
+                w_top_pT = GetTopPtWeights(a,b,gen_pt[2],gen_pt[3])
+
+            weight_top_pT.push_back( w_top_pT )
+
         # Fill all branches
-        outputtree.Fill()
+        outputtree.Fill()         
 
     ######## end main event loop ########
+ 
+    ################################################################
+    #                   Make and save plots                        # 
+    ################################################################
 
     h_cutflow_norm = norm(h_cutflow)
-    h_cutflow_log = h_cutflow.Clone()
-    h_cutflow_log.SetName(h_cutflow.GetName()+'_log')
-    h_cutflow_norm_log = h_cutflow_norm.Clone()
-    h_cutflow_norm_log.SetName(h_cutflow_norm.GetName()+'_log')
        
-    ## Make and save plots
-
     # cutflows
     histlist = [h_cutflow,h_cutflow_norm]
 
@@ -457,11 +723,15 @@ def selection(rootfiles):
     else :
         if options.grid == 'yes' :
             print '\nSaving output into root files for grid use\n'
-            gridsaving(histlist+[outputtree],event_type,f_index,'update')
+    #        gridsaving(histlist+[outputtree],event_type,f_index,'update')
         else :
             print '\nSaving output into root files to local dir \n'
-            saving(histlist+[outputtree],event_type,f_index,'update')
+    #        saving(histlist+[outputtree],event_type,f_index)#,'update')
 
+    for item in histlist+[outputtree]:
+        item.SetDirectory(fout) 
+    fout.Write()
+    fout.Close()
     # Stop our timer
     timer.Stop()
 
@@ -480,6 +750,7 @@ def selection(rootfiles):
     print '\n'
 
 
-
-#########################  Actual process  ##############################
+################################################################
+#                    Run main program                          #
+################################################################
 main()

@@ -109,11 +109,12 @@ def comparison_plot(mc_,data_,legend,event_type='MC',upload = False,logy=False,o
     fout = ROOT.TFile(plotdir+event_type+'_plots.root',createmode)
 
     # plotting
-    c1 = ROOT.TCanvas(data_.GetName())
     if logy == "log" : 
+        c1 = ROOT.TCanvas(data_.GetName()+'_log')
         c1.SetLogy()
         name = plotdir+event_type+'_'+mc_.GetName()+'_compare_log.png'
     else :
+        c1 = ROOT.TCanvas(data_.GetName())
         name = plotdir+event_type+'_'+mc_.GetName()+'_compare.png'
     # Find the max of both histograms
     max_mc = mc_.GetMaximum()
@@ -151,13 +152,17 @@ def saving(histlist,event_type='MC',index = 0000,createmode='recreate'):
         os.mkdir(savedir)
         print 'Creating new dir '+savedir
     # Saving root files
-    fout = ROOT.TFile(savedir+event_type+'_selection_output_'+str(index)+'.root',createmode)
-    print 'saving output into file: '+savedir+event_type+'_selection_output_'+str(index)+'.root'
+    outname = savedir+event_type+'_selection_output_'+str(index)+'.root'  
+    fout = ROOT.TFile(outname,createmode)
+    print 'saving output into file: ',outname
     for ihist in histlist:
+        ihist.SetDirectory(fout)
         ihist.Write()
-    fout.Write()
+    #fout.Write()
     # file closure
     fout.Close()
+    # return output names  
+    return outname
 
 # A more general function that saves a list of objects into a single root file
 def savetoroot(objects,outputdir='histograms',event_type='test',fname='',createmode='recreate'):
@@ -185,13 +190,17 @@ def savetoroot(objects,outputdir='histograms',event_type='test',fname='',createm
 # Save histograms to root files in current directory. Can be used in grid jobs
 def gridsaving(histlist,event_type='MC',index = 0000,createmode='recreate'):
     # Saving root files
-    fout = ROOT.TFile(event_type+'_selection_output_'+str(index)+'.root',createmode)
-    print 'saving output into file: '+event_type+'_selection_output_'+str(index)+'.root'
+    outname = event_type+'_selection_output_'+str(index)+'.root'
+    fout = ROOT.TFile(outname,createmode)
+    print 'saving output into file: ',outname
     for ihist in histlist:
+        ihist.SetDirectory(fout)
         ihist.Write()
     fout.Write()
     # file closure
     fout.Close()
+    return outname
+
 
 # Print pdgIds of all daughter particles
 def check_daus( gen ):
