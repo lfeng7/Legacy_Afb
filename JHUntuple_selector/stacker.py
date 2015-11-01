@@ -72,7 +72,7 @@ data_lumi = 19748
 csvm = 0.679
 
 # Get input files
-prepend = './selected_files/v2_beta1/all/'   # dir of output files to make histograms
+prepend = './selected_files/v2_trigger_removed/all/'   # dir of output files to make histograms
 postfix='_selected'
 # Set up output histogram files
 template_type = options.tmptype
@@ -158,9 +158,11 @@ def MakeHistograms():
         h_MET = ROOT.TH1D('MET',event_type+' MET;MET(GeV);events',nbins,0.,200.)
         h_Nbjets = ROOT.TH1D('Nbjets',event_type+' Num tagged bjets;Nbjets;events',5,1,6)
         h_npv = ROOT.TH1D('npv',htitle+';Number of Primary Vertices;Events',35,0,35)
+        h_5jets_pt = ROOT.TH1D('5jets_pt',event_type+' selected 4 or 5 leading jets pT;pT(GeV);events',nbins,30.,400.)
 
         # Make a list of histograms for write
         tmplist = [h_cutflow,h_cutflow_norm,h_lep_pt,h_lep_eta,h_lep_charge, h_m3,h_Njets,h_jets_pt,h_jets_eta,h_MET,h_Nbjets,h_npv]
+        tmplist+= [h_5jets_pt]
 
         # Remove the attachement of histograms from input root file, debug only
         for ihist in tmplist : ihist.SetDirectory(0)
@@ -176,6 +178,8 @@ def MakeHistograms():
                 h_Njets.Fill(num_jets)
                 for ijet in tmptree.jets_pt: h_jets_pt.Fill(ijet)
                 for ijet in tmptree.jets_eta: h_jets_eta.Fill(ijet)
+                if tmptree.jets_pt.size()<=5:
+                    for ijet in tmptree.jets_pt: h_5jets_pt.Fill(ijet)
                 bjets = []
                 for ijet in tmptree.jets_csv:
                     if ijet>csvm : bjets.append(ijet)
@@ -317,7 +321,7 @@ def MakeComparisonPlots():
     ########################################################
 
     # list of histogram to make stack plots
-    hlist = ['cutflow','jets_pt','Njets','m3','lep_pt','MET','jets_eta','lep_eta','Nbjets','lep_charge','npv']
+    hlist = ['cutflow','jets_pt','Njets','m3','lep_pt','MET','jets_eta','lep_eta','Nbjets','lep_charge','npv','5jets_pt']
     rebinlist = ['jets_pt','m3','el_cand_pt','MET','jets_eta','el_cand_eta']
 
     stacks = []
