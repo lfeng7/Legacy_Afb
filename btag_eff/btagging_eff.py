@@ -175,7 +175,7 @@ def MakeBtaggingEfficiency():
             # Loop over entries
             nev = tmp_tree.GetEntries()
             # print 'num entries is',nev
-            jets_count,evt_count = 0 , 0
+            jets_count,evt_count,num_all_jets = 0 , 0 , 0
             for iev in range(nev):
                 evt_count += 1
                 if iev == options.maxevts:
@@ -188,6 +188,8 @@ def MakeBtaggingEfficiency():
 
                 njets_denom = 0
                 njets_num = 0
+
+                num_all_jets+=len(tmp_tree.jets_pt)
 
                 for j in range(len(tmp_tree.jets_pt)):
                     j_csv = tmp_tree.jets_csv[j]
@@ -217,7 +219,8 @@ def MakeBtaggingEfficiency():
                         eff_denom_list[2].Fill(j_pt,j_eta)
                 # print 'Number of valid jets is : '+str(valid_jets) # For debug
             print 'Total number of events : '+str(evt_count)
-            print 'Total number of Jets   : '+str(jets_count)
+            print 'Total number of jets :',num_all_jets
+            print 'Total number of good Jets   : '+str(jets_count)
             print 'Average number of jets per event is : %.2f'%(float(jets_count)/float(evt_count))+'\n'
             tmp_f.Close()
         # Finish Loop over files in current sample type
