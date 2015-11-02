@@ -1,0 +1,63 @@
+cmswn1226.fnal.gov
+/storage/local/data1/condor/execute/dir_27880
+python ./tardir/selection.py --txtfiles tardir/inputfiles/T_t.txt --makeplots no --mcordata mc --mctype singletop --maxevts -1 --type T_t --grid yes --maxfiles 1 --startfile 0
+Error in <TROOT::Macro>: macro /rootlogon.C not found in path .:/cvmfs/cms.cern.ch/slc6_amd64_gcc481/lcg/root/5.34.18-cms12/macros:
+Getting files from this dir /eos/uscms/store/user/lfeng7/ntuples/jhu_diffmo/T_t-channel_TuneZ2star_8TeV-powheg-tauola/crab_T_t_v1_all/151009_164218/0000/*.root
+Will process file 0 to 1
+Getting these files:
+/eos/uscms/store/user/lfeng7/ntuples/jhu_diffmo/T_t-channel_TuneZ2star_8TeV-powheg-tauola/crab_T_t_v1_all/151009_164218/0000/jhutester_numEvent1000_1.root
+processing file  /eos/uscms/store/user/lfeng7/ntuples/jhu_diffmo/T_t-channel_TuneZ2star_8TeV-powheg-tauola/crab_T_t_v1_all/151009_164218/0000/jhutester_numEvent1000_1.root
+Getting 153607 events
+
+Running in grid mode. Creating outputfile in current dir
+
+saving output into file:  T_t_selection_output_1.root
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 7 candidate events
+Loop over 10001 event , selected 10 candidate events
+Loop over 15001 event , selected 11 candidate events
+Loop over 20001 event , selected 19 candidate events
+Loop over 25001 event , selected 22 candidate events
+Loop over 30001 event , selected 27 candidate events
+Loop over 35001 event , selected 32 candidate events
+Loop over 40001 event , selected 37 candidate events
+Loop over 45001 event , selected 42 candidate events
+Loop over 50001 event , selected 46 candidate events
+Loop over 55001 event , selected 53 candidate events
+Loop over 60001 event , selected 58 candidate events
+Loop over 65001 event , selected 64 candidate events
+Loop over 70001 event , selected 68 candidate events
+Loop over 75001 event , selected 74 candidate events
+Loop over 80001 event , selected 78 candidate events
+Loop over 85001 event , selected 83 candidate events
+Loop over 90001 event , selected 89 candidate events
+Loop over 95001 event , selected 94 candidate events
+Loop over 100001 event , selected 101 candidate events
+Loop over 105001 event , selected 104 candidate events
+Loop over 110001 event , selected 109 candidate events
+Loop over 115001 event , selected 114 candidate events
+Loop over 120001 event , selected 123 candidate events
+Loop over 125001 event , selected 130 candidate events
+Loop over 130001 event , selected 134 candidate events
+Loop over 135001 event , selected 140 candidate events
+Loop over 140001 event , selected 145 candidate events
+Loop over 145001 event , selected 151 candidate events
+Loop over 150001 event , selected 158 candidate events
+
+Saving output into root files for grid use
+
+
+
+RealTime=315.47 seconds, CpuTime=310.81 seconds
+486.91 events / RealTime second .
+494.22 events / CpuTime second .
+0.51 candidate events / RealTime second .
+0.51 candidate events / CpuTime second .
+Analyzed events: 153607
+Candidate events:    160
+
+
+
+real	5m21.605s
+user	4m45.993s
+sys	0m30.388s

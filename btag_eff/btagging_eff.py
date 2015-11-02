@@ -5,12 +5,7 @@
 # the input of tagger.
 # Hey new version! 
 # 11-1-15
-import ROOT
-import os
-import glob
-import math
-from array import array
-
+from utility import *
 from optparse import OptionParser
 
 parser = OptionParser()
@@ -58,7 +53,7 @@ parser.add_option('--fakelep', metavar='F', type='string', action='store',
 argv = []
 
 # Get input files
-prepend = './selected_files/test/all/'   # dir of output files to make histograms
+prepend = 'selected_files/regular/all/'   # dir of output files to make histograms
 postfix='_selected.root'
 input_tree_name = 'selected'
 # Set up output root file dir
@@ -114,6 +109,7 @@ def MakeBtaggingEfficiency():
         # Make output file
         # will save to btagging_efficiency_files/template_type/event_type_control_plots.root
         typename = all_type_names[itype]        
+        MakeDirectory(output_dir+template_type)
         foutname = output_dir+template_type+'/'+typename+fout_postfix
         fout = ROOT.TFile(foutname,'recreate')  
         print 'Making:',foutname

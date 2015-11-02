@@ -1,5 +1,6 @@
 import ROOT
 import os
+ROOT.gROOT.SetBatch(True)
 
 def normalized_compare_plots(histlist):
     """Make a compared plots with different color and renormalized"""

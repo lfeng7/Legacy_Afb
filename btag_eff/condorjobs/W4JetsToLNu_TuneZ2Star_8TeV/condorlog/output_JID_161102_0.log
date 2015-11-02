@@ -1,0 +1,115 @@
+cmswn1226.fnal.gov
+/storage/local/data1/condor/execute/dir_26531
+python ./tardir/selection.py --txtfiles tardir/inputfiles/W4JetsToLNu_TuneZ2Star_8TeV.txt --makeplots no --mcordata mc --mctype wjets --maxevts -1 --type W4JetsToLNu_TuneZ2Star_8TeV --grid yes --maxfiles 2 --startfile 0
+Error in <TROOT::Macro>: macro /rootlogon.C not found in path .:/cvmfs/cms.cern.ch/slc6_amd64_gcc481/lcg/root/5.34.18-cms12/macros:
+Getting files from this dir /eos/uscms/store/user/lfeng7/ntuples/jhu_diffmo/W4JetsToLNu_TuneZ2Star_8TeV-madgraph/crab_W4Jets_v1_all/151009_164132/0000/*.root
+Will process file 0 to 2
+Getting these files:
+/eos/uscms/store/user/lfeng7/ntuples/jhu_diffmo/W4JetsToLNu_TuneZ2Star_8TeV-madgraph/crab_W4Jets_v1_all/151009_164132/0000/jhutester_numEvent1000_1.root
+/eos/uscms/store/user/lfeng7/ntuples/jhu_diffmo/W4JetsToLNu_TuneZ2Star_8TeV-madgraph/crab_W4Jets_v1_all/151009_164132/0000/jhutester_numEvent1000_10.root
+processing file  /eos/uscms/store/user/lfeng7/ntuples/jhu_diffmo/W4JetsToLNu_TuneZ2Star_8TeV-madgraph/crab_W4Jets_v1_all/151009_164132/0000/jhutester_numEvent1000_1.root
+Getting 153434 events
+
+Running in grid mode. Creating outputfile in current dir
+
+saving output into file:  W4JetsToLNu_TuneZ2Star_8TeV_selection_output_1.root
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 72 candidate events
+Loop over 10001 event , selected 134 candidate events
+Loop over 15001 event , selected 206 candidate events
+Loop over 20001 event , selected 261 candidate events
+Loop over 25001 event , selected 330 candidate events
+Loop over 30001 event , selected 392 candidate events
+Loop over 35001 event , selected 467 candidate events
+Loop over 40001 event , selected 545 candidate events
+Loop over 45001 event , selected 605 candidate events
+Loop over 50001 event , selected 675 candidate events
+Loop over 55001 event , selected 738 candidate events
+Loop over 60001 event , selected 798 candidate events
+Loop over 65001 event , selected 859 candidate events
+Loop over 70001 event , selected 924 candidate events
+Loop over 75001 event , selected 979 candidate events
+Loop over 80001 event , selected 1051 candidate events
+Loop over 85001 event , selected 1107 candidate events
+Loop over 90001 event , selected 1185 candidate events
+Loop over 95001 event , selected 1248 candidate events
+Loop over 100001 event , selected 1328 candidate events
+Loop over 105001 event , selected 1396 candidate events
+Loop over 110001 event , selected 1466 candidate events
+Loop over 115001 event , selected 1524 candidate events
+Loop over 120001 event , selected 1587 candidate events
+Loop over 125001 event , selected 1649 candidate events
+Loop over 130001 event , selected 1723 candidate events
+Loop over 135001 event , selected 1786 candidate events
+Loop over 140001 event , selected 1858 candidate events
+Loop over 145001 event , selected 1923 candidate events
+Loop over 150001 event , selected 2002 candidate events
+
+Saving output into root files for grid use
+
+
+
+RealTime=308.57 seconds, CpuTime=305.99 seconds
+497.24 events / RealTime second .
+501.43 events / CpuTime second .
+6.64 candidate events / RealTime second .
+6.69 candidate events / CpuTime second .
+Analyzed events: 153434
+Candidate events:   2048
+
+
+processing file  /eos/uscms/store/user/lfeng7/ntuples/jhu_diffmo/W4JetsToLNu_TuneZ2Star_8TeV-madgraph/crab_W4Jets_v1_all/151009_164132/0000/jhutester_numEvent1000_10.root
+Getting 153426 events
+
+Running in grid mode. Creating outputfile in current dir
+
+saving output into file:  W4JetsToLNu_TuneZ2Star_8TeV_selection_output_10.root
+Loop over 1 event , selected 0 candidate events
+Loop over 5001 event , selected 69 candidate events
+Loop over 10001 event , selected 138 candidate events
+Loop over 15001 event , selected 223 candidate events
+Loop over 20001 event , selected 285 candidate events
+Loop over 25001 event , selected 340 candidate events
+Loop over 30001 event , selected 423 candidate events
+Loop over 35001 event , selected 492 candidate events
+Loop over 40001 event , selected 541 candidate events
+Loop over 45001 event , selected 607 candidate events
+Loop over 50001 event , selected 681 candidate events
+Loop over 55001 event , selected 750 candidate events
+Loop over 60001 event , selected 814 candidate events
+Loop over 65001 event , selected 883 candidate events
+Loop over 70001 event , selected 943 candidate events
+Loop over 75001 event , selected 1005 candidate events
+Loop over 80001 event , selected 1086 candidate events
+Loop over 85001 event , selected 1155 candidate events
+Loop over 90001 event , selected 1214 candidate events
+Loop over 95001 event , selected 1277 candidate events
+Loop over 100001 event , selected 1350 candidate events
+Loop over 105001 event , selected 1430 candidate events
+Loop over 110001 event , selected 1491 candidate events
+Loop over 115001 event , selected 1550 candidate events
+Loop over 120001 event , selected 1618 candidate events
+Loop over 125001 event , selected 1689 candidate events
+Loop over 130001 event , selected 1763 candidate events
+Loop over 135001 event , selected 1822 candidate events
+Loop over 140001 event , selected 1881 candidate events
+Loop over 145001 event , selected 1949 candidate events
+Loop over 150001 event , selected 2011 candidate events
+
+Saving output into root files for grid use
+
+
+
+RealTime=308.08 seconds, CpuTime=305.23 seconds
+498.00 events / RealTime second .
+502.66 events / CpuTime second .
+6.68 candidate events / RealTime second .
+6.75 candidate events / CpuTime second .
+Analyzed events: 153426
+Candidate events:   2059
+
+
+
+real	10m29.916s
+user	9m19.345s
+sys	0m58.180s
