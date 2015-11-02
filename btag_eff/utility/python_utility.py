@@ -52,15 +52,15 @@ def MakeDirectory(dirname):
         print 'Making '+prefix
     else :
         print 'dir',dirname,'exists already'
+    os.system('cp utility/index.php '+dirname)
 
-def Upload(dirname):
+def Upload(dirname,webdirname=''):
     prefix = dirname
-    webdir = 'pha:/home/lfeng/public_html/research/Dump/'
+    webdir = 'pha:/home/lfeng/public_html/research/Dump/'+webdirname
     # check if plotting dir is made. If not , make it now
     if not os.path.exists(prefix):
         print 'Dir ',dirname,'does not exist. Cannot upload to webpage!'
     else :
-        os.system('cp ~/index.php '+dirname)
         os.system('scp -r '+dirname+' '+webdir)
         print 'Uploading',dirname,'to',webdir    
 

@@ -12,12 +12,17 @@ parser.add_option('--inputfiles', metavar='F', type='string', action='store',
                   dest='inputFiles',
                   help='Input files')
 
+parser.add_option('--upload', metavar='F', type='string', action='store',
+                  default = "no",
+                  dest='upload',
+                  help='If upload to webpage')
+
 (options, args) = parser.parse_args()
 
 argv = []
 
 # Some prepends
-plotsdir = 'plots/btag_efficiency/'
+plotsdir = 'plots/ejets/'
 
 eta = [0.8,1.1,1.6,2.3]
 pt = 75
@@ -34,8 +39,12 @@ def main() :
             tfile = ROOT.TFile(ifile)
             plot(tfile)
             tfile.Close()
+            # Upload to webpage
+        if options.upload == 'yes':
+            Upload(plotsdir,'btagging_efficiency')
     else:
         print 'No correct input files given. Will do nothing.'
+
 
 def get_btag_eff (tfile,pt,eta,jet_flavor):
     efficiency_b = tfile.Get('efficiency_b')

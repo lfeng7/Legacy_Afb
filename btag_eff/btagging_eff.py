@@ -124,12 +124,20 @@ def MakeBtaggingEfficiency():
         CSVM = 0.679
         # Binning
         # bins_pt = array('d',[0.5,30.0,40.0,50.0,60.0,70.0,80.0,100.0,120.0,160.0,210.0,260.0,320.0,400.0,500.0,600.0,4000.0]) # For signal
-        bins_pt_b = array('d',[0., 40., 60., 80., 100., 150., 200., 300., 400., 500., 1000.]) # For ttbar # the same as Sal's code
-        bins_eta_b = array('d',[0., 0.6, 1.2, 2.4])
-        bins_pt_c = array('d',[0., 40., 60., 80., 100., 150., 200., 300., 400., 1000.]) # For ttbar # the same as Sal's code
-        bins_eta_c = array('d',[0., 0.6, 1.2, 2.4])
-        bins_pt_udsg = array('d',[0., 40., 60., 80., 100., 150., 200., 300., 400., 1000.]) # For ttbar # the same as Sal's code
-        bins_eta_udsg = array('d',[0., 0.6, 1.2, 2.4])
+        if all_types[itype] == 'ttbar':
+            bins_pt_b = array('d',[0., 40., 60., 80., 100., 150., 200., 300., 400., 500., 1000.]) # For ttbar # the same as Sal's code
+            bins_eta_b = array('d',[0., 0.6, 1.2, 2.4])
+            bins_pt_c = array('d',[0., 40., 60., 80., 100., 150., 200., 300., 400., 1000.]) # For ttbar # the same as Sal's code
+            bins_eta_c = array('d',[0., 0.6, 1.2, 2.4])
+            bins_pt_udsg = array('d',[0., 40., 60., 80., 100., 150., 200., 300., 400., 1000.]) # For ttbar # the same as Sal's code
+            bins_eta_udsg = array('d',[0., 0.6, 1.2, 2.4])
+        else :
+            bins_pt_b = array('d',[0., 40., 60., 80., 100., 150., 1000.]) # For ttbar # the same as Sal's code
+            bins_eta_b = array('d',[0., 0.6, 1.2, 2.4])
+            bins_pt_c = array('d',[0., 40., 60., 80., 100., 150., 1000.]) # For ttbar # the same as Sal's code
+            bins_eta_c = array('d',[0., 0.6, 1.2, 2.4])
+            bins_pt_udsg = array('d',[0., 40., 60., 80., 100., 150., 1000.]) # For ttbar # the same as Sal's code
+            bins_eta_udsg = array('d',[0., 0.6, 1.2, 2.4])            
 
         pt_binning = [bins_pt_b,bins_pt_c,bins_pt_udsg]
         eta_binning = [bins_eta_b,bins_eta_c,bins_eta_udsg]
@@ -173,7 +181,7 @@ def MakeBtaggingEfficiency():
                 if iev == options.maxevts:
                     break
                 # Report progress
-                if iev%5000 == 1 :
+                if iev%20000 == 1 :
                     # print 'finishing event # ',iev
                     print 'Progress ',int(100.*iev/nev),'%'
                 tmp_tree.GetEntry(iev)
