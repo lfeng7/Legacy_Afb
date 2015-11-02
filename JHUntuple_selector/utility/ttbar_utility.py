@@ -269,7 +269,7 @@ def get_SF_btag(ptJet,etaJet,flavJet):      # checked
 # ///this is the functin to call to get the event-by-event b-tag weight
 # ///as implemented, it only works for CSVM. 
 # Input : given a list of selected jets info such as jets_info = [(pt,eta,flavor,csv)]
-def get_weight_btag(jets_info, sampletype) :
+def get_weight_btag(jets_info, eff_hists) :
     # Initiate probability and its uncertainty
     # Probability
     mcTag = 1.;
@@ -294,7 +294,7 @@ def get_weight_btag(jets_info, sampletype) :
             continue    #for jets with flavor 0, we ignore. 
         etabin = get_eta_bin_jet(jet_eta);
         # Get b-tagging efficiency using pt,eta and jet_flavor infor
-        eff = get_btag_eff(jet_Pt,jet_eta,jet_flavor,sampletype)
+        eff = get_btag_eff(jet_Pt,jet_eta,jet_flavor,eff_hists)
         # Get SF for this jet
         SF_result = get_SF_btag(jet_Pt,jet_eta,jet_flavor)
         jet_SF = SF_result[0]
