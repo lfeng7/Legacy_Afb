@@ -5,10 +5,11 @@
 # the input of tagger.
 # Hey new version! 
 # 11-1-15
-from utility import *
+import ROOT
 import os
 import glob
 import math
+from array import array
 
 from optparse import OptionParser
 
@@ -38,8 +39,8 @@ parser.add_option('--applyHLT', metavar='F', type='string', action='store',
                   help='If apply HLT as first selection cut.')
 
 parser.add_option('--maxevts', metavar='F', type='int', action='store',
-                  default = 10000,
-                  dest='maxEvts',
+                  default = -1,
+                  dest='maxevts',
                   help='max number of input ntuple files')
 
 parser.add_option('--type', metavar='F', type='string', action='store',
@@ -57,11 +58,12 @@ parser.add_option('--fakelep', metavar='F', type='string', action='store',
 argv = []
 
 # Get input files
-prepend = './selected_files/test/'   # dir of output files to make histograms
+prepend = './selected_files/test/all/'   # dir of output files to make histograms
 postfix='_selected.root'
 input_tree_name = 'selected'
 # Set up output root file dir
 template_type = options.run_type
+output_dir = 'btagging_efficiency_files/'
  
 # initialization and declaration
 
@@ -71,26 +73,28 @@ template_type = options.run_type
 # (filepath, nevts_gen, xsec_NLO, type, nevts_total_ntuple)
 flist = []
 # Single Top
-flist.append(['T_s','singletop',259961,3.79,259176] )
+# flist.append(['T_s','singletop',259961,3.79,259176] )
 flist.append(['T_t','singletop',3758227,56.4,3748155] )
-flist.append(['T_tW','singletop',497658,11.1,495559])
-flist.append(['Tbar_s','singletopbar',139974, 1.76,139604])
+# flist.append(['T_tW','singletop',497658,11.1,495559])
+# flist.append(['Tbar_s','singletopbar',139974, 1.76,139604])
 flist.append(['Tbar_t','singletopbar',1935072, 30.7,1930185])
-flist.append(['Tbar_tW','singletopbar',493460,11.1,491463])
+# flist.append(['Tbar_tW','singletopbar',493460,11.1,491463])
 # Wjets
-flist.append(['W1JetsToLNu_TuneZ2Star_8TeV','wjets',23141598,6662.8,23038253])
-flist.append(['W2JetsToLNu_TuneZ2Star_8TeV','wjets',34044921,2159.2,33993463])
-flist.append(['W3JetsToLNu_TuneZ2Star_8TeV','wjets',15539503,640.4,15507852])
+# flist.append(['W1JetsToLNu_TuneZ2Star_8TeV','wjets',23141598,6662.8,23038253])
+# flist.append(['W2JetsToLNu_TuneZ2Star_8TeV','wjets',34044921,2159.2,33993463])
+# flist.append(['W3JetsToLNu_TuneZ2Star_8TeV','wjets',15539503,640.4,15507852])
 flist.append(['W4JetsToLNu_TuneZ2Star_8TeV','wjets',13382803,246.0,13326400])
 # DYjets
-flist.append(['DY1JetsToLL_M','zjets',24045248,660.6,23802736])
-flist.append(['DY2JetsToLL_M','zjets',2352304,215.1,2345857])
-flist.append(['DY3JetsToLL_M','zjets',11015445,65.79,10655325])
+# flist.append(['DY1JetsToLL_M','zjets',24045248,660.6,23802736])
+# flist.append(['DY2JetsToLL_M','zjets',2352304,215.1,2345857])
+# flist.append(['DY3JetsToLL_M','zjets',11015445,65.79,10655325])
 flist.append(['DY4JetsToLL_M','zjets',6402827,28.59,5843425])
 # signal
 flist.append(['TT_CT10_TuneZ2star_8TeV','ttbar',21675970,245.9,21560109])
 
-flist = (['TT_CT10_TuneZ2star_8TeV','ttbar'])
+def main():
+    print 'Making btagging efficiency files.'
+    MakeBtaggingEfficiency()
 
 def MakeBtaggingEfficiency():
     fout_postfix = '_CSVM_bTaggingEfficiencyMap.root'
@@ -110,9 +114,9 @@ def MakeBtaggingEfficiency():
         # Make output file
         # will save to btagging_efficiency_files/template_type/event_type_control_plots.root
         typename = all_type_names[itype]        
-        foutname = 
-        fout = ROOT.TFile(foutname,'update')  
-        print 'Making:',fout 
+        foutname = output_dir+template_type+'/'+typename+fout_postfix
+        fout = ROOT.TFile(foutname,'recreate')  
+        print 'Making:',foutname
         ################################################################
         #           Set up 2D histograms for efficiency files          #
         ################################################################
@@ -149,8 +153,8 @@ def MakeBtaggingEfficiency():
         eff_denom_list = []
         eff_list = []
         for i in range(len(h_name_num)):
-            eff_num_list.append(TH2D(h_name_num[i],h_name_num[i],pt_bin[i],pt_binning[i],eta_bin[i],eta_binning[i]))
-            eff_denom_list.append(TH2D(h_name_denom[i],h_name_denom[i],pt_bin[i],pt_binning[i],eta_bin[i],eta_binning[i]))
+            eff_num_list.append(ROOT.TH2D(h_name_num[i],h_name_num[i],pt_bin[i],pt_binning[i],eta_bin[i],eta_binning[i]))
+            eff_denom_list.append(ROOT.TH2D(h_name_denom[i],h_name_denom[i],pt_bin[i],pt_binning[i],eta_bin[i],eta_binning[i]))
         # Set the address of the histogram as the output root file
         for i in range(len(eff_num_list)):
             eff_num_list[i].SetDirectory(fout)
@@ -161,21 +165,21 @@ def MakeBtaggingEfficiency():
         ################################################################
         for ifile in selected_files[itype] :
             tmp_name =  prepend+ifile+postfix
-            tmp_f = ROOT.TFile(tmp_f)
+            print 'Processing',tmp_name            
+            tmp_f = ROOT.TFile(tmp_name)
             tmp_tree = tmp_f.Get(input_tree_name)   
             # Loop over entries
             nev = tmp_tree.GetEntries()
-            print 'Processing',ifile
-            print 'num entries is',nev
+            # print 'num entries is',nev
             jets_count,evt_count = 0 , 0
             for iev in range(nev):
                 evt_count += 1
-                if evt_count == cutoff:
+                if iev == options.maxevts:
                     break
                 # Report progress
-                if evt_count%10000 == 1 :
-                    # print 'finishing event # '+str(i)
-                    print 'Progress ' + str(100.*evt_count/nev)+'%'
+                if iev%5000 == 1 :
+                    # print 'finishing event # ',iev
+                    print 'Progress ',int(100.*iev/nev),'%'
                 tmp_tree.GetEntry(iev)
 
                 njets_denom = 0
@@ -209,8 +213,8 @@ def MakeBtaggingEfficiency():
                         eff_denom_list[2].Fill(j_pt,j_eta)
                 # print 'Number of valid jets is : '+str(valid_jets) # For debug
             print 'Total number of events : '+str(evt_count)
-            print 'Total number of Jets   : '+str(jet_count)
-            print 'Average number of jets per event is : '+'%.2f'%(float(jet_count)/float(evt_count))
+            print 'Total number of Jets   : '+str(jets_count)
+            print 'Average number of jets per event is : %.2f'%(float(jets_count)/float(evt_count))+'\n'
             tmp_f.Close()
         # Finish Loop over files in current sample type
 
@@ -224,7 +228,7 @@ def MakeBtaggingEfficiency():
         # Save rootfiles
         fout.Write()
         fout.Close()
-        print 'Finished making efficiency file for sample',all_types[itype]
+        print 'Finished making efficiency file for sample',all_types[itype],'\n'
 
     # Finish loop over sample types
     print 'All done!'
