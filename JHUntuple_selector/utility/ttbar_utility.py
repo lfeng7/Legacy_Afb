@@ -44,17 +44,20 @@ def LoadPUfiles() :
     mc_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/dumped_Powheg_TT.root') 
     data_pu_dist = data_pufile.Get('pileup').Clone()
     MC_pu_dist   = mc_pufile.Get('pileup').Clone()
+    data_pu_dist.Scale(1.0/data_pu_dist.Integral())
+    MC_pu_dist.Scale(1.0/MC_pu_dist.Integral())
+    pu_dists = [data_pu_dist,MC_pu_dist]
+    for item in pu_dists: 
+        item.SetDirectory(0)
     print 'NPV distribution loaded!'
-    return [data_pu_dist,MC_pu_dist]
+    return pu_dists 
 
 def GetPUWeights(npvRealTrue,pu_dists):
     # Set up pileup distribution files used in pileup reweighting
     data_pu_dist = pu_dists[0]
     MC_pu_dist = pu_dists[1]
-    data_pu_dist.Scale(1.0/data_pu_dist.Integral())
-    MC_pu_dist.Scale(1.0/MC_pu_dist.Integral())        
     # Calculate PU corrections based on npvRealTrue
-    w_PU = data_pu_dist.GetBinContent(data_pu_dist.FindFixBin(1.0*npvRealTrue[0]))/MC_pu_dist.GetBinContent(MC_pu_dist.FindFixBin(1.0*npvRealTrue[0]))
+    w_PU = data_pu_dist.GetBinContent(data_pu_dist.FindFixBin(1.0*npvRealTrue))/MC_pu_dist.GetBinContent(MC_pu_dist.FindFixBin(1.0*npvRealTrue))
     return w_PU
 
 # Formula for top pT weights
@@ -144,7 +147,10 @@ def LoadBtagEfficiency(sampletype):
     efficiency_c = file_tmp.Get('efficiency_c').Clone()
     efficiency_udsg = file_tmp.Get('efficiency_udsg').Clone()  
     print 'Btagging efficiency loaded for type',sampletype
-    return [efficiency_b,efficiency_c,efficiency_udsg]    
+    eff_hists = [efficiency_b,efficiency_c,efficiency_udsg]    
+    for item in eff_hists:
+        item.SetDirectory(0)
+    return eff_hists
 
 
 def get_btag_eff (pt,eta,jet_flavor,eff_hists):    
