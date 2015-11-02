@@ -131,13 +131,20 @@ def MakeBtaggingEfficiency():
             bins_eta_c = array('d',[0., 0.6, 1.2, 2.4])
             bins_pt_udsg = array('d',[0., 40., 60., 80., 100., 150., 200., 300., 400., 1000.]) # For ttbar # the same as Sal's code
             bins_eta_udsg = array('d',[0., 0.6, 1.2, 2.4])
-        else if all_types[itype] in ['singletop','singletopbar' :
+        elif all_types[itype] in ['singletop','singletopbar'] :
             bins_pt_b = array('d',[0., 40., 60., 80., 100., 150., 200., 300., 1000.]) # For ttbar # the same as Sal's code
             bins_eta_b = array('d',[0., 0.6, 1.2, 2.4])
             bins_pt_c = array('d',[0., 40., 60., 80., 100., 150., 1000.]) # For ttbar # the same as Sal's code
             bins_eta_c = array('d',[0., 0.6, 1.2, 2.4])
             bins_pt_udsg = array('d',[0., 40., 60., 80., 100., 150., 1000.]) # For ttbar # the same as Sal's code
-            bins_eta_udsg = array('d',[0., 0.6, 1.2, 2.4])            
+            bins_eta_udsg = array('d',[0., 0.6, 1.2, 2.4]) 
+        else :
+            bins_pt_b = array('d',[0., 40., 60., 80., 100., 150., 1000.]) # For ttbar # the same as Sal's code
+            bins_eta_b = array('d',[0., 0.6, 1.2, 2.4])
+            bins_pt_c = array('d',[0., 40., 60., 80., 100., 150., 1000.]) # For ttbar # the same as Sal's code
+            bins_eta_c = array('d',[0., 0.6, 1.2, 2.4])
+            bins_pt_udsg = array('d',[0., 40., 60., 80., 100., 150., 1000.]) # For ttbar # the same as Sal's code
+            bins_eta_udsg = array('d',[0., 0.6, 1.2, 2.4])                       
 
         pt_binning = [bins_pt_b,bins_pt_c,bins_pt_udsg]
         eta_binning = [bins_eta_b,bins_eta_c,bins_eta_udsg]
