@@ -1,6 +1,7 @@
 import ROOT
 import os
 ROOT.gROOT.SetBatch(True)
+ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
 
 def normalized_compare_plots(histlist):
     """Make a compared plots with different color and renormalized"""

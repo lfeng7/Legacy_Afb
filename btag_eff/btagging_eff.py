@@ -131,8 +131,8 @@ def MakeBtaggingEfficiency():
             bins_eta_c = array('d',[0., 0.6, 1.2, 2.4])
             bins_pt_udsg = array('d',[0., 40., 60., 80., 100., 150., 200., 300., 400., 1000.]) # For ttbar # the same as Sal's code
             bins_eta_udsg = array('d',[0., 0.6, 1.2, 2.4])
-        else :
-            bins_pt_b = array('d',[0., 40., 60., 80., 100., 150., 1000.]) # For ttbar # the same as Sal's code
+        else if all_types[itype] in ['singletop','singletopbar' :
+            bins_pt_b = array('d',[0., 40., 60., 80., 100., 150., 200., 300., 1000.]) # For ttbar # the same as Sal's code
             bins_eta_b = array('d',[0., 0.6, 1.2, 2.4])
             bins_pt_c = array('d',[0., 40., 60., 80., 100., 150., 1000.]) # For ttbar # the same as Sal's code
             bins_eta_c = array('d',[0., 0.6, 1.2, 2.4])

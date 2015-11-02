@@ -92,6 +92,23 @@ def plot(tfile) :
     flavor_names = ['b','c','udsg']
     color_list = [2,4,7]
 
+    # Make 2D plots of efficiency
+    efficiency_b = tfile.Get('efficiency_b')
+    efficiency_c = tfile.Get('efficiency_c')
+    efficiency_udsg = tfile.Get('efficiency_udsg') 
+    list_effs = [efficiency_b,efficiency_c,efficiency_udsg]
+    for i in range(len(list_effs)):
+        tmp_h = list_effs[i]
+        tmp_c = ROOT.TCanvas('tmp_c_'+str(i))
+        tmp_name = channel+' b-tagging '+tmp_h.GetName()     
+        tmp_file = outputdir+'btagg_eff_'+tmp_h.GetName()+'.png'   
+        tmp_h.SetTitle(tmp_name)
+        tmp_h.SetStats(0)
+        tmp_h.GetXaxis().SetTitle('pT (GeV)')
+        tmp_h.GetYaxis().SetTitle('abs(eta)')
+        tmp_h.Draw('colz')
+        tmp_c.SaveAs(tmp_file)
+
     for i in range(n):
         pt_tmp = i*step
         x.append(pt_tmp)
