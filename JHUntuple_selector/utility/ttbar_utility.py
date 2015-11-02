@@ -34,6 +34,29 @@ def GetBinEntry(hist) :
         entry.append(int(hist.GetArray()[i]))
     return entry
 
+################################################################
+#               Functions for MC correctons                    #
+################################################################
+
+# PU weights
+def LoadPUfiles() :
+    data_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/data_pileup_distribution.root')
+    mc_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/dumped_Powheg_TT.root') 
+    data_pu_dist = data_pufile.Get('pileup').Clone()
+    MC_pu_dist   = mc_pufile.Get('pileup').Clone()
+    print 'NPV distribution loaded!'
+    return [data_pu_dist,MC_pu_dist]
+
+def GetPUWeights(npvRealTrue,pu_dists):
+    # Set up pileup distribution files used in pileup reweighting
+    data_pu_dist = pu_dists[0]
+    MC_pu_dist = pu_dists[1]
+    data_pu_dist.Scale(1.0/data_pu_dist.Integral())
+    MC_pu_dist.Scale(1.0/MC_pu_dist.Integral())        
+    # Calculate PU corrections based on npvRealTrue
+    w_PU = data_pu_dist.GetBinContent(data_pu_dist.FindFixBin(1.0*npvRealTrue[0]))/MC_pu_dist.GetBinContent(MC_pu_dist.FindFixBin(1.0*npvRealTrue[0]))
+    return w_PU
+
 # Formula for top pT weights
 def GetTopPtWeights(a,b,pt1,pt2):
     pt_w = 1.0
@@ -94,8 +117,17 @@ def GetEleSFs(pt,eta,SFtable):
 
 #btagging efficiency
 
-def get_btag_eff (pt,eta,jet_flavor,sampletype):
+def GetTypeBtagging(sample_name):
+    typename = sample_name
+    dictionary = [('singletop',['T_s','T_t','T_tW'])]
+    dictionary+= [('singletopbar',['Tbar_s','Tbar_t','Tbar_tW'])]
+    for item in dictionary:
+        for name in item[1]:
+            if name in sample_name:
+                typename = item[0]
+    return typename
 
+def LoadBtagEfficiency(sampletype):
     #Set up btag efficiency files
     eff_files = []
     eff_files += [('ttbar','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/TT_CT10_TuneZ2star_8TeV-powheg-tauola_AK5PF_CSVM_bTaggingEfficiencyMap.root')]
@@ -104,18 +136,24 @@ def get_btag_eff (pt,eta,jet_flavor,sampletype):
     eff_files += [('singletop','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/T_t-channel_TuneZ2star_8TeV-powheg-tauola_AK5PF_CSVM_bTaggingEfficiencyMap.root')]
     eff_files += [('singletopbar','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola_AK5PF_CSVM_bTaggingEfficiencyMap.root')]
     
-    # F_eff = ''
     for ifile in eff_files:
         if sampletype == ifile[0] :
             F_eff = ifile[1]
     file_tmp = ROOT.TFile(F_eff)
-    efficiency_b = file_tmp.Get('efficiency_b')
-    efficiency_c = file_tmp.Get('efficiency_c')
-    efficiency_udsg = file_tmp.Get('efficiency_udsg')    
-    
+    efficiency_b = file_tmp.Get('efficiency_b').Clone()
+    efficiency_c = file_tmp.Get('efficiency_c').Clone()
+    efficiency_udsg = file_tmp.Get('efficiency_udsg').Clone()  
+    print 'Btagging efficiency loaded for type',sampletype
+    return [efficiency_b,efficiency_c,efficiency_udsg]    
+
+
+def get_btag_eff (pt,eta,jet_flavor,eff_hists):    
      #Debug only
 #    print 'eff hist name',efficiency_udsg.GetName()
     # x,y of TH2F of efficiency are pt and eta
+    efficiency_b = eff_hists[0]
+    efficiency_c = eff_hists[1]
+    efficiency_udsg = eff_hists[2]
     if jet_flavor == 5 :
         binx = efficiency_b.GetXaxis().FindBin(pt)
         biny = efficiency_b.GetYaxis().FindBin(eta)

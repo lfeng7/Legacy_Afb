@@ -324,19 +324,12 @@ def selection(rootfiles):
         #                   All the corrections                        #
         ################################################################
 
-        # PU weights
-        weight_pileup = ROOT.vector('float')()
-
         # Top pT weights
         weight_top_pT = ROOT.vector('float')()
 
-        # b-tagging
-        weight_btag_eff = ROOT.vector('float')()
-        weight_btag_eff_err = ROOT.vector('float')()
-
         # Set vectors for corrections
-        mc_vecs += [weight_pileup,weight_top_pT,weight_btag_eff,weight_btag_eff_err]
-        mc_branch_names += ['weight_pileup','weight_top_pT','weight_btag_eff','weight_btag_eff_err']
+        mc_vecs += [weight_top_pT]
+        mc_branch_names += ['weight_top_pT']
 
         # Add MC branches to ttree
         all_mc_branches = zip(mc_branch_names,mc_vecs)
@@ -558,39 +551,13 @@ def selection(rootfiles):
 
 
         ############################################################
-        #               Get all correction weights for MC          #
+        #               Get some correction weights for MC         #
         ############################################################
 
         # Initialize all weights
-        w_PU = 1.0 ; w_top_pT = 1.0 ; w_btag,w_btag_err = 1.0 , 0
+        w_top_pT = 1.0
 
         if options.mcordata == 'mc' :
-
-            # PU weights
-
-            # Set up pileup distribution files used in pileup reweighting
-            data_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/data_pileup_distribution.root')
-            data_pu_dist = data_pufile.Get('pileup')
-            mc_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/dumped_Powheg_TT.root') 
-            MC_pu_dist   = mc_pufile.Get('pileup')
-            data_pu_dist.Scale(1.0/data_pu_dist.Integral())
-            MC_pu_dist.Scale(1.0/MC_pu_dist.Integral())        
-            # Calculate PU corrections based on npvRealTrue
-            w_PU = data_pu_dist.GetBinContent(data_pu_dist.FindFixBin(1.0*npvRealTrue[0]))/MC_pu_dist.GetBinContent(MC_pu_dist.FindFixBin(1.0*npvRealTrue[0]))
-            weight_pileup.push_back(w_PU)  
-
-
-            # b-tagging corrections
-            selected_jets = []
-            for i in range(jets_pt.size()):
-                selected_jets.append( (jets_pt[i],jets_eta[i],jets_flavor[i],jets_csv[i]))
-
-            w_result = get_weight_btag(selected_jets,options.sampletype)
-            w_btag   = w_result[0]
-            w_btag_err = w_result[1]
-            weight_btag_eff.push_back(w_btag)
-            weight_btag_eff_err.push_back(w_btag_err) 
-
 
             # GenParticles info for signal MC only
 

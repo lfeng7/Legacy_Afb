@@ -1,6 +1,11 @@
 # Adding two lists by adding each element in the lists
 # Unless that element is string. In that case, take the element from first list
 import sys
+import os
+import math
+import glob
+import numpy
+from array import array
 
 def SumColumn( M ) :
     newlist = []
@@ -37,3 +42,25 @@ def GetSomeFiles(allfiles,startfile,filesperjob):
         print 'Will process file',headfile,'to',endfile
         somefiles = [allfiles[i] for i in range(headfile,endfile)]  
     return somefiles
+
+# Make directory if not exist already
+def MakeDirectory(dirname):
+    prefix = dirname
+    # check if plotting dir is made. If not , make it now
+    if not os.path.exists(prefix):
+        os.mkdir(prefix)
+        print 'Making '+prefix
+    else :
+        print 'dir',dirname,'exists already'
+    os.system('cp utility/index.php '+dirname)
+
+def Upload(dirname,webdirname=''):
+    prefix = dirname
+    webdir = 'pha:/home/lfeng/public_html/research/Dump/'+webdirname
+    # check if plotting dir is made. If not , make it now
+    if not os.path.exists(prefix):
+        print 'Dir ',dirname,'does not exist. Cannot upload to webpage!'
+    else :
+        os.system('scp -r '+dirname+' '+webdir)
+        print 'Uploading',dirname,'to',webdir    
+
