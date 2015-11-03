@@ -131,10 +131,11 @@ def main():
     global f_index
     f_index = 0
     for ifile in files:
-        # find the index of the input file
-        index_ = ifile.split('jhutester_numEvent1000_')
-        index_ = index_[1].split('.root')
-        f_index = int( index_[0])
+        if options.inputFiles == '':
+            # find the index of the input file
+            index_ = ifile.split('jhutester_numEvent1000_')
+            index_ = index_[1].split('.root')
+            f_index = int( index_[0])
         print 'processing file  '+ifile
         #print 'current file index is',f_index
         selection(ifile)
