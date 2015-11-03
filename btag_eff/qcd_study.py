@@ -1,9 +1,8 @@
 # Edit log
 # making ttree to study events with fake electrons
 
-
-
 from utility import *
+from fwlite_boilerplate import *
 import os
 import glob
 import math
@@ -241,6 +240,7 @@ def selection(rootfiles):
     lep_mass = ROOT.vector('float')()
     lep_charge = ROOT.vector('int')()
     lep_iso = ROOT.vector('float')()
+    lep_iso_loose = ROOT.vector('float')()
 
     met_pt_vec = ROOT.vector('float')()
     met_phi_vec = ROOT.vector('float')()
@@ -248,11 +248,11 @@ def selection(rootfiles):
     trigger_vec = ROOT.vector('bool')()   
 
     data_vecs = [jets_pt,jets_eta,jets_phi,jets_mass,jets_csv_vec,lep_pt,lep_eta,lep_phi,lep_mass,lep_charge,met_pt_vec,met_phi_vec]
-    data_vecs += [trigger_vec,lep_iso]
+    data_vecs += [trigger_vec,lep_iso,lep_iso_loose]
 
     # Set up branches
     branch_names = ['jets_pt','jets_eta','jets_phi','jets_mass','jets_csv','lep_pt','lep_eta','lep_phi','lep_mass','lep_charge','met_pt','met_phi']
-    branch_names += ['trigger','lep_iso']
+    branch_names += ['trigger','lep_iso','lep_iso_loose']
 
     all_branches = zip(branch_names,data_vecs)
     for ibranch in all_branches:
@@ -371,6 +371,7 @@ def selection(rootfiles):
         for i in range(len(el_p4)):
             el = el_p4[i]
             icharge = el_charge[i]
+            lepiso = el_iso[i]
             # PFelectrons passed loose selection
             # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Veto
             if el_isLoose[i] and el_iso[i]<0.15 and el.pt()>20 and math.fabs(el.eta())<2.5 : el_loose.append((el,icharge,el_iso[i]))
@@ -382,8 +383,9 @@ def selection(rootfiles):
                 if options.fakelep == 'yes' and lepiso_cut < el_iso[i] < 1.0 :
                     el_cand.append((el,icharge,el_iso[i]))
         # Study the iso of electrons
-            if el.pt()>30 and abs(el.eta())<2.5:
-                lepiso = el_iso[i]
+            if el.pt()>30 and abs(el.eta())<2.5 and el_isLoose[i]:
+                lep_iso_loose.push_back(lepiso)
+            if el.pt()>30 and abs(el.eta())<2.5 and el_isTight[i] and not el_isModTight[i]:
                 lep_iso.push_back(lepiso)
         outputtree.Fill()
         # Study the iso of electrons
@@ -458,7 +460,7 @@ def selection(rootfiles):
         met_phi_vec.push_back(met_phi[0])
 
         # Fill all branches
-        outputtree.Fill()         
+        #outputtree.Fill()         
 
     ######## end main event loop ########
  
