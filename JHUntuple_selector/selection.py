@@ -16,6 +16,7 @@
 
 
 from utility import *
+from fwlite_boilerplate import *
 import os
 import glob
 import math
@@ -266,7 +267,7 @@ def selection(rootfiles):
     lep_phi = ROOT.vector('float')()
     lep_mass = ROOT.vector('float')()
     lep_charge = ROOT.vector('int')()
-    lep_iso = ROOT.vector('int')()
+    lep_iso = ROOT.vector('float')()
 
     met_pt_vec = ROOT.vector('float')()
     met_phi_vec = ROOT.vector('float')()
@@ -414,7 +415,7 @@ def selection(rootfiles):
         # Apply trigger 
         if options.applyHLT == 'yes' :
             if not passTrig : continue
-            h_cutflow.Fill('HLT',1)
+        h_cutflow.Fill('HLT',1)
 
         # Informations for MC only     
         if options.mcordata == 'mc' :

@@ -59,7 +59,7 @@ parser.add_option('--correction', metavar='F', type='string', action='store',
                   help='If use correction')
 
 parser.add_option('--tmptype', metavar='F', type='string', action='store',
-                  default = 'corrected',
+                  default = 'scaled',
                   dest='tmptype',
                   help='If use correction')
 
@@ -191,8 +191,8 @@ def MakeHistograms():
                 if i%10000 == 0 : print 'processing event',i
                 tmptree.GetEntry(i)
                 # Skip events with additional cut on leption iso if process fake-lepton events
-                lep_iso_ = tmptree.lep_iso[0]
-                if options.fakelep == 'yes' and lep_iso_ < options.lepisocut : continue
+                #lep_iso_ = tmptree.lep_iso[0]
+                #if options.fakelep == 'yes' and lep_iso_ < options.lepisocut : continue
                 # Jets
                 num_jets = tmptree.jets_pt.size()
                 h_Njets.Fill(num_jets)
@@ -209,7 +209,7 @@ def MakeHistograms():
                 h_lep_pt.Fill(tmptree.lep_pt[0])
                 h_lep_eta.Fill(tmptree.lep_eta[0])
                 h_lep_charge.Fill(tmptree.lep_charge[0])
-                h_lep_iso.Fill(tmptree.lep_iso[0])
+                #h_lep_iso.Fill(tmptree.lep_iso[0])
                 #MET
                 h_MET.Fill(tmptree.met_pt[0])
                 #npv
@@ -253,9 +253,9 @@ def MakeHistograms():
                     tmptree.GetEntry(i)
                     # Apply trigger
                     if options.applytrigger == 'yes':
-                        if tmptree.trigger == 0 : continue
+                        if tmptree.trigger[0] == 0 : continue
                     # Skip events with additional cut on leption iso if process fake-lepton events                
-                    if options.fakelep == 'yes' and lep_iso_ < options.lepisocut : continue                    
+                    #if options.fakelep == 'yes' and lep_iso_ < options.lepisocut : continue                    
                     w_top_pt = tmptree.weight_top_pT[0]
                     h_MET_tmp_0.Fill(tmptree.met_pt[0])
                     h_MET_tmp_1.Fill(tmptree.met_pt[0],w_top_pt)
@@ -269,13 +269,13 @@ def MakeHistograms():
 
                 # Apply trigger
                 if options.applytrigger == 'yes':
-                    if tmptree.trigger == 0 : continue
+                    if tmptree.trigger[0] == 0 : continue
                 # Do electron corrections
                 lep_pt_ = tmptree.lep_pt[0]
                 lep_eta_ = tmptree.lep_eta[0]
-                lep_iso_ = tmptree.lep_iso[0]
+                #lep_iso_ = tmptree.lep_iso[0]
                 # Skip events with additional cut on leption iso if process fake-lepton events                
-                if options.fakelep == 'yes' and lep_iso_ < options.lepisocut : continue
+                #if options.fakelep == 'yes' and lep_iso_ < options.lepisocut : continue
 
                 # Get Ele ID efficiency SF                
                 sf_eleID = GetEleSFs(lep_pt_,lep_eta_,EleID_SFs)
@@ -310,9 +310,9 @@ def MakeHistograms():
                 for i in range(jets_pt.size()):
                     selected_jets.append((jets_pt[i],jets_eta[i],jets_flavor[i],jets_csv[i]))
                 # Get b-tag weights
-                w_result = get_weight_btag(selected_jets,btagEff_type)
+                w_result = get_weight_btag(selected_jets,eff_hists)
                 w_btag   = w_result[0]
-                w_btag_err = w_result[1]
+                err_btag = w_result[1]
                 w_btag_up = w_btag + err_btag
                 w_btag_down = w_btag - err_btag 
 
@@ -350,7 +350,7 @@ def MakeHistograms():
                 h_lep_pt.Fill(tmptree.lep_pt[0],event_weight)
                 h_lep_eta.Fill(tmptree.lep_eta[0],event_weight)
                 h_lep_charge.Fill(tmptree.lep_charge[0],event_weight)
-                h_lep_iso.Fill(tmptree.lep_iso[0],event_weight)
+                #h_lep_iso.Fill(tmptree.lep_iso[0],event_weight)
                 # MET
                 h_MET.Fill(tmptree.met_pt[0],event_weight)
                 # npv
