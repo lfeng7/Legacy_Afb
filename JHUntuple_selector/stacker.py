@@ -78,6 +78,10 @@ parser.add_option('--lepisocut', metavar='F', type='int', action='store',
                   dest='lepisocut',
                   help='Lower bound for fake electron isolation.')
 
+parser.add_option('--nbcut', metavar='F', type='int', action='store',
+                  default = 2,
+                  dest='nbcut',
+                  help='Number of b-tagged jets cut')
 
 (options, args) = parser.parse_args()
 
@@ -88,40 +92,46 @@ data_lumi = 19748
 csvm = 0.679
 
 # Get input files
-prepend = './selected_files/v2_trigger_removed/all/'   # dir of output files to make histograms
+if options.fakelep == 'yes':
+    prepend = './selected_files/v3_fakelep/all'
+else:
+    prepend = './selected_files/v2_trigger_removed/all/'   # dir of output files to make histograms
 postfix='_selected'
 # Set up output histogram files
 template_type = options.tmptype
-hist_prepend = './selected_hists/'+template_type+'/' 
-if options.fakelep == 'yes':
-    dir_name = 'controlplots_'+template_type+'_fakelep' # name of the dir for control plots, such as corrected, topPT, un_corrected
-else:    
-    dir_name = 'controlplots_'+template_type # name of the dir for control plots, such as corrected, topPT, un_corrected
+tmptype_name = template_type
+if options.fakelep == yes:
+    tmptype_name += '_fakelep'
+hist_prepend = './selected_hists/'+tmptype_name+'/' 
+    
+dir_name = 'controlplots_'+tmptype_name # name of the dir for control plots, such as corrected, topPT, un_corrected
   
 # initialization and declaration
 flist = []
 
 #### Set up MC input files
-# stucture of a list of files
-#    0,         1         2        3         4           
-# (filepath, nevts_gen, xsec_NLO, type, nevts_total_ntuple)
-# Single Top
-flist.append(['T_s','singletop',259961,3.79,259176,'singletop'] )
-flist.append(['T_t','singletop',3758227,56.4,3748155,'singletop'] )
-flist.append(['T_tW','singletop',497658,11.1,495559,'singletop'])
-flist.append(['Tbar_s','singletop',139974, 1.76,139604,'singletopbar'])
-flist.append(['Tbar_t','singletop',1935072, 30.7,1930185,'singletopbar'])
-flist.append(['Tbar_tW','singletop',493460,11.1,491463,'singletopbar'])
-# Wjets
-flist.append(['W1JetsToLNu_TuneZ2Star_8TeV','wjets',23141598,6662.8,23038253,'wjets'])
-flist.append(['W2JetsToLNu_TuneZ2Star_8TeV','wjets',34044921,2159.2,33993463,'wjets'])
-flist.append(['W3JetsToLNu_TuneZ2Star_8TeV','wjets',15539503,640.4,15507852,'wjets'])
-flist.append(['W4JetsToLNu_TuneZ2Star_8TeV','wjets',13382803,246.0,13326400,'wjets'])
-# DYjets
-flist.append(['DY1JetsToLL_M','zjets',24045248,660.6,23802736,'zjets'])
-flist.append(['DY2JetsToLL_M','zjets',2352304,215.1,2345857,'zjets'])
-flist.append(['DY3JetsToLL_M','zjets',11015445,65.79,10655325,'zjets'])
-flist.append(['DY4JetsToLL_M','zjets',6402827,28.59,5843425,'zjets'])
+
+#    0,                 1         2          3         4                   5
+# (MC_sample_name, sample_type, Nevts_gen, x-sec, nevts_total_ntuple, btag_type)
+# # Single Top
+# flist.append(['T_s','singletop',259961,3.79,259176,'singletop'] )
+# flist.append(['T_t','singletop',3758227,56.4,3748155,'singletop'] )
+# flist.append(['T_tW','singletop',497658,11.1,495559,'singletop'])
+# flist.append(['Tbar_s','singletop',139974, 1.76,139604,'singletopbar'])
+# flist.append(['Tbar_t','singletop',1935072, 30.7,1930185,'singletopbar'])
+# flist.append(['Tbar_tW','singletop',493460,11.1,491463,'singletopbar'])
+# # Wjets
+# flist.append(['W1JetsToLNu_TuneZ2Star_8TeV','wjets',23141598,6662.8,23038253,'wjets'])
+# flist.append(['W2JetsToLNu_TuneZ2Star_8TeV','wjets',34044921,2159.2,33993463,'wjets'])
+# flist.append(['W3JetsToLNu_TuneZ2Star_8TeV','wjets',15539503,640.4,15507852,'wjets'])
+# flist.append(['W4JetsToLNu_TuneZ2Star_8TeV','wjets',13382803,246.0,13326400,'wjets'])
+# # DYjets
+# flist.append(['DY1JetsToLL_M','zjets',24045248,660.6,23802736,'zjets'])
+# flist.append(['DY2JetsToLL_M','zjets',2352304,215.1,2345857,'zjets'])
+# flist.append(['DY3JetsToLL_M','zjets',11015445,65.79,10655325,'zjets'])
+# flist.append(['DY4JetsToLL_M','zjets',6402827,28.59,5843425,'zjets'])
+# QCD
+flist.append(['QCD_Pt-15to3000','qcd',9991674,6662.6,9940092,'qcd'])
 # signal
 flist.append(['TT_CT10_TuneZ2star_8TeV','ttbar',21675970,245.9,21560109,'ttbar'])
 
@@ -173,13 +183,15 @@ def MakeHistograms():
         h_jets_pt = ROOT.TH1D('jets_pt',event_type+' selected jets pT;pT(GeV);events',nbins,30.,400.)
         h_jets_eta = ROOT.TH1D('jets_eta',event_type+' selected jets eta;eta;events',nbins,-2.7,2.7)
         h_MET = ROOT.TH1D('MET',event_type+' MET;MET(GeV);events',nbins,0.,200.)
-        h_Nbjets = ROOT.TH1D('Nbjets',event_type+' Num tagged bjets;Nbjets;events',5,1,6)
+        h_Nbjets = ROOT.TH1D('Nbjets',event_type+' Num tagged bjets;Nbjets;events',4,0,4)
         h_npv = ROOT.TH1D('npv',htitle+';Number of Primary Vertices;Events',35,0,35)
         h_5jets_pt = ROOT.TH1D('5jets_pt',event_type+' selected 4 or 5 leading jets pT;pT(GeV);events',nbins,30.,400.)
         h_lep_iso = ROOT.TH1D('lep_iso',htitle+';eta;events',nbins,0,1.0)
+        h_Nleps = ROOT.TH1D('Nleps',event_type+' Num selected leptons;Num leps;events',4,0,4)
+
         # Make a list of histograms for write
         tmplist = [h_cutflow,h_cutflow_norm,h_lep_pt,h_lep_eta,h_lep_charge, h_m3,h_Njets,h_jets_pt,h_jets_eta,h_MET,h_Nbjets,h_npv]
-        tmplist+= [h_5jets_pt,h_lep_iso]
+        tmplist+= [h_5jets_pt,h_lep_iso,h_Nleps]
 
         # Remove the attachement of histograms from input root file, debug only
         for ihist in tmplist : ihist.SetDirectory(0)
@@ -190,9 +202,29 @@ def MakeHistograms():
                 # Progress report
                 if i%10000 == 0 : print 'processing event',i
                 tmptree.GetEntry(i)
-                # Skip events with additional cut on leption iso if process fake-lepton events
-                #lep_iso_ = tmptree.lep_iso[0]
-                #if options.fakelep == 'yes' and lep_iso_ < options.lepisocut : continue
+                #######################################################
+                #          Some additional event selections           #
+                #######################################################
+                # trigger
+                if options.applytrigger == 'yes':
+                    if tmptree.trigger[0] == 0 : continue
+                # jets
+                bjets = []
+                for ijet in tmptree.jets_csv:
+                    if ijet>csvm : bjets.append(ijet)
+                if not len(bjets) >= options.nbcut : continue
+                # leptons  
+                lep_isos = tmptree.lep_iso
+                if not lep_isos.size() >= nlepcut : continue
+                if options.fakelep == 'yes':
+                    toskip = 0
+                    for ilep in lep_isos:
+                        if ilep < options.lepisocut : toskip = 1
+                    if toskip == 1 : continue
+
+                #######################################################
+                #          Fill the control hists                     #
+                #######################################################
                 # Jets
                 num_jets = tmptree.jets_pt.size()
                 h_Njets.Fill(num_jets)
@@ -200,16 +232,19 @@ def MakeHistograms():
                 for ijet in tmptree.jets_eta: h_jets_eta.Fill(ijet)
                 if tmptree.jets_pt.size()<=5:
                     for ijet in tmptree.jets_pt: h_5jets_pt.Fill(ijet)
-                bjets = []
-                for ijet in tmptree.jets_csv:
-                    if ijet>csvm : bjets.append(ijet)
                 h_Nbjets.Fill(len(bjets))
                 h_m3.Fill(M3(tmptree.jets_pt,tmptree.jets_eta,tmptree.jets_phi,tmptree.jets_mass))
                 # leptons
-                h_lep_pt.Fill(tmptree.lep_pt[0])
-                h_lep_eta.Fill(tmptree.lep_eta[0])
-                h_lep_charge.Fill(tmptree.lep_charge[0])
-                #h_lep_iso.Fill(tmptree.lep_iso[0])
+                lep_pts = tmptree.lep_pt
+                lep_etas = tmptree.lep_eta
+                lep_charges = tmptree.lep_charge
+                lep_isos = tmptree.lep_iso
+                h_Nleps.Fill(lep_pts.size())
+                for i in range(lep_pts.size()) :
+                    h_lep_pt.Fill(lep_pts[i])
+                    h_lep_eta.Fill(lep_etas[i])
+                    h_lep_charge.Fill(lep_charges[i])
+                    h_lep_iso.Fill(lep_isos[i])
                 #MET
                 h_MET.Fill(tmptree.met_pt[0])
                 #npv
@@ -238,9 +273,9 @@ def MakeHistograms():
             tmplist += [h_npv_true,h_w_PU,h_w_top_pt,h_w_btag,h_err_btag,h_w_eleID,h_w_trigger,h_err_eleID,h_err_trigger]
             for ihist in tmplist : ihist.SetDirectory(0)
 
-            # Fill Histograms
-
-            # Find topPtScale if we want to apply topPt reweighting
+            #######################################################
+            #     Calculate the normalization for top pT SFs      #
+            #######################################################
             # To avoid the top pt weight change the overall normalization 
             topPtScale = 1.0
             if sample_type == 'ttbar' :
@@ -249,33 +284,73 @@ def MakeHistograms():
                 h_MET_tmp_1 = h_MET.Clone()
                 h_MET_tmp_0.SetDirectory(0)
                 h_MET_tmp_1.SetDirectory(0)
+
                 for i in range(tmptree.GetEntries()):
                     tmptree.GetEntry(i)
-                    # Apply trigger
+
+                    #######################################################
+                    #          Some additional event selections           #
+                    #######################################################
+                    # trigger
                     if options.applytrigger == 'yes':
                         if tmptree.trigger[0] == 0 : continue
-                    # Skip events with additional cut on leption iso if process fake-lepton events                
-                    #if options.fakelep == 'yes' and lep_iso_ < options.lepisocut : continue                    
+                    # jets
+                    bjets = []
+                    for ijet in tmptree.jets_csv:
+                        if ijet>csvm : bjets.append(ijet)
+                    if not len(bjets) >= options.nbcut : continue
+                    # leptons  
+                    lep_isos = tmptree.lep_iso
+                    if not lep_isos.size() >= nlepcut : continue
+                    if options.fakelep == 'yes':
+                        toskip = 0
+                        for ilep in lep_isos:
+                            if ilep < options.lepisocut : toskip = 1
+                        if toskip == 1 : continue
+
+                    #######################################################
+                    #          Calculate Normalzation                     #
+                    #######################################################                                    
                     w_top_pt = tmptree.weight_top_pT[0]
                     h_MET_tmp_0.Fill(tmptree.met_pt[0])
                     h_MET_tmp_1.Fill(tmptree.met_pt[0],w_top_pt)
+
                 topPtScale = h_MET_tmp_1.Integral()*1.0/h_MET_tmp_0.Integral()
                 print 'topPtScale = ',topPtScale
 
+            # Loop over entries for MC
             for i in range(tmptree.GetEntries()):
                 # Progress report
                 if i%10000 == 0 : print 'processing event',i
                 tmptree.GetEntry(i)
 
-                # Apply trigger
+                #######################################################
+                #          Some additional event selections           #
+                #######################################################
+                # trigger
                 if options.applytrigger == 'yes':
                     if tmptree.trigger[0] == 0 : continue
+                # jets
+                bjets = []
+                for ijet in tmptree.jets_csv:
+                    if ijet>csvm : bjets.append(ijet)
+                if not len(bjets) >= options.nbcut : continue
+                # leptons  
+                lep_isos = tmptree.lep_iso
+                if not lep_isos.size() >= nlepcut : continue
+                if options.fakelep == 'yes':
+                    toskip = 0
+                    for ilep in lep_isos:
+                        if ilep < options.lepisocut : toskip = 1
+                    if toskip == 1 : continue
+
+                #######################################################
+                #          Calculate correction SFs                   #
+                #######################################################
+
                 # Do electron corrections
                 lep_pt_ = tmptree.lep_pt[0]
                 lep_eta_ = tmptree.lep_eta[0]
-                #lep_iso_ = tmptree.lep_iso[0]
-                # Skip events with additional cut on leption iso if process fake-lepton events                
-                #if options.fakelep == 'yes' and lep_iso_ < options.lepisocut : continue
 
                 # Get Ele ID efficiency SF                
                 sf_eleID = GetEleSFs(lep_pt_,lep_eta_,EleID_SFs)
@@ -322,18 +397,18 @@ def MakeHistograms():
                 # book all weights
                 all_weights = []
                 if options.tmptype == 'scaled':
-                    all_weights += [w_PU,w_btag,w_eleID,w_trigger,w_top_pt]
-                if options.tmptype == 'scaledup':
-                    all_weights += [w_PU_up,w_btag_up,w_eleID_up,w_trigger_up,w_top_pt]
-                if options.tmptype == 'scaleddown':
-                    all_weights += [w_PU_down,w_btag_down,w_eleID_down,w_trigger_down,w_top_pt]
+                    all_weights += [w_PU,w_btag,w_eleID,w_top_pt]
                 if options.tmptype == 'no_top_pt':
-                    all_weights += [w_PU,w_btag,w_eleID,w_trigger]
+                    all_weights += [w_PU,w_btag,w_eleID]
+                if options.applytrigger == 'yes':
+                    all_weights += [w_trigger]
                 # Get final weight
                 event_weight = 1.0
                 for iw in all_weights : event_weight *= iw
 
-                # Fill control plots
+                #######################################################
+                #          Fill control plots                         #
+                #######################################################             
                 # Jets
                 num_jets = tmptree.jets_pt.size()
                 h_Njets.Fill(num_jets)
@@ -341,16 +416,19 @@ def MakeHistograms():
                 for ijet in tmptree.jets_eta: h_jets_eta.Fill(ijet,event_weight)
                 if tmptree.jets_pt.size()<=5:
                     for ijet in tmptree.jets_pt: h_5jets_pt.Fill(ijet,event_weight)
-                bjets = []
-                for ijet in tmptree.jets_csv:
-                    if ijet>csvm : bjets.append(ijet)
                 h_Nbjets.Fill(len(bjets),event_weight)
                 h_m3.Fill(M3(tmptree.jets_pt,tmptree.jets_eta,tmptree.jets_phi,tmptree.jets_mass),event_weight)
                 # leptons
-                h_lep_pt.Fill(tmptree.lep_pt[0],event_weight)
-                h_lep_eta.Fill(tmptree.lep_eta[0],event_weight)
-                h_lep_charge.Fill(tmptree.lep_charge[0],event_weight)
-                #h_lep_iso.Fill(tmptree.lep_iso[0],event_weight)
+                lep_pts = tmptree.lep_pt
+                lep_etas = tmptree.lep_eta
+                lep_charges = tmptree.lep_charge
+                lep_isos = tmptree.lep_iso
+                h_Nleps.Fill(lep_pts.size(),event_weight)
+                for i in range(lep_pts.size()) :
+                    h_lep_pt.Fill(lep_pts[i],event_weight)
+                    h_lep_eta.Fill(lep_etas[i],event_weight)
+                    h_lep_charge.Fill(lep_charges[i],event_weight)
+                    h_lep_iso.Fill(lep_isos[i],event_weight)
                 # MET
                 h_MET.Fill(tmptree.met_pt[0],event_weight)
                 # npv
@@ -381,7 +459,8 @@ def MakeComparisonPlots():
 
     # list of histogram to make stack plots
     hlist = ['cutflow','jets_pt','Njets','m3','lep_pt','MET','jets_eta','lep_eta','Nbjets','lep_charge','npv','5jets_pt']
-    rebinlist = ['jets_pt','m3','el_cand_pt','MET','jets_eta','el_cand_eta']
+    hlist+= ['lep_iso','Nleps']
+    # rebinlist = ['jets_pt','m3','el_cand_pt','MET','jets_eta','el_cand_eta']
 
     stacks = []
     # Booking stack histograms 
@@ -427,6 +506,8 @@ def MakeComparisonPlots():
     sample_types = []
     # Loop over files
     for ifile in flist :
+        # Skip QCD MC samples for good reasons..
+        if ifile[1] == 'qcd': continue
         # Getting files
         tmp_fname = hist_prepend+ifile[0]+'_control_plots.root'
         print 'processing MC file',tmp_fname
