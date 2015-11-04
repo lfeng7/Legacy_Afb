@@ -535,12 +535,13 @@ def selection(rootfiles):
                 iflavor = ijet[3]
                 jets_flavor.push_back(iflavor)
         # lep
-        lepp4 = el_cand[0][0]
-        lepcharge = el_cand[0][1]
-        lepiso = el_cand[0][2]
-        lep_pt.push_back(lepp4.pt());lep_eta.push_back(lepp4.eta());lep_phi.push_back(lepp4.phi());lep_mass.push_back(lepp4.mass())
-        lep_charge.push_back(lepcharge)
-        lep_iso.push_back(lepiso)
+        for iel in el_cand:
+            lepp4 = iel[0]
+            lepcharge = iel[1]
+            lepiso = iel[2]
+            lep_pt.push_back(lepp4.pt());lep_eta.push_back(lepp4.eta());lep_phi.push_back(lepp4.phi());lep_mass.push_back(lepp4.mass())
+            lep_charge.push_back(lepcharge)
+            lep_iso.push_back(lepiso)
         # MET
         met_pt_vec.push_back(met_pt[0])
         met_phi_vec.push_back(met_phi[0])
