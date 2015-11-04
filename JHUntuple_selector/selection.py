@@ -114,6 +114,8 @@ parser.add_option('--makeplots', metavar='F', type='string', action='store',
 
 argv = []
 
+if options.fakelep == 'yes': btag_cut = 1
+else : btag_cut = 2
 
 def main():
     # Get the file list with all input files.
@@ -148,10 +150,11 @@ def main():
         global f_index
         f_index = 0
         for ifile in files:
-            # find the index of the input file
-            index_ = ifile.split('jhutester_numEvent1000_')
-            index_ = index_[1].split('.root')
-            f_index = int( index_[0])
+            if options.inputFiles == '':
+                # find the index of the input file
+                index_ = ifile.split('jhutester_numEvent1000_')
+                index_ = index_[1].split('.root')
+                f_index = int( index_[0])
             print 'processing file  '+ifile
             #print 'current file index is',f_index
             selection(ifile)
@@ -505,7 +508,7 @@ def selection(rootfiles):
         bjets = [ jet for jet in jets_cand if jet[2] > csv_cut ]
 
         # Selection on b-tagging
-        if not len(bjets) >= 2: continue
+        if not len(bjets) >= btag_cut: continue
         h_cutflow.Fill('b-tagging',1)
 
         n_evts_passed += 1
