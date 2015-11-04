@@ -132,16 +132,24 @@ def GetTypeBtagging(sample_name):
 
 def LoadBtagEfficiency(sampletype):
     #Set up btag efficiency files
+    prepend = '/uscms_data/d3/lfeng7/Payloads/run1/btagging_efficiency/regular/'
     eff_files = []
-    eff_files += [('ttbar','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/TT_CT10_TuneZ2star_8TeV-powheg-tauola_AK5PF_CSVM_bTaggingEfficiencyMap.root')]
-    eff_files += [('wjets','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_AK5PF_CSVM_bTaggingEfficiencyMap.root')]
-    eff_files += [('zjets','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_AK5PF_CSVM_bTaggingEfficiencyMap.root')]
-    eff_files += [('singletop','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/T_t-channel_TuneZ2star_8TeV-powheg-tauola_AK5PF_CSVM_bTaggingEfficiencyMap.root')]
-    eff_files += [('singletopbar','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola_AK5PF_CSVM_bTaggingEfficiencyMap.root')]
-    
+    eff_files += [('ttbar',prepend+'TT_CT10_TuneZ2star_8TeV-powheg-tauola_CSVM_bTaggingEfficiencyMap.root')]
+    eff_files += [('wjets',prepend+'WnJetsToLNu_TuneZ2Star_8TeV-madgraph_CSVM_bTaggingEfficiencyMap.root')]
+    eff_files += [('zjets',prepend+'DYnJetsToLL_M-50_TuneZ2Star_8TeV-madgraph_CSVM_bTaggingEfficiencyMap.root')]
+    eff_files += [('singletop',prepend+'T_star-channel_TuneZ2star_8TeV-powheg-tauola_CSVM_bTaggingEfficiencyMap.root')]
+    eff_files += [('singletopbar',prepend+'Tbar_star-channel_TuneZ2star_8TeV-powheg-tauola_CSVM_bTaggingEfficiencyMap.root')]
+
+    payload_found = 0
     for ifile in eff_files:
         if sampletype == ifile[0] :
             F_eff = ifile[1]
+            payload_found = 1
+
+    if payload_found == 0 :
+        print 'No b tagging efficiency payload found for this sample!' 
+        return 'None'
+
     file_tmp = ROOT.TFile(F_eff)
     efficiency_b = file_tmp.Get('efficiency_b').Clone()
     efficiency_c = file_tmp.Get('efficiency_c').Clone()
@@ -270,6 +278,9 @@ def get_SF_btag(ptJet,etaJet,flavJet):      # checked
 # ///as implemented, it only works for CSVM. 
 # Input : given a list of selected jets info such as jets_info = [(pt,eta,flavor,csv)]
 def get_weight_btag(jets_info, eff_hists) :
+    # return default weight if no eff_hists is given
+    if eff_hists == 'None': 
+        return [1,0,0]
     # Initiate probability and its uncertainty
     # Probability
     mcTag = 1.;
