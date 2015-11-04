@@ -79,9 +79,14 @@ parser.add_option('--lepisocut', metavar='F', type='int', action='store',
                   help='Lower bound for fake electron isolation.')
 
 parser.add_option('--nbcut', metavar='F', type='int', action='store',
-                  default = 2,
+                  default = 1,
                   dest='nbcut',
                   help='Number of b-tagged jets cut')
+
+parser.add_option('--nlepcut', metavar='F', type='int', action='store',
+                  default = 1,
+                  dest='nlepcut',
+                  help='Number of selected leptons cut')
 
 (options, args) = parser.parse_args()
 
@@ -93,14 +98,14 @@ csvm = 0.679
 
 # Get input files
 if options.fakelep == 'yes':
-    prepend = './selected_files/v3_fakelep/all'
+    prepend = './selected_files/v3_fakelep/all/'
 else:
     prepend = './selected_files/v2_trigger_removed/all/'   # dir of output files to make histograms
 postfix='_selected'
 # Set up output histogram files
 template_type = options.tmptype
 tmptype_name = template_type
-if options.fakelep == yes:
+if options.fakelep == 'yes':
     tmptype_name += '_fakelep'
 hist_prepend = './selected_hists/'+tmptype_name+'/' 
     
@@ -172,7 +177,7 @@ def MakeHistograms():
         h_cutflow = tmpfile.Get('cutflow')
         h_cutflow_norm = tmpfile.Get('cutflow_norm')
         # Make an output file for histograms
-        savetoroot([],'selected_hists',template_type,event_type+'_control_plots')
+        savetoroot([],'selected_hists',tmptype_name,event_type+'_control_plots')
 
         # Physics objects
         h_lep_pt = ROOT.TH1D('lep_pt',event_type+' selected lepton pT;pT(GeV);events',nbins,0.,200.)
@@ -215,7 +220,7 @@ def MakeHistograms():
                 if not len(bjets) >= options.nbcut : continue
                 # leptons  
                 lep_isos = tmptree.lep_iso
-                if not lep_isos.size() >= nlepcut : continue
+                if not lep_isos.size() >= options.nlepcut : continue
                 if options.fakelep == 'yes':
                     toskip = 0
                     for ilep in lep_isos:
@@ -301,7 +306,7 @@ def MakeHistograms():
                     if not len(bjets) >= options.nbcut : continue
                     # leptons  
                     lep_isos = tmptree.lep_iso
-                    if not lep_isos.size() >= nlepcut : continue
+                    if not lep_isos.size() >= options.nlepcut : continue
                     if options.fakelep == 'yes':
                         toskip = 0
                         for ilep in lep_isos:
@@ -337,7 +342,7 @@ def MakeHistograms():
                 if not len(bjets) >= options.nbcut : continue
                 # leptons  
                 lep_isos = tmptree.lep_iso
-                if not lep_isos.size() >= nlepcut : continue
+                if not lep_isos.size() >= options.nlepcut : continue
                 if options.fakelep == 'yes':
                     toskip = 0
                     for ilep in lep_isos:
@@ -447,7 +452,7 @@ def MakeHistograms():
         # Save histograms into root files
         print 'Saving',event_type,' histograms into root file..'
         #        will save to selected_hists/test/event_type_control_plots.root
-        savetoroot(tmplist,'selected_hists',template_type,event_type+'_control_plots','update')
+        savetoroot(tmplist,'selected_hists',tmptype_name,event_type+'_control_plots','update')
         # Close selected root file
         tmpfile.Close()
 
@@ -617,9 +622,9 @@ def MakeComparisonPlots():
     # Make an txt files for some information output
     f_yields = open('./csvfiles/cutflow.csv','w')
     if options.fakelep == 'no':
-        f_corrected_yields = open('./csvfiles/yields_'+options.tmptype+'.csv','w')
+        f_corrected_yields = open('./csvfiles/yields_'+tmptype_name+'.csv','w')
     else :
-        f_corrected_yields = open('./csvfiles/yields_'+options.tmptype+'_fakelep.csv','w')
+        f_corrected_yields = open('./csvfiles/yields_'+tmptype_name+'_fakelep.csv','w')
 
     tmp_stack = mc_stacks[7]
     tmp_data = data_hists[7]

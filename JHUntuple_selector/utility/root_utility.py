@@ -231,7 +231,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     max_data = data_.GetMaximum()
     max_ = max(max_mc,max_data)*1.1
     data_.SetMaximum(max_)
-    # mc_.SetMaximum(max_)
+    mc_.SetMaximum(max_)
     # Calculating the residual of each bin
     h_data = data_
     h_stack = mc_.GetStack().Last() # This is the combined histogram in stack
