@@ -1,0 +1,1 @@
+/eos/uscms/store/user/lfeng7/ntuples/jhu_diffmo_v2/QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6/crab_QCD_Pt-15to3000/151103_125904/0000/*.root

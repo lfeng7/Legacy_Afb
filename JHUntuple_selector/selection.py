@@ -25,7 +25,7 @@ import math
 evt_to_run = -1 
 csv_cut = 0.679
 trigger_path='HLT_Ele27_WP80_v'
-lepiso_cut = 0.15
+lepiso_cut = 0.2
 
 #event_type = 'Powheg_TT_btag'
 events_passed = -1
@@ -201,6 +201,7 @@ def selection(rootfiles):
     # define label module names here
     el_prefix = 'jhuElePFlow'
     el_loose_prefix = 'jhuElePFlowLoose'
+    el_postfix = 'Loose'    
     mu_prefix = 'jhuMuonPFlow'
     muloose_prefix = 'jhuMuonPFlowLoose'
 
@@ -360,12 +361,12 @@ def selection(rootfiles):
         for ivec in all_vecs: ivec.clear()
 
         # Read objects in nTuple
-        evt.getByLabel(el_prefix,'electron',el_hndl)
-        evt.getByLabel(el_prefix,'electroniso',el_iso_hndl)
-        evt.getByLabel(el_prefix,'electronisloose',el_isLoose_hndl)
-        evt.getByLabel(el_prefix,'electronistight',el_isTight_hndl)
-        evt.getByLabel(el_prefix,'electronmodtight',el_isModTight_hndl)
-        evt.getByLabel(el_prefix,'electroncharge',el_charge_hndl)
+        evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix,el_hndl)
+        evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'iso',el_iso_hndl)
+        evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'isloose',el_isLoose_hndl)
+        evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'istight',el_isTight_hndl)
+        evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'modtight',el_isModTight_hndl)
+        evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'charge',el_charge_hndl)
 
         evt.getByLabel('jhuMuonPFlow','muon',mu_hndl)
         evt.getByLabel('jhuMuonPFlow','muoniso',mu_iso_hndl)
@@ -454,7 +455,8 @@ def selection(rootfiles):
             icharge = el_charge[i]
             # PFelectrons passed loose selection
             # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Veto
-            if el_isLoose[i] and el_iso[i]<0.15 and el.pt()>20 and math.fabs(el.eta())<2.5 : el_loose.append((el,icharge,el_iso[i]))
+            if el_isLoose[i] and el_iso[i]<0.15 and el.pt()>20 and math.fabs(el.eta())<2.5 : 
+                el_loose.append((el,icharge,el_iso[i]))
             # PFelectrons passed tight selection
             # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Signal
             if el_isTight[i] and not el_isModTight[i] and el.pt()>30 and abs(el.eta())<2.5: 
@@ -471,8 +473,9 @@ def selection(rootfiles):
             mu = mu_p4[i]
             if mu_is_loose[i] and mu_iso[i]< 0.2 and mu.pt()>10 and abs(mu.eta())<2.5: mu_loose.append(mu)
 
-        # Selection on leptons        
-        if not len(el_cand)==1 : continue # continue
+        # Selection on leptons 
+        if options.fakelep == 'yes' and not len(el_cand)>=1  : continue            
+        elif not len(el_cand)==1 : continue # continue
         h_cutflow.Fill('el',1)
         if len(mu_loose) > 0 : continue
         h_cutflow.Fill('loose mu veto',1)
