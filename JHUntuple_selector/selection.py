@@ -114,9 +114,6 @@ parser.add_option('--makeplots', metavar='F', type='string', action='store',
 
 argv = []
 
-if options.fakelep == 'yes': btag_cut = 1
-else : btag_cut = 2
-
 def main():
     # Get the file list with all input files.
     if options.inputFiles != '':
@@ -163,6 +160,13 @@ def main():
 # selection is the function to do selection. patfile should be EDM PATtuple files
 def selection(rootfiles):
 
+    if options.fakelep == 'yes': 
+        btag_cut = 1
+        el_postfix = 'Loose'
+    else : 
+        btag_cut = 2
+        el_postfix = ''
+
     # Get input files
     files = rootfiles
     events = Events(files)
@@ -204,7 +208,7 @@ def selection(rootfiles):
     # define label module names here
     el_prefix = 'jhuElePFlow'
     el_loose_prefix = 'jhuElePFlowLoose'
-    el_postfix = 'Loose'    
+    #el_postfix = 'Loose'    
     mu_prefix = 'jhuMuonPFlow'
     muloose_prefix = 'jhuMuonPFlowLoose'
 
