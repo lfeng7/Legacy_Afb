@@ -191,7 +191,7 @@ def MakeHistograms():
         h_Nbjets = ROOT.TH1D('Nbjets',event_type+' Num tagged bjets;Nbjets;events',4,0,4)
         h_npv = ROOT.TH1D('npv',htitle+';Number of Primary Vertices;Events',35,0,35)
         h_5jets_pt = ROOT.TH1D('5jets_pt',event_type+' selected 4 or 5 leading jets pT;pT(GeV);events',nbins,30.,400.)
-        h_lep_iso = ROOT.TH1D('lep_iso',htitle+';eta;events',nbins,0,1.0)
+        h_lep_iso = ROOT.TH1D('lep_iso',htitle+';RelIso;events',nbins,0,1.0)
         h_Nleps = ROOT.TH1D('Nleps',event_type+' Num selected leptons;Num leps;events',4,0,4)
 
         # Make a list of histograms for write

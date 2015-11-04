@@ -234,7 +234,10 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     mc_.SetMaximum(max_)
     # Calculating the residual of each bin
     h_data = data_
-    h_stack = mc_.GetStack().Last() # This is the combined histogram in stack
+    if mc_.ClassName() == 'THStack':
+        h_stack = mc_.GetStack().Last() # This is the combined histogram in stack
+    else : 
+        h_stack = mc_
     # Make residual histogram
     h_res = ROOT.TH1D(event_type+'_residuals',';; Data/MC',h_data.GetNbinsX(),h_data.GetXaxis().GetXmin(),h_data.GetXaxis().GetXmax())
     h_res.GetXaxis().SetName(h_data.GetXaxis().GetName())
