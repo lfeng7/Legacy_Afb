@@ -1,2 +1,3 @@
-Currently in v1.
-10-7-15
+v 2.2
+JHUselcector is for event selection and ttree maker. 
+btagg_eff is for making b-tagging  efficiency files. 
