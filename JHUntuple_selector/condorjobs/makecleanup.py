@@ -1,4 +1,4 @@
-prepend = '../../selected_files/v2_trigger_removed/'
+prepend = '../../selected_files/v2_trigger_removed_data/'
 fout = open('cleanall.sh','w')
 import glob
 alldir = glob.glob('*')

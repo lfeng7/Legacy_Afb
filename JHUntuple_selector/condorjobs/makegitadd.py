@@ -6,6 +6,6 @@ for idir in alldir:
     idir = idir.strip()
     # ignore files in current dir, only loop over dirs
     if len(idir.split('.'))>1 : continue
-    towrite = 'git add '+idir+'/*.py '+idir+'/ana.* \n'
+    towrite = 'git add '+idir+'/*.py '+idir+'/ana.* '+idir+'/*.csh \n'
     fout.write(towrite)
 fout.close()

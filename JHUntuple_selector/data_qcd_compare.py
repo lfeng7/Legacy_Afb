@@ -69,7 +69,7 @@ parser.add_option('--applytrigger', metavar='F', type='string', action='store',
                   help='If apply trigger on MC')
 
 parser.add_option('--fakelep', metavar='F', type='string', action='store',
-                  default = 'no',
+                  default = 'yes',
                   dest='fakelep',
                   help='If run on selected events with fake lepton.')
 
@@ -132,6 +132,12 @@ fqcd= ROOT.TFile(qcd_input)
 leg = ROOT.TLegend(0.85,0.65,1.0,1.0)
 
 # Get histograms
+qcd_scale = 1
+# Get histograms from qcd
+for ihist in hlist :
+    ih = fqcd.Get(ihist)
+    if ihist == 'MET': qcd_scale = ih.Integral()
+print 'Number of qcd events',qcd_scale
 
 data_hists = []
 # Get histograms from data
@@ -140,25 +146,24 @@ data_scale = 1
 for ihist in hlist :
     ih = fdata.Get(ihist)
     if ihist == 'MET' : data_scale = ih.Integral()
+print 'Number of data-qcd events',data_scale
+for ihist in hlist :
+    ih = fdata.Get(ihist)
     ih.SetDirectory(0)
     ih.SetName(ih.GetName()+'_data')
     ih.SetFillColor(icolor)
     ih.SetLineColor(icolor)
     ih.SetMarkerStyle(21)  
+    ih.Scale(1.0*qcd_scale/data_scale)
     data_hists.append(ih)
 # Add data entry to legend
 leg.AddEntry(data_hists[0],'data')
 
 qcd_hists = []
-qcd_scale = 1
-# Get histograms from qcd
-for ihist in hlist :
-    ih = fqcd.Get(ihist)
-    if ihist == 'MET': qcd_scale = ih.Integral()
 for ihist in hlist : 
     ih = fqcd.Get(ihist)   
     ih.SetDirectory(0)
-    ih.Scale(1.0*data_scale/qcd_scale)
+#    ih.Scale(1.0*data_scale/qcd_scale)
     ih.SetName(ih.GetName()+'_qcd')
     qcd_hists.append(ih)
 # Add data entry to legend

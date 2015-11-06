@@ -480,6 +480,8 @@ def selection(rootfiles):
             mu = mu_p4[i]
             if mu_is_loose[i] and mu_iso[i]< 0.2 and mu.pt()>10 and abs(mu.eta())<2.5: mu_loose.append(mu)
 
+#        if len(el_cand) >1 :print len(el_cand)
+
         # Selection on leptons 
         if options.fakelep == 'yes' and not len(el_cand)>=1  : continue            
         elif not len(el_cand)==1 : continue # continue

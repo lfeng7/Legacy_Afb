@@ -1,5 +1,5 @@
-rm -r *.cmd  *.tgz notneeded condor-* condorlog TT_CT10_TuneZ2star_8TeV
-mkdir TT_CT10_TuneZ2star_8TeV
-mv *.root TT_CT10_TuneZ2star_8TeV
+rm -r *.cmd  *.tgz notneeded condor-* condorlog QCD_Pt-15to3000 
+mkdir QCD_Pt-15to3000 
+mv *.root QCD_Pt-15to3000 
 mkdir condorlog
 mv *.log condorlog

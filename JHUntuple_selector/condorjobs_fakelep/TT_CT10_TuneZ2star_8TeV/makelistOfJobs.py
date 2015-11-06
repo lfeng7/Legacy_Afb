@@ -1,6 +1,6 @@
 fout = open('ana.listOfJobs','w')
 num_files = 188
-filesperjob =  10
+filesperjob = 3 
 startfile = 0
 txtfile = 'TT_CT10_TuneZ2star_8TeV.txt'
 sampletype = 'TT_CT10_TuneZ2star_8TeV'

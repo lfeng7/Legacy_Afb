@@ -98,7 +98,7 @@ csvm = 0.679
 
 # Get input files
 if options.fakelep == 'yes':
-    prepend = './selected_files/v3_fakelep/all/'
+    prepend = './selected_files/v3_fakelep_updated/all/'
 else:
     prepend = './selected_files/v2_trigger_removed/all/'   # dir of output files to make histograms
 postfix='_selected'
