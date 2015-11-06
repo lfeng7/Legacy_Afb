@@ -9,7 +9,10 @@ stacker.py do two things
 (1) Take selected ttree, make histograms of control plots, and calculate most of the MC correction SFs for MC.
 (2) Make stack plots of MC and compare with data
 
-What's added in this version:
-(1) selection.py now can make side-band selection, but only newer version of jhu ntuples will work because fake lep is from PFLooseEles
-(2) stacker also add options for fakelep. Some extra cuts can be done in fakelep mode, such as additonal b-tagging and ele iso cuts.
+What's added in 2.X version:
+(0) workflow overhaul. Now selection/treemaker is a separate step as plotting/stacking. 
+(1) b-tagging, electron ID/Isolation efficiency, HLT trigger efficiency, PU, top pT reweighting, correction SFs are implemented
+(2) Nicer plotting, with Data/MC comparison plots added
+(3) selection.py now can make side-band selection, but only newer version of jhu ntuples will work because fake lep is from PFLooseEles
+(4) stacker also add options for fakelep. Some extra cuts can be done in fakelep mode, such as additonal b-tagging and ele iso cuts.
 
