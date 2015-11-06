@@ -1,21 +1,21 @@
-git add DY1JetsToLL_M/*.py DY1JetsToLL_M/ana.* 
-git add DY2JetsToLL_M/*.py DY2JetsToLL_M/ana.* 
-git add DY3JetsToLL_M/*.py DY3JetsToLL_M/ana.* 
-git add DY4JetsToLL_M/*.py DY4JetsToLL_M/ana.* 
-git add SingleEl_Run2012A_v1/*.py SingleEl_Run2012A_v1/ana.* 
-git add SingleEl_Run2012B/*.py SingleEl_Run2012B/ana.* 
-git add SingleEl_Run2012C_part1/*.py SingleEl_Run2012C_part1/ana.* 
-git add SingleEl_Run2012C_part2/*.py SingleEl_Run2012C_part2/ana.* 
-git add SingleEl_Run2012D/*.py SingleEl_Run2012D/ana.* 
-git add TT_CT10_TuneZ2star_8TeV/*.py TT_CT10_TuneZ2star_8TeV/ana.* 
-git add T_s/*.py T_s/ana.* 
-git add T_t/*.py T_t/ana.* 
-git add T_tW/*.py T_tW/ana.* 
-git add Tbar_s/*.py Tbar_s/ana.* 
-git add Tbar_t/*.py Tbar_t/ana.* 
-git add Tbar_tW/*.py Tbar_tW/ana.* 
-git add W1JetsToLNu_TuneZ2Star_8TeV/*.py W1JetsToLNu_TuneZ2Star_8TeV/ana.* 
-git add W2JetsToLNu_TuneZ2Star_8TeV/*.py W2JetsToLNu_TuneZ2Star_8TeV/ana.* 
-git add W3JetsToLNu_TuneZ2Star_8TeV/*.py W3JetsToLNu_TuneZ2Star_8TeV/ana.* 
-git add W4JetsToLNu_TuneZ2Star_8TeV/*.py W4JetsToLNu_TuneZ2Star_8TeV/ana.* 
-git add template/*.py template/ana.* 
+git add DY1JetsToLL_M/*.py DY1JetsToLL_M/ana.* DY1JetsToLL_M/*.csh 
+git add DY2JetsToLL_M/*.py DY2JetsToLL_M/ana.* DY2JetsToLL_M/*.csh 
+git add DY3JetsToLL_M/*.py DY3JetsToLL_M/ana.* DY3JetsToLL_M/*.csh 
+git add DY4JetsToLL_M/*.py DY4JetsToLL_M/ana.* DY4JetsToLL_M/*.csh 
+git add SingleEl_Run2012A_v1/*.py SingleEl_Run2012A_v1/ana.* SingleEl_Run2012A_v1/*.csh 
+git add SingleEl_Run2012B/*.py SingleEl_Run2012B/ana.* SingleEl_Run2012B/*.csh 
+git add SingleEl_Run2012C_part1/*.py SingleEl_Run2012C_part1/ana.* SingleEl_Run2012C_part1/*.csh 
+git add SingleEl_Run2012C_part2/*.py SingleEl_Run2012C_part2/ana.* SingleEl_Run2012C_part2/*.csh 
+git add SingleEl_Run2012D/*.py SingleEl_Run2012D/ana.* SingleEl_Run2012D/*.csh 
+git add TT_CT10_TuneZ2star_8TeV/*.py TT_CT10_TuneZ2star_8TeV/ana.* TT_CT10_TuneZ2star_8TeV/*.csh 
+git add T_s/*.py T_s/ana.* T_s/*.csh 
+git add T_t/*.py T_t/ana.* T_t/*.csh 
+git add T_tW/*.py T_tW/ana.* T_tW/*.csh 
+git add Tbar_s/*.py Tbar_s/ana.* Tbar_s/*.csh 
+git add Tbar_t/*.py Tbar_t/ana.* Tbar_t/*.csh 
+git add Tbar_tW/*.py Tbar_tW/ana.* Tbar_tW/*.csh 
+git add W1JetsToLNu_TuneZ2Star_8TeV/*.py W1JetsToLNu_TuneZ2Star_8TeV/ana.* W1JetsToLNu_TuneZ2Star_8TeV/*.csh 
+git add W2JetsToLNu_TuneZ2Star_8TeV/*.py W2JetsToLNu_TuneZ2Star_8TeV/ana.* W2JetsToLNu_TuneZ2Star_8TeV/*.csh 
+git add W3JetsToLNu_TuneZ2Star_8TeV/*.py W3JetsToLNu_TuneZ2Star_8TeV/ana.* W3JetsToLNu_TuneZ2Star_8TeV/*.csh 
+git add W4JetsToLNu_TuneZ2Star_8TeV/*.py W4JetsToLNu_TuneZ2Star_8TeV/ana.* W4JetsToLNu_TuneZ2Star_8TeV/*.csh 
+git add template/*.py template/ana.* template/*.csh 

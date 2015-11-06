@@ -1,21 +1,21 @@
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 0
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 10
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 20
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 30
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 40
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 50
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 60
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 70
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 80
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 90
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 100
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 110
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 120
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 130
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 140
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 150
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 160
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 170
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 180
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 190
-python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --applyHLT yes --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 200
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 0
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 10
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 20
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 30
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 40
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 50
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 60
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 70
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 80
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 90
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 100
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 110
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 120
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 130
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 140
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 150
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 160
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 170
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 180
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 190
+python ./tardir/selection.py --txtfiles tardir/inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --maxevts -1 --type SingleEl_Run2012A_v1 --grid yes --maxfiles 10 --startfile 200

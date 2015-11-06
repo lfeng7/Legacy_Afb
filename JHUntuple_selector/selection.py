@@ -16,6 +16,7 @@
 
 
 from utility import *
+from fwlite_boilerplate import *
 import os
 import glob
 import math
@@ -24,6 +25,7 @@ import math
 evt_to_run = -1 
 csv_cut = 0.679
 trigger_path='HLT_Ele27_WP80_v'
+lepiso_cut = 0.2
 
 #event_type = 'Powheg_TT_btag'
 events_passed = -1
@@ -97,6 +99,11 @@ parser.add_option('--mctype', metavar='F', type='string', action='store',
                   dest='sampletype',
                   help='type of sample files')
 
+parser.add_option('--fakelep', metavar='F', type='string', action='store',
+                  default = 'no',
+                  dest='fakelep',
+                  help='If select fake leptons')
+
 # if want to make plots, use multiple input patfiles instead of looping over each files
 parser.add_option('--makeplots', metavar='F', type='string', action='store',
                   default = 'no',
@@ -106,7 +113,6 @@ parser.add_option('--makeplots', metavar='F', type='string', action='store',
 (options, args) = parser.parse_args()
 
 argv = []
-
 
 def main():
     # Get the file list with all input files.
@@ -141,10 +147,11 @@ def main():
         global f_index
         f_index = 0
         for ifile in files:
-            # find the index of the input file
-            index_ = ifile.split('jhutester_numEvent1000_')
-            index_ = index_[1].split('.root')
-            f_index = int( index_[0])
+            if options.inputFiles == '':
+                # find the index of the input file
+                index_ = ifile.split('jhutester_numEvent1000_')
+                index_ = index_[1].split('.root')
+                f_index = int( index_[0])
             print 'processing file  '+ifile
             #print 'current file index is',f_index
             selection(ifile)
@@ -152,6 +159,13 @@ def main():
 
 # selection is the function to do selection. patfile should be EDM PATtuple files
 def selection(rootfiles):
+
+    if options.fakelep == 'yes': 
+        btag_cut = 1
+        el_postfix = 'Loose'
+    else : 
+        btag_cut = 2
+        el_postfix = ''
 
     # Get input files
     files = rootfiles
@@ -194,6 +208,7 @@ def selection(rootfiles):
     # define label module names here
     el_prefix = 'jhuElePFlow'
     el_loose_prefix = 'jhuElePFlowLoose'
+    #el_postfix = 'Loose'    
     mu_prefix = 'jhuMuonPFlow'
     muloose_prefix = 'jhuMuonPFlowLoose'
 
@@ -260,6 +275,7 @@ def selection(rootfiles):
     lep_phi = ROOT.vector('float')()
     lep_mass = ROOT.vector('float')()
     lep_charge = ROOT.vector('int')()
+    lep_iso = ROOT.vector('float')()
 
     met_pt_vec = ROOT.vector('float')()
     met_phi_vec = ROOT.vector('float')()
@@ -269,11 +285,11 @@ def selection(rootfiles):
     pileup_events = ROOT.vector('float')()
 
     data_vecs = [jets_pt,jets_eta,jets_phi,jets_mass,jets_csv_vec,lep_pt,lep_eta,lep_phi,lep_mass,lep_charge,met_pt_vec,met_phi_vec]
-    data_vecs += [trigger_vec,pileup_events]
+    data_vecs += [trigger_vec,pileup_events,lep_iso]
 
     # Set up branches
     branch_names = ['jets_pt','jets_eta','jets_phi','jets_mass','jets_csv','lep_pt','lep_eta','lep_phi','lep_mass','lep_charge','met_pt','met_phi']
-    branch_names += ['trigger','pileup_events']
+    branch_names += ['trigger','pileup_events','lep_iso']
 
     all_branches = zip(branch_names,data_vecs)
     for ibranch in all_branches:
@@ -317,19 +333,12 @@ def selection(rootfiles):
         #                   All the corrections                        #
         ################################################################
 
-        # PU weights
-        weight_pileup = ROOT.vector('float')()
-
         # Top pT weights
         weight_top_pT = ROOT.vector('float')()
 
-        # b-tagging
-        weight_btag_eff = ROOT.vector('float')()
-        weight_btag_eff_err = ROOT.vector('float')()
-
         # Set vectors for corrections
-        mc_vecs += [weight_pileup,weight_top_pT,weight_btag_eff,weight_btag_eff_err]
-        mc_branch_names += ['weight_pileup','weight_top_pT','weight_btag_eff','weight_btag_eff_err']
+        mc_vecs += [weight_top_pT]
+        mc_branch_names += ['weight_top_pT']
 
         # Add MC branches to ttree
         all_mc_branches = zip(mc_branch_names,mc_vecs)
@@ -359,12 +368,12 @@ def selection(rootfiles):
         for ivec in all_vecs: ivec.clear()
 
         # Read objects in nTuple
-        evt.getByLabel(el_prefix,'electron',el_hndl)
-        evt.getByLabel(el_prefix,'electroniso',el_iso_hndl)
-        evt.getByLabel(el_prefix,'electronisloose',el_isLoose_hndl)
-        evt.getByLabel(el_prefix,'electronistight',el_isTight_hndl)
-        evt.getByLabel(el_prefix,'electronmodtight',el_isModTight_hndl)
-        evt.getByLabel(el_prefix,'electroncharge',el_charge_hndl)
+        evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix,el_hndl)
+        evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'iso',el_iso_hndl)
+        evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'isloose',el_isLoose_hndl)
+        evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'istight',el_isTight_hndl)
+        evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'modtight',el_isModTight_hndl)
+        evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'charge',el_charge_hndl)
 
         evt.getByLabel('jhuMuonPFlow','muon',mu_hndl)
         evt.getByLabel('jhuMuonPFlow','muoniso',mu_iso_hndl)
@@ -414,7 +423,7 @@ def selection(rootfiles):
         # Apply trigger 
         if options.applyHLT == 'yes' :
             if not passTrig : continue
-            h_cutflow.Fill('HLT',1)
+        h_cutflow.Fill('HLT',1)
 
         # Informations for MC only     
         if options.mcordata == 'mc' :
@@ -453,10 +462,15 @@ def selection(rootfiles):
             icharge = el_charge[i]
             # PFelectrons passed loose selection
             # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Veto
-            if el_isLoose[i] and el_iso[i]<0.15 and el.pt()>20 and math.fabs(el.eta())<2.5 : el_loose.append((el,icharge))
+            if el_isLoose[i] and el_iso[i]<0.15 and el.pt()>20 and math.fabs(el.eta())<2.5 : 
+                el_loose.append((el,icharge,el_iso[i]))
             # PFelectrons passed tight selection
             # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Signal
-            if el_isTight[i] and not el_isModTight[i] and el_iso[i]<0.1 and el.pt()>30 and abs(el.eta())<2.5: el_cand.append((el,icharge))
+            if el_isTight[i] and not el_isModTight[i] and el.pt()>30 and abs(el.eta())<2.5: 
+                if options.fakelep == 'no' and el_iso[i]<0.1:
+                    el_cand.append((el,icharge,el_iso[i]))
+                if options.fakelep == 'yes' and lepiso_cut < el_iso[i] < 1.0 :
+                    el_cand.append((el,icharge,el_iso[i]))
         el_extra = list( ipar for ipar in el_loose if ipar not in el_cand)
 
         #### PF muons ####
@@ -466,8 +480,11 @@ def selection(rootfiles):
             mu = mu_p4[i]
             if mu_is_loose[i] and mu_iso[i]< 0.2 and mu.pt()>10 and abs(mu.eta())<2.5: mu_loose.append(mu)
 
-        # Selection on leptons        
-        if not len(el_cand)==1 : continue # continue
+#        if len(el_cand) >1 :print len(el_cand)
+
+        # Selection on leptons 
+        if options.fakelep == 'yes' and not len(el_cand)>=1  : continue            
+        elif not len(el_cand)==1 : continue # continue
         h_cutflow.Fill('el',1)
         if len(mu_loose) > 0 : continue
         h_cutflow.Fill('loose mu veto',1)
@@ -497,7 +514,7 @@ def selection(rootfiles):
         bjets = [ jet for jet in jets_cand if jet[2] > csv_cut ]
 
         # Selection on b-tagging
-        if not len(bjets) >= 2: continue
+        if not len(bjets) >= btag_cut: continue
         h_cutflow.Fill('b-tagging',1)
 
         n_evts_passed += 1
@@ -520,10 +537,13 @@ def selection(rootfiles):
                 iflavor = ijet[3]
                 jets_flavor.push_back(iflavor)
         # lep
-        lepp4 = el_cand[0][0]
-        lepcharge = el_cand[0][1]
-        lep_pt.push_back(lepp4.pt());lep_eta.push_back(lepp4.eta());lep_phi.push_back(lepp4.phi());lep_mass.push_back(lepp4.mass())
-        lep_charge.push_back(lepcharge)
+        for iel in el_cand:
+            lepp4 = iel[0]
+            lepcharge = iel[1]
+            lepiso = iel[2]
+            lep_pt.push_back(lepp4.pt());lep_eta.push_back(lepp4.eta());lep_phi.push_back(lepp4.phi());lep_mass.push_back(lepp4.mass())
+            lep_charge.push_back(lepcharge)
+            lep_iso.push_back(lepiso)
         # MET
         met_pt_vec.push_back(met_pt[0])
         met_phi_vec.push_back(met_phi[0])
@@ -545,39 +565,13 @@ def selection(rootfiles):
 
 
         ############################################################
-        #               Get all correction weights for MC          #
+        #               Get some correction weights for MC         #
         ############################################################
 
         # Initialize all weights
-        w_PU = 1.0 ; w_top_pT = 1.0 ; w_btag,w_btag_err = 1.0 , 0
+        w_top_pT = 1.0
 
         if options.mcordata == 'mc' :
-
-            # PU weights
-
-            # Set up pileup distribution files used in pileup reweighting
-            data_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/data_pileup_distribution.root')
-            data_pu_dist = data_pufile.Get('pileup')
-            mc_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/dumped_Powheg_TT.root') 
-            MC_pu_dist   = mc_pufile.Get('pileup')
-            data_pu_dist.Scale(1.0/data_pu_dist.Integral())
-            MC_pu_dist.Scale(1.0/MC_pu_dist.Integral())        
-            # Calculate PU corrections based on npvRealTrue
-            w_PU = data_pu_dist.GetBinContent(data_pu_dist.FindFixBin(1.0*npvRealTrue[0]))/MC_pu_dist.GetBinContent(MC_pu_dist.FindFixBin(1.0*npvRealTrue[0]))
-            weight_pileup.push_back(w_PU)  
-
-
-            # b-tagging corrections
-            selected_jets = []
-            for i in range(jets_pt.size()):
-                selected_jets.append( (jets_pt[i],jets_eta[i],jets_flavor[i],jets_csv[i]))
-
-            w_result = get_weight_btag(selected_jets,options.sampletype)
-            w_btag   = w_result[0]
-            w_btag_err = w_result[1]
-            weight_btag_eff.push_back(w_btag)
-            weight_btag_eff_err.push_back(w_btag_err) 
-
 
             # GenParticles info for signal MC only
 

@@ -34,6 +34,32 @@ def GetBinEntry(hist) :
         entry.append(int(hist.GetArray()[i]))
     return entry
 
+################################################################
+#               Functions for MC correctons                    #
+################################################################
+
+# PU weights
+def LoadPUfiles() :
+    data_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/data_pileup_distribution.root')
+    mc_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/dumped_Powheg_TT.root') 
+    data_pu_dist = data_pufile.Get('pileup').Clone('npv_data')
+    MC_pu_dist   = mc_pufile.Get('pileup').Clone('npv_mc')
+    data_pu_dist.Scale(1.0/data_pu_dist.Integral())
+    MC_pu_dist.Scale(1.0/MC_pu_dist.Integral())
+    pu_dists = [data_pu_dist,MC_pu_dist]
+    for item in pu_dists: 
+        item.SetDirectory(0)
+    print 'NPV distribution loaded!'
+    return pu_dists 
+
+def GetPUWeights(npvRealTrue,pu_dists):
+    # Set up pileup distribution files used in pileup reweighting
+    data_pu_dist = pu_dists[0]
+    MC_pu_dist = pu_dists[1]
+    # Calculate PU corrections based on npvRealTrue
+    w_PU = data_pu_dist.GetBinContent(data_pu_dist.FindFixBin(1.0*npvRealTrue))/MC_pu_dist.GetBinContent(MC_pu_dist.FindFixBin(1.0*npvRealTrue))
+    return w_PU
+
 # Formula for top pT weights
 def GetTopPtWeights(a,b,pt1,pt2):
     pt_w = 1.0
@@ -94,28 +120,54 @@ def GetEleSFs(pt,eta,SFtable):
 
 #btagging efficiency
 
-def get_btag_eff (pt,eta,jet_flavor,sampletype):
+def GetTypeBtagging(sample_name):
+    typename = sample_name
+    dictionary = [('singletop',['T_s','T_t','T_tW'])]
+    dictionary+= [('singletopbar',['Tbar_s','Tbar_t','Tbar_tW'])]
+    for item in dictionary:
+        for name in item[1]:
+            if name in sample_name:
+                typename = item[0]
+    return typename
 
+def LoadBtagEfficiency(sampletype):
     #Set up btag efficiency files
+    prepend = '/uscms_data/d3/lfeng7/Payloads/run1/btagging_efficiency/regular/'
     eff_files = []
-    eff_files += [('ttbar','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/TT_CT10_TuneZ2star_8TeV-powheg-tauola_AK5PF_CSVM_bTaggingEfficiencyMap.root')]
-    eff_files += [('wjets','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball_AK5PF_CSVM_bTaggingEfficiencyMap.root')]
-    eff_files += [('zjets','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_AK5PF_CSVM_bTaggingEfficiencyMap.root')]
-    eff_files += [('singletop','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/T_t-channel_TuneZ2star_8TeV-powheg-tauola_AK5PF_CSVM_bTaggingEfficiencyMap.root')]
-    eff_files += [('singletopbar','/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/analysis_new/EDSHyFT/data/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola_AK5PF_CSVM_bTaggingEfficiencyMap.root')]
-    
-    # F_eff = ''
+    eff_files += [('ttbar',prepend+'TT_CT10_TuneZ2star_8TeV-powheg-tauola_CSVM_bTaggingEfficiencyMap.root')]
+    eff_files += [('wjets',prepend+'WnJetsToLNu_TuneZ2Star_8TeV-madgraph_CSVM_bTaggingEfficiencyMap.root')]
+    eff_files += [('zjets',prepend+'DYnJetsToLL_M-50_TuneZ2Star_8TeV-madgraph_CSVM_bTaggingEfficiencyMap.root')]
+    eff_files += [('singletop',prepend+'T_star-channel_TuneZ2star_8TeV-powheg-tauola_CSVM_bTaggingEfficiencyMap.root')]
+    eff_files += [('singletopbar',prepend+'Tbar_star-channel_TuneZ2star_8TeV-powheg-tauola_CSVM_bTaggingEfficiencyMap.root')]
+
+    payload_found = 0
     for ifile in eff_files:
         if sampletype == ifile[0] :
             F_eff = ifile[1]
+            payload_found = 1
+
+    if payload_found == 0 :
+        print 'No b tagging efficiency payload found for this sample!' 
+        return 'None'
+
     file_tmp = ROOT.TFile(F_eff)
-    efficiency_b = file_tmp.Get('efficiency_b')
-    efficiency_c = file_tmp.Get('efficiency_c')
-    efficiency_udsg = file_tmp.Get('efficiency_udsg')    
-    
+    efficiency_b = file_tmp.Get('efficiency_b').Clone()
+    efficiency_c = file_tmp.Get('efficiency_c').Clone()
+    efficiency_udsg = file_tmp.Get('efficiency_udsg').Clone()  
+    print 'Btagging efficiency loaded for type',sampletype
+    eff_hists = [efficiency_b,efficiency_c,efficiency_udsg]    
+    for item in eff_hists:
+        item.SetDirectory(0)
+    return eff_hists
+
+
+def get_btag_eff (pt,eta,jet_flavor,eff_hists):    
      #Debug only
 #    print 'eff hist name',efficiency_udsg.GetName()
     # x,y of TH2F of efficiency are pt and eta
+    efficiency_b = eff_hists[0]
+    efficiency_c = eff_hists[1]
+    efficiency_udsg = eff_hists[2]
     if jet_flavor == 5 :
         binx = efficiency_b.GetXaxis().FindBin(pt)
         biny = efficiency_b.GetYaxis().FindBin(eta)
@@ -225,7 +277,10 @@ def get_SF_btag(ptJet,etaJet,flavJet):      # checked
 # ///this is the functin to call to get the event-by-event b-tag weight
 # ///as implemented, it only works for CSVM. 
 # Input : given a list of selected jets info such as jets_info = [(pt,eta,flavor,csv)]
-def get_weight_btag(jets_info, sampletype) :
+def get_weight_btag(jets_info, eff_hists) :
+    # return default weight if no eff_hists is given
+    if eff_hists == 'None': 
+        return [1,0,0]
     # Initiate probability and its uncertainty
     # Probability
     mcTag = 1.;
@@ -250,7 +305,7 @@ def get_weight_btag(jets_info, sampletype) :
             continue    #for jets with flavor 0, we ignore. 
         etabin = get_eta_bin_jet(jet_eta);
         # Get b-tagging efficiency using pt,eta and jet_flavor infor
-        eff = get_btag_eff(jet_Pt,jet_eta,jet_flavor,sampletype)
+        eff = get_btag_eff(jet_Pt,jet_eta,jet_flavor,eff_hists)
         # Get SF for this jet
         SF_result = get_SF_btag(jet_Pt,jet_eta,jet_flavor)
         jet_SF = SF_result[0]

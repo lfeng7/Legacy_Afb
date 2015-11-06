@@ -1,0 +1,3 @@
+Make b-tagging efficiency root files
+(1) selection.py take jhu_diffmo ntuples, do event selection ( except for b-tagging ) , and dump selected jets info to root files 
+(2) btagging.py take selected root files and make b-tagging efficiency root files as input for btagging corrections

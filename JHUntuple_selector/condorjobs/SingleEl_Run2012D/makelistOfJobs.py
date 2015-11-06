@@ -7,7 +7,7 @@ sampletype = 'SingleEl_Run2012D.txt'
 mcordata = 'data'
 while startfile < num_files :
 	toprint = 'python ./tardir/selection.py --txtfiles tardir/inputfiles/'+txtfile+' --makeplots no --mcordata '+mcordata
-	toprint += ' --applyHLT yes --maxevts -1 --type '+sampletype+' --grid yes --maxfiles '+str(filesperjob)+' --startfile '+str(startfile)+'\n'
+	toprint += '  --maxevts -1 --type '+sampletype+' --grid yes --maxfiles '+str(filesperjob)+' --startfile '+str(startfile)+'\n'
 	fout.write(toprint)
 	startfile += filesperjob
 
