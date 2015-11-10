@@ -89,7 +89,7 @@ def GetTriggerSFs(pt,eta):
 # Electron cut-based ID efficiency SF
 # https://twiki.cern.ch/twiki/bin/view/Main/EGammaScaleFactors2012#2012_8_TeV_Jan22_Re_recoed_data
 def LoadEleSFs():
-    with open('utility/sFGsfIdTight.txt','r') as fin:
+    with open('/uscms_data/d3/lfeng7/Payloads/run1/SFs/sFGsfIdTight.txt','r') as fin:
         data = fin.readlines()
     all_SFs = []
     for line in data:
