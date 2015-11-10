@@ -19,7 +19,7 @@ MLEP = MELECTRON
 # Global payloads
 
 #Set up file and read histograms used for CSV info in kinematic fit.
-f1 = TFile('/uscms_data/d3/lfeng7/Payloads/run1/kinfit/dumped_Powheg_TT.root')  # The CSV distribution input files for Powheg signal
+f1 = ROOT.TFile('/uscms_data/d3/lfeng7/Payloads/run1/kinfit/dumped_Powheg_TT.root')  # The CSV distribution input files for Powheg signal
 # f1 = TFile('/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/codes/tagging/tagged_files_9_14/dump_TTJets_SemiLep.root') # The CSV input for Madgraph signals
 bdisc = f1.Get('bDisc')
 Wsubdisc = f1.Get('WsubDisc')
@@ -68,7 +68,7 @@ def fcn(npar, deriv, f, par, flag) :
     global minf
     # Some constants
     #for debug purpose, see if MT is set correctly
-    print 'MT = ',MT
+    #print 'MT = ',MT
 
     QW = (MW*MW)/(MT*MT)
     ZW = (2.0*2.0)/(MT*MT)
@@ -150,6 +150,7 @@ def fcn(npar, deriv, f, par, flag) :
 def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
     global minf
     global lepton,blep,bhad,Wsub1,Wsub2,met
+    global blepCSV,bhadCSV,WCSV1,WCSV2,extraCSV
     global MT,MLEP
     ######################################################
     ##              EVENT RECONSTRUCTION                ##
@@ -312,8 +313,7 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
         Wsub2 = combos[j][3]
         for i in range(6) :
             bestParValues.append(bestParValues2[j][i])
-        for i in range(nParticles) :
-            finalChi[i] = Chis2[0][0]
+        finalChi = Chis2[0][0]
         plot_final_chi = Chis2[0][0]
     else :
         j = Chis1[0][1]
@@ -324,8 +324,7 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
         Wsub2 = combos[j][3]
         for i in range(6) :
             bestParValues.append(bestParValues1[j][i])
-        for i in range(nParticles) :
-            finalChi[i] = Chis1[0][0]
+        finalChi = Chis1[0][0]
         plot_final_chi = Chis1[0][0]
     #Rescale the particle fourvectors based on the optimal parameters
     lepton = pscale(bestParValues[1], lepton)
@@ -340,14 +339,12 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
     met.SetPy(newmety)
     met.SetPz(bestParValues[0])
     met.SetE(math.sqrt(met.Px()*met.Px()+met.Py()*met.Py()+met.Pz()*met.Pz()))
-    for i in range(6) :
-        bestFitParValues[i] = bestParValues[i]
     # Return top pair, Whad, Wlep, p4 and momentum scales
     tlep_p4 = (lepton+met+blep).Clone()
     thad_p4 = (Wtag+bhad).Clone()
     wlep_p4 = (lepton + met).Clone()
     whad_p4 = Wtag.Clone()
 
-    toreturn = [ plot_final_chi,(tlep_p4,thad_p4,wlep_p4,whad_p4),(bestFitParValues) ]
+    toreturn = [ plot_final_chi,(tlep_p4,thad_p4,wlep_p4,whad_p4),(bestParValues) ]
     return toreturn
 
