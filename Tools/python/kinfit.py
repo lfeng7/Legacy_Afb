@@ -16,6 +16,17 @@ MLEP = MELECTRON
 # elif options.lep == 'el' :
 #   MLEP = MELECTRON
 
+# Global payloads
+
+#Set up file and read histograms used for CSV info in kinematic fit.
+f1 = TFile('/uscms_data/d3/lfeng7/Payloads/run1/kinfit/dumped_Powheg_TT.root')  # The CSV distribution input files for Powheg signal
+# f1 = TFile('/uscms_data/d3/lfeng7/CMSSW_5_3_11/src/Analysis/codes/tagging/tagged_files_9_14/dump_TTJets_SemiLep.root') # The CSV input for Madgraph signals
+bdisc = f1.Get('bDisc')
+Wsubdisc = f1.Get('WsubDisc')
+otherdisc = f1.Get('otherDisc')
+bdiscInt = bdisc.Integral()
+WsubdiscInt = Wsubdisc.Integral()
+otherdiscInt = otherdisc.Integral()
 
 def GetNvPz(lepton,metPt,metPhi):
     met1 = ROOT.TLorentzVector()
