@@ -18,10 +18,10 @@ MLEP = MELECTRON
 
 def GetNvPz(lepton,metPt,metPhi):
     #find the best first guess of the Pz based on the W mass and the lepton we found
-    met1.SetPtEtaPhiM(metPt[0],0.0,metPhi[0],0.0)
+    met1.SetPtEtaPhiM(metPt,0.0,metPhi,0.0)
     met2   = met1
-    pTv    = metPt[0]
-    phivec = [math.cos(metPhi[0]),math.sin(metPhi[0])]
+    pTv    = metPt
+    phivec = [math.cos(metPhi),math.sin(metPhi)]
     Elep   = lepton.E()
     plep   = math.sqrt(lepton.Px()*lepton.Px()+lepton.Py()*lepton.Py()+lepton.Pz()*lepton.Pz())
     pZlep  = lepton.Pz()
@@ -29,7 +29,6 @@ def GetNvPz(lepton,metPt,metPhi):
     arg0   = MW*MW+plep*plep-Elep*Elep+2.*pTv*pPhi
     arg    = Elep*Elep*(4.*pTv*pTv*(pZlep*pZlep-Elep*Elep)+arg0*arg0) #discriminant in the quadratic equation solution
     if not arg > 0 : #If discriminant is imaginary
-        count_neutrinoOneOption += 1
         pzv1 = pZlep*arg0/(2.*(Elep*Elep-pZlep*pZlep))
         met1.SetPz(pzv1)
         met1.SetE(math.sqrt(met1.Px()*met1.Px()+met1.Py()*met1.Py()+met1.Pz()*met1.Pz()))
