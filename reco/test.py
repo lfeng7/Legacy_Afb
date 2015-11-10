@@ -5,9 +5,6 @@ tmptree = fin.Get('selected')
 for iev in range(tmptree.GetEntries()):
     tmptree.GetEntry(iev)
 
-    n_selected_jets = jets_pt.size()
-    if not 4<= n_selected_jets <=5 : continue
-
     jets_pt = tmptree.jets_pt
     jets_eta = tmptree.jets_eta
     jets_phi = tmptree.jets_phi
@@ -15,10 +12,13 @@ for iev in range(tmptree.GetEntries()):
     jets_csv = tmptree.jets_csv 
     lep_pts = tmptree.lep_pt
     lep_etas = tmptree.lep_eta
-    lep_phis = tmptree.lep_phis
+    lep_phis = tmptree.lep_phi
     lep_mass = tmptree.lep_mass
     met_pt = tmptree.met_pt
     met_phi = tmptree.met_phi 
+
+    n_selected_jets = jets_pt.size()
+    if not 4<= n_selected_jets <=5 : continue
 
     # Set up inputs  
     lep_p4 = ROOT.TLorentzVector()
@@ -26,7 +26,7 @@ for iev in range(tmptree.GetEntries()):
     jets_p4,jets_csv_list = [],[]    
     for i in range(jets_pt.size()):
         tmp_p4 = ROOT.TLorentzVector()
-        tmp_p4.SetPtEtaPhiM(jets_pt[i],jets_eta[i],jets_phi[i],jets_phi[i],jets_mass[i])
+        tmp_p4.SetPtEtaPhiM(jets_pt[i],jets_eta[i],jets_phi[i],jets_mass[i])
         jets_p4.append(tmp_p4)
         jets_csv_list.append(jets_csv[i])
     metPt = met_pt[0]; metPhi = met_phi[0]

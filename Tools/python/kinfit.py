@@ -1,5 +1,6 @@
 import ROOT
 import math
+from array import array
 
 #Global constants
 MW = 80.4 
@@ -35,10 +36,10 @@ def GetNvPz(lepton,metPt,metPhi):
         met1.SetE(math.sqrt(met1.Px()*met1.Px()+met1.Py()*met1.Py()+met1.Pz()*met1.Pz()))
         met2 = met1.Clone
     else : #have two choices for the neutrino Pz from the quadratic equation
-        pzv1 = (pZlep*arg0+sqrt(arg))/(2.*(Elep*Elep-pZlep*pZlep))
+        pzv1 = (pZlep*arg0+math.sqrt(arg))/(2.*(Elep*Elep-pZlep*pZlep))
         met1.SetPz(pzv1)
         met1.SetE(math.sqrt(met1.Px()*met1.Px()+met1.Py()*met1.Py()+met1.Pz()*met1.Pz()))
-        pzv2 = (pZlep*arg0-sqrt(arg))/(2.*(Elep*Elep-pZlep*pZlep))
+        pzv2 = (pZlep*arg0-math.sqrt(arg))/(2.*(Elep*Elep-pZlep*pZlep))
         met2.SetPz(pzv2)
         met2.SetE(math.sqrt(met2.Px()*met2.Px()+met2.Py()*met2.Py()+met2.Pz()*met2.Pz()))
     return(met1,met2)
@@ -61,7 +62,7 @@ def fcn(npar, deriv, f, par, flag) :
     QW = (MW*MW)/(MT*MT)
     ZW = (2.0*2.0)/(MT*MT)
     ZT = (1.4*1.4)/(MT*MT)
-    CDFT  = (math.acos(0.)+math.atan(1./sqrt(ZT)))/sqrt(ZT)
+    CDFT  = (math.acos(0.)+math.atan(1./math.sqrt(ZT)))/math.sqrt(ZT)
     CDFW  = 0.5+2.*QW+(1.5*QW*QW-0.5*ZW*QW-1.5)*math.log(((1.-QW)*(1.-QW)+ZW*QW)/(QW*QW+QW*ZW))
     CDFW += ((QW*QW*QW-3.*ZW*QW*QW-3.*QW+2.)/math.sqrt(ZW*QW))*(math.atan((1.-QW)/math.sqrt(ZW*QW))+math.atan(QW/math.sqrt(ZW*QW)))
     SIGMAJ = 0.10
@@ -137,7 +138,7 @@ def fcn(npar, deriv, f, par, flag) :
 ############################################################################################################
 def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
     global minf
-    global lepton,blep,bhad,Wsub1,Wsubb2,met
+    global lepton,blep,bhad,Wsub1,Wsub2,met
     global MT,MLEP
     ######################################################
     ##              EVENT RECONSTRUCTION                ##
