@@ -17,9 +17,10 @@ MLEP = MELECTRON
 
 
 def GetNvPz(lepton,metPt,metPhi):
+    met1 = ROOT.TLorentzVector()
     #find the best first guess of the Pz based on the W mass and the lepton we found
     met1.SetPtEtaPhiM(metPt,0.0,metPhi,0.0)
-    met2   = met1
+    met2   = met1.Clone()
     pTv    = metPt
     phivec = [math.cos(metPhi),math.sin(metPhi)]
     Elep   = lepton.E()
@@ -32,7 +33,7 @@ def GetNvPz(lepton,metPt,metPhi):
         pzv1 = pZlep*arg0/(2.*(Elep*Elep-pZlep*pZlep))
         met1.SetPz(pzv1)
         met1.SetE(math.sqrt(met1.Px()*met1.Px()+met1.Py()*met1.Py()+met1.Pz()*met1.Pz()))
-        met2 = met1
+        met2 = met1.Clone
     else : #have two choices for the neutrino Pz from the quadratic equation
         pzv1 = (pZlep*arg0+sqrt(arg))/(2.*(Elep*Elep-pZlep*pZlep))
         met1.SetPz(pzv1)
@@ -238,9 +239,9 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
     for iFit in range(nFits) : #one for each neutrino solution
         #set which neutrino to use for this iteration
         if iFit == 0 :
-            met = met1
+            met = met1.Clone()
         elif iFit == 1:
-            met = met2
+            met = met2.Clone()
         #Stuff common to every fit
         minuit = ROOT.TMinuit(6)
         minuit.SetFCN(fcn)
