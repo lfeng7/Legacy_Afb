@@ -20,17 +20,17 @@ parser.add_option('--inputfiles', metavar='F', type='string', action='store',
 
 parser.add_option('--evtsperjob', metavar='F', type='int', action='store',
                   default = -1,
-                  dest='evtsperjob'
+                  dest='evtsperjob',
                   help='number of events to run for each job')
 
 parser.add_option('--evtstart', metavar='F', type='int', action='store',
-                  default = -1,
-                  dest='evtstart'
+                  default = 0,
+                  dest='evtstart',
                   help='the evt to start')
 
 parser.add_option('--samplename', metavar='F', type='int', action='store',
                   default = 'TT_CT10_TuneZ2star_8TeV',
-                  dest='samplename'
+                  dest='samplename',
                   help='name of the sample to run, such as , Tbar_s, TT_CT10_TuneZ2star_8TeV etc ') 
 
 parser.add_option('--upload', metavar='F', type='string', action='store',
@@ -156,7 +156,10 @@ def main():
 def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isFakeLep='no'):
     # Get ttree
     print 'Start to process file',tfile.GetName()
-    evt_end = evt_start+evt_to_run
+    if evt_to_run>0 :
+        evt_end = evt_start+evt_to_run
+    else : # (evt_to_run = -1 indicates run all events)
+        evt_end = -1 
     print 'Prcess from event',evt_start,'to event',evt_end
     tmptree = tfile.Get('selected')
     # Check if the starting event is more than total number of evts in current files
