@@ -160,8 +160,9 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     # kinfit results 
     kinfit_results = ROOT.vector('float')() #'pZv','scaleLep','scaleblep','scalebhad','scaleWsub1','scaleWsub2'
     final_chi2 = ROOT.vector('float')()
-    vecs += [final_chi2,kinfit_results]
-    br_names += ['final_chi2','kinfit_results']
+    final_nv_pz = ROOT.vector('float')()
+    vecs += [final_chi2,kinfit_results,final_nv_pz]
+    br_names += ['final_chi2','kinfit_results','final_nv_pz']
     
     # Corrections
     if sample_type != 'data':
@@ -329,13 +330,14 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
             reco_eta.push_back(ip4.Eta())
             reco_phi.push_back(ip4.Phi())
             reco_mass.push_back(ip4.M())
-        for ipar in bestFitParValues:
-            kinfit_results.push_back(ipar)
-
+        for i in range(1,len(bestFitParValues)):
+            kinfit_results.push_back(bestFitParValues[i])
+        final_nv_pz.push_back(bestFitParValues[0])
         #Fill the newtree
         newtree.Fill()
     # End loop over entries
 
+    h_cutflow.SetMaximum(h_cutflow.GetMaximum())
     # Write and close files
     fout.Write()
     fout.Close()
