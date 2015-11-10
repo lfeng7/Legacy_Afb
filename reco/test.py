@@ -3,6 +3,7 @@ fin = ROOT.TFile('selected_files/v2_trigger_removed/all/TT_CT10_TuneZ2star_8TeV_
 tmptree = fin.Get('selected')
 
 for iev in range(tmptree.GetEntries()):
+    if iev == 100 : break
     tmptree.GetEntry(iev)
 
     jets_pt = tmptree.jets_pt
@@ -35,4 +36,4 @@ for iev in range(tmptree.GetEntries()):
     mcordata = 'mc'
 
     reco_result = DoReco(jets_p4,jets_csv_list,lep_p4,metPt,metPhi,lep_type,mcordata)
-    break
+    #break

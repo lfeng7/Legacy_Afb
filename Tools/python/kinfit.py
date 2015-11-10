@@ -45,7 +45,7 @@ def GetNvPz(lepton,metPt,metPhi):
         pzv1 = pZlep*arg0/(2.*(Elep*Elep-pZlep*pZlep))
         met1.SetPz(pzv1)
         met1.SetE(math.sqrt(met1.Px()*met1.Px()+met1.Py()*met1.Py()+met1.Pz()*met1.Pz()))
-        met2 = met1.Clone
+        met2 = met1.Clone()
     else : #have two choices for the neutrino Pz from the quadratic equation
         pzv1 = (pZlep*arg0+math.sqrt(arg))/(2.*(Elep*Elep-pZlep*pZlep))
         met1.SetPz(pzv1)
@@ -280,12 +280,15 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
             minuit.mnparm(0,parNames[0],ROOT.Double(met.Pz()),1.0,0,0,ierflag)
             for j in range(1,6) :
                 minuit.mnparm(j,parNames[j],1.0,1.0,0,0,ierflag)
-                #Fix the scale 
-                minuit.FixParameter(j)
+            #Fix the scale 
+            for j in range(0,6) :
+#                minuit.FixParameter(j)
+                pass
             #minimize
             minuit.mnexcm('MIGRAD', arglist, 1,ierflag)
             if ierflag != 0 :
                 print 'PROBLEM IN FIT: ierflag = '+str(ierflag)+''
+                continue
             #Set fit Chi of this particular combination
             if iFit == 0 :
                 Chis1.append((minf,i))

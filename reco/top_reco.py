@@ -2,7 +2,7 @@
 
 from Legacy_Afb.Tools.kinfit import *
 from Legacy_Afb.Tools.ttbar_utility import *
-
+import glob
 from optparse import OptionParser
 
 # Job steering
@@ -28,11 +28,6 @@ parser.add_option('--evtstart', metavar='F', type='int', action='store',
                   dest='evtstart',
                   help='the evt to start')
 
-parser.add_option('--samplename', metavar='F', type='int', action='store',
-                  default = 'TT_CT10_TuneZ2star_8TeV',
-                  dest='samplename',
-                  help='name of the sample to run, such as , Tbar_s, TT_CT10_TuneZ2star_8TeV etc ') 
-
 parser.add_option('--upload', metavar='F', type='string', action='store',
                   default = 'yes',
                   dest='dumpplots',
@@ -48,7 +43,7 @@ parser.add_option('--fakelep', metavar='F', type='string', action='store',
                   dest='fakelep',
                   help='If run on selected events with fake lepton.')
 
-parser.add_option('--lepisocut', metavar='F', type='int', action='store',
+parser.add_option('--lepisocut', metavar='F', type='float', action='store',
                   default = 0.15,
                   dest='lepisocut',
                   help='Lower bound for fake electron isolation.')
@@ -78,38 +73,6 @@ else:
     prepend = './selected_files/v2_trigger_removed/all/'   # dir of output files to make histograms
 postfix='_selected'  
 
-#### Set up MC input files
-
-#    0,                 1         2          3         4                   5
-# (MC_sample_name, sample_type, Nevts_gen, x-sec, nevts_total_ntuple, btag_type)
-# Single reco
-flist.append(['T_s','singlereco',259961,3.79,259176,'singlereco'] )
-flist.append(['T_t','singlereco',3758227,56.4,3748155,'singlereco'] )
-flist.append(['T_tW','singlereco',497658,11.1,495559,'singlereco'])
-flist.append(['Tbar_s','singlereco',139974, 1.76,139604,'singlerecobar'])
-flist.append(['Tbar_t','singlereco',1935072, 30.7,1930185,'singlerecobar'])
-flist.append(['Tbar_tW','singlereco',493460,11.1,491463,'singlerecobar'])
-# Wjets
-flist.append(['W1JetsToLNu_TuneZ2Star_8TeV','wjets',23141598,6662.8,23038253,'wjets'])
-flist.append(['W2JetsToLNu_TuneZ2Star_8TeV','wjets',34044921,2159.2,33993463,'wjets'])
-flist.append(['W3JetsToLNu_TuneZ2Star_8TeV','wjets',15539503,640.4,15507852,'wjets'])
-flist.append(['W4JetsToLNu_TuneZ2Star_8TeV','wjets',13382803,246.0,13326400,'wjets'])
-# DYjets
-flist.append(['DY1JetsToLL_M','zjets',24045248,660.6,23802736,'zjets'])
-flist.append(['DY2JetsToLL_M','zjets',2352304,215.1,2345857,'zjets'])
-flist.append(['DY3JetsToLL_M','zjets',11015445,65.79,10655325,'zjets'])
-flist.append(['DY4JetsToLL_M','zjets',6402827,28.59,5843425,'zjets'])
-# QCD
-flist.append(['QCD_Pt-15to3000','qcd',9991674,6662.6,9940092,'qcd'])
-# signal
-flist.append(['TT_CT10_TuneZ2star_8TeV','ttbar',21675970,245.9,21560109,'ttbar'])
-
-#### Set up data input files
-#    0,         1                   2             
-# (filepath,   type,   sample_integrated_lumi
-#datafile = ['SingleEl_Run2012A_v1','data',888]
-datafile = ['SingleEl_Run2012ABCD','data',19748]
-
 def main():
     # Get the file list with all input files.
     if options.inputFiles != '':
@@ -135,9 +98,11 @@ def main():
         evt_start = options.evtstart
         evt_to_run = options.evtsperjob
         isFakeLep = options.fakelep
+        tfile = ROOT.TFile(ifile)
         # Do reco
-        print 'reconstruction(',ifile,sample_name,sample_type,evt_start,evt_to_run,isFakeLep,')'
-        reco_message = reconstruction(ifile,sample_name,sample_type,evt_start,evt_to_run,isFakeLep)   
+        print 'run options:',tfile.GetName(),sample_name,sample_type,evt_start,evt_to_run,isFakeLep
+        reco_message = reconstruction(tfile,sample_name,sample_type,evt_start,evt_to_run,isFakeLep)   
+        print reco_message
 
     print 'All done!'
 
@@ -155,19 +120,19 @@ def main():
 # ex. tf1, 'Tbar_s','singletopbar' (for b-tagging correction purpose),2000,10000
 def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isFakeLep='no'):
     # Get ttree
+    tmptree = tfile.Get('selected')
     print 'Start to process file',tfile.GetName()
     if evt_to_run>0 :
         evt_end = evt_start+evt_to_run
     else : # (evt_to_run = -1 indicates run all events)
         evt_end = -1 
     print 'Prcess from event',evt_start,'to event',evt_end
-    tmptree = tfile.Get('selected')
     # Check if the starting event is more than total number of evts in current files
     if evt_start > tmptree.GetEntries():
         return 'evt_start > total_num_events in input ttree. Will stop here.'
         
     # Make output file
-    fout_name = sample_name+'_reco_'+evt_start+'_'+evt_end+'.root'
+    fout_name = sample_name+'_reco_'+str(evt_start)+'_'+str(evt_end)+'.root'
     fout = ROOT.TFile(fout_name,'recreate')
     # Make output ttree
     tmptree.SetBranchStatus('jets*',0)
@@ -218,27 +183,32 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         w_trigger_vec = ROOT.vector('float')()
         w_trigger_up = ROOT.vector('float')()
         w_trigger_down = ROOT.vector('float')()
-        vecs += [w_PU_vec,w_PU_up,w_PU_down,w_btag_vec,w_btag_up,w_btag_down,w_eleID,w_eleID_up,w_eleID_down]
-        vecs += [w_trigger,w_trigger_up,w_trigger_down]
-        br_names += ['w_PU','w_PU_up','w_PU_down','w_btag','w_btag_up','w_btag_down','w_eleID_vec','w_eleID_up','w_eleID_down']
-        br_names += ['w_trigger_vec','w_trigger_up','w_trigger_down']
+        vecs += [w_PU_vec,w_PU_up,w_PU_down,w_btag_vec,w_btag_up,w_btag_down,w_eleID_vec,w_eleID_up,w_eleID_down]
+        vecs += [w_trigger_vec,w_trigger_up,w_trigger_down]
+        br_names += ['w_PU','w_PU_up','w_PU_down','w_btag','w_btag_up','w_btag_down','w_eleID','w_eleID_up','w_eleID_down']
+        br_names += ['w_trigger','w_trigger_up','w_trigger_down']
     # Add branches to the tree
     branches = zip(br_names,vecs)
     for ibr in branches:
         newtree.Branch(ibr[0],ibr[1])
     # Add cutflow diagrams
-    h_cutflow = ROOT.TH1D('cutflow_extra',event_type+' cutflow extra;cuts;events',4,0.,4.)
+    h_cutflow = ROOT.TH1D('cutflow_extra',' cutflow extra;cuts;events',4,0.,4.)
     h_cutflow.SetBit(ROOT.TH1.kCanRebin)
+    h_cutflow.SetDirectory(fout)
 
 
     # Loop over entries
     n_evt = 0
-    for iev in range(evt_start,oldtree.GetEntries()):
+    for iev in range(evt_start,tmptree.GetEntries()):
+        # Reset all vector containers
+        for ivec in vecs: ivec.clear()    
+
         # Progress report
-        if iev%5000 == 0 : print 'processing event',i 
+        if iev%500 == 0 : print 'processing event',iev 
         # Break at the given event number
         if iev == evt_end : print 'Finish processing. Quit at event',evt_end; break ;
-
+        
+        tmptree.GetEntry(iev)
         # Book the branches from input ttree
         jets_pt = tmptree.jets_pt
         jets_eta = tmptree.jets_eta
@@ -247,11 +217,12 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         jets_csv = tmptree.jets_csv 
         lep_pts = tmptree.lep_pt
         lep_etas = tmptree.lep_eta
-        lep_phis = tmptree.lep_phis
+        lep_phis = tmptree.lep_phi
         lep_mass = tmptree.lep_mass
         met_pt = tmptree.met_pt
         met_phi = tmptree.met_phi         
 
+        #print 'iev',iev
 
         #######################################################
         #          Additional Selection Cuts                  #
@@ -268,7 +239,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         if not nbtags >= options.nbcut : continue
         h_cutflow.Fill('n_btag',1)
         # leptons  
-        if isFakeLep == 'yes'
+        if isFakeLep == 'yes':
             lep_isos = tmptree.lep_iso
             if not lep_isos.size() >= options.nlepcut : continue
             toskip = 0
@@ -314,6 +285,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
             w_PU_down.push_back(w_PU+err_PU_down)   
 
             # b-tagging efficiency
+            jets_flavor = tmptree.jets_flavor
             selected_jets = []
             for i in range(jets_pt.size()):
                 selected_jets.append((jets_pt[i],jets_eta[i],jets_flavor[i],jets_csv[i]))
@@ -330,11 +302,11 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         #######################################################
         # Set up inputs  
         lep_p4 = ROOT.TLorentzVector()
-        lep_p4.SetPtEtaPhiM(lep_pt[0],lep_eta[0],lep_phi[0],lep_mass[0])
+        lep_p4.SetPtEtaPhiM(lep_pts[0],lep_etas[0],lep_phis[0],lep_mass[0])
         jets_p4,jets_csv_list = [],[]    
         for i in range(jets_pt.size()):
             tmp_p4 = ROOT.TLorentzVector()
-            tmp_p4.SetPtEtaPhiM(jets_pt[i],jets_eta[i],jets_phi[i],jets_phi[i],jets_mass[i])
+            tmp_p4.SetPtEtaPhiM(jets_pt[i],jets_eta[i],jets_phi[i],jets_mass[i])
             jets_p4.append(tmp_p4)
             jets_csv_list.append(jets_csv[i])
         metPt = met_pt[0]; metPhi = met_phi[0]
