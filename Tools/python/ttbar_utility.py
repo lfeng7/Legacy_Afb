@@ -121,14 +121,24 @@ def GetEleSFs(pt,eta,SFtable):
 #btagging efficiency
 
 def GetTypeBtagging(sample_name):
-    typename = sample_name
-    dictionary = [('singletop',['T_s','T_t','T_tW'])]
-    dictionary+= [('singletopbar',['Tbar_s','Tbar_t','Tbar_tW'])]
-    for item in dictionary:
-        for name in item[1]:
-            if name in sample_name:
-                typename = item[0]
-    return typename
+    btag_type = 'ttbar'
+    for item in ['T_s','T_t','T_tW']:
+        if item in sample_name : btag_type = 'singletop'
+
+    for item in ['Tbar_s','Tbar_t','Tbar_tW']:
+        if item in sample_name : btag_type = 'singletopbar'
+
+    for item in ['DY1Jets','DY2Jets','DY3Jets','DY4Jets','DYJets']:
+        if item in sample_name : btag_type = 'zjets' 
+
+    for item in ['W1Jets','W2Jets','W3Jets','W4Jets','WJets']:
+        if item in sample_name : btag_type = 'wjets'
+
+    for item in ['TT']:
+        if item in sample_name : btag_type = 'ttbar'   
+
+    return btag_type
+     
 
 def LoadBtagEfficiency(sampletype):
     #Set up btag efficiency files

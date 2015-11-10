@@ -1,6 +1,7 @@
 # Take in the selection output ttree, do reco reconstruction via kinfit
 
-from utility import *
+from Legacy_Afb.Tools.kinfit import *
+from Legacy_Afb.Tools.ttbar_utility import *
 
 from optparse import OptionParser
 
@@ -17,10 +18,20 @@ parser.add_option('--inputfiles', metavar='F', type='string', action='store',
                   dest='inputFiles',
                   help='Input files')
 
-parser.add_option('--maxfiles', metavar='F', type='int', action='store',
+parser.add_option('--evtsperjob', metavar='F', type='int', action='store',
                   default = -1,
-                  dest='maxfiles',
-                  help='max number of input ntuple files')
+                  dest='evtsperjob'
+                  help='number of events to run for each job')
+
+parser.add_option('--evtstart', metavar='F', type='int', action='store',
+                  default = -1,
+                  dest='evtstart'
+                  help='the evt to start')
+
+parser.add_option('--samplename', metavar='F', type='int', action='store',
+                  default = 'TT_CT10_TuneZ2star_8TeV',
+                  dest='samplename'
+                  help='name of the sample to run, such as , Tbar_s, TT_CT10_TuneZ2star_8TeV etc ') 
 
 parser.add_option('--upload', metavar='F', type='string', action='store',
                   default = 'yes',
@@ -31,21 +42,6 @@ parser.add_option('--verbose', metavar='F', type='string', action='store',
                   default = 'no',
                   dest='verbose',
                   help='If you want more information than you usually need.')
-
-parser.add_option('--recopt', metavar='F', type='string', action='store',
-                  default = 'yes',
-                  dest='recopt',
-                  help='If do reco pt reweighting')
-
-parser.add_option('--tmptype', metavar='F', type='string', action='store',
-                  default = 'scaled',
-                  dest='tmptype',
-                  help='If use correction')
-
-parser.add_option('--applytrigger', metavar='F', type='string', action='store',
-                  default = 'no',
-                  dest='applytrigger',
-                  help='If apply trigger on MC')
 
 parser.add_option('--fakelep', metavar='F', type='string', action='store',
                   default = 'no',
@@ -80,17 +76,7 @@ if options.fakelep == 'yes':
     prepend = './selected_files/v3_fakelep_updated/all/'
 else:
     prepend = './selected_files/v2_trigger_removed/all/'   # dir of output files to make histograms
-postfix='_selected'
-
-# # Set up output files
-# template_type = options.tmptype
-# tmptype_name = template_type
-# if options.fakelep == 'yes':
-#     tmptype_name += '_fakelep'
-# hist_prepend = './selected_hists/'+tmptype_name+'/' 
-    
-# dir_name = 'controlplots_'+tmptype_name # name of the dir for control plots, such as corrected, recoPT, un_corrected
-  
+postfix='_selected'  
 
 #### Set up MC input files
 
@@ -125,22 +111,58 @@ flist.append(['TT_CT10_TuneZ2star_8TeV','ttbar',21675970,245.9,21560109,'ttbar']
 datafile = ['SingleEl_Run2012ABCD','data',19748]
 
 def main():
-    if options.makehists == 'yes':
-        print 'Making histograms from the selection root files.'
-        MakeHistograms()
-    if options.makeplots == 'yes':
-        print 'Making comparison plots of MC and data.'
-        MakeComparisonPlots()
+    # Get the file list with all input files.
+    if options.inputFiles != '':
+        allfiles = glob.glob( options.inputFiles )
+    elif options.txtfiles:
+        allfiles = []
+        with open(options.txtfiles, 'r') as input_:
+            for line in input_:
+                print 'Getting files from this dir '+line.strip()
+                somefiles =  glob.glob(line.strip())
+                allfiles.extend(somefiles)
+    else:
+        allfiles = []
+
+    timer = ROOT.TStopwatch()
+    timer.Start()
+
+    # Job splitting is done here
+    for ifile in allfiles:
+        sample_name = ifile.split('/')
+        sample_name = sample_name[len(sample_name)-1].split('.root')[0]
+        sample_type = GetTypeBtagging(sample_name)
+        evt_start = options.evtstart
+        evt_to_run = options.evtsperjob
+        isFakeLep = options.fakelep
+        # Do reco
+        print 'reconstruction(',ifile,sample_name,sample_type,evt_start,evt_to_run,isFakeLep,')'
+        reco_message = reconstruction(ifile,sample_name,sample_type,evt_start,evt_to_run,isFakeLep)   
+
     print 'All done!'
 
+    # Stop our timer
+    timer.Stop()
+    # Print out our timing information
+    print '\n'
+    rtime = timer.RealTime(); # Real time (or "wall time")
+    ctime = timer.CpuTime(); # CPU time
+    print("RealTime={0:6.2f} seconds, CpuTime={1:6.2f} seconds").format(rtime,ctime)
+
+
+
 # Do reconstruction for the given file, process only a specific part of it, and output to a new file
-# ex. tf1, 'Tbar_s','singlerecobar' (for b-tagging correction purpose),2000,10000
-def reco(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isFakeLep='no'):
+# ex. tf1, 'Tbar_s','singletopbar' (for b-tagging correction purpose),2000,10000
+def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isFakeLep='no'):
     # Get ttree
     print 'Start to process file',tfile.GetName()
     evt_end = evt_start+evt_to_run
     print 'Prcess from event',evt_start,'to event',evt_end
     tmptree = tfile.Get('selected')
+    # Check if the starting event is more than total number of evts in current files
+    if evt_start > tmptree.GetEntries():
+        return 'evt_start > total_num_events in input ttree. Will stop here.'
+        
     # Make output file
     fout_name = sample_name+'_reco_'+evt_start+'_'+evt_end+'.root'
     fout = ROOT.TFile(fout_name,'recreate')
@@ -344,11 +366,6 @@ def reco(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isFakeLep='no
     fout.Close()
     tfile.Close()
 
-
-
-
-
-
-
+    return 'Reconstruction finished!'
 
 main()
