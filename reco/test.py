@@ -3,7 +3,7 @@ fin = ROOT.TFile('selected_files/v2_trigger_removed/all/TT_CT10_TuneZ2star_8TeV_
 tmptree = fin.Get('selected')
 
 for iev in range(tmptree.GetEntries()):
-    if iev == 100 : break
+    if not iev == 154590 : continue
     tmptree.GetEntry(iev)
 
     jets_pt = tmptree.jets_pt

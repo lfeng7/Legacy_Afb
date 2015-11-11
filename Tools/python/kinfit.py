@@ -277,9 +277,10 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
             WCSV2   = comboCSVs[i][3]
             extraCSV = extraJetCSVs[i]
             #set the parameters in minuit
+            # https://root.cern.ch/root/html534/TMinuit.html#TMinuit:mnexcm
             minuit.mnparm(0,parNames[0],ROOT.Double(met.Pz()),1.0,0,0,ierflag)
             for j in range(1,6) :
-                minuit.mnparm(j,parNames[j],1.0,1.0,0,0,ierflag)
+                minuit.mnparm(j,parNames[j],1.0,1.0,0.2,1.8,ierflag)
             #Fix the scale 
             for j in range(0,6) :
 #                minuit.FixParameter(j)
