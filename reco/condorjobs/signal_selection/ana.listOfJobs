@@ -1,0 +1,1 @@
+python ./tar_dir/top_reco.py --inputfiles selected_files/v2_trigger_removed/all/TT_CT10_TuneZ2star_8TeV_selected.root --evtstart 0 --evtsperjob 100
