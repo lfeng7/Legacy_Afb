@@ -58,6 +58,11 @@ parser.add_option('--nlepcut', metavar='F', type='int', action='store',
                   dest='nlepcut',
                   help='Number of selected leptons cut')
 
+parser.add_option('--applytrigger', metavar='F', type='string', action='store',
+                  default = 'yes',
+                  dest='applytrigger',
+                  help='If apply trigger on MC')
+
 (options, args) = parser.parse_args()
 
 argv = []
@@ -193,7 +198,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     for ibr in branches:
         newtree.Branch(ibr[0],ibr[1])
     # Add cutflow diagrams
-    h_cutflow = ROOT.TH1D('cutflow_extra',' cutflow extra;cuts;events',4,0.,4.)
+    h_cutflow = ROOT.TH1D('cutflow_extra',' cutflow extra;cuts;events',5,0.,5.)
     h_cutflow.SetBit(ROOT.TH1.kCanRebin)
     h_cutflow.SetDirectory(fout)
 
@@ -229,6 +234,10 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         #          Additional Selection Cuts                  #
         #######################################################
         h_cutflow.Fill('no cut',1)
+        #trigger
+        if options.applytrigger == 'yes':
+            if tmptree.trigger[0] == 0 : continue  
+        h_cutflow.Fill('trigger'1)      
         # jets
         bjets = []
         n_selected_jets = jets_pt.size()
