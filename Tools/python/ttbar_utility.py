@@ -137,6 +137,9 @@ def GetTypeBtagging(sample_name):
     for item in ['TT']:
         if item in sample_name : btag_type = 'ttbar'   
 
+    for item in ['SingleEl','SingleMu','data','Data']:
+        if item in sample_name : btag_type = 'data' 
+
     return btag_type
      
 
