@@ -237,7 +237,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         #trigger
         if options.applytrigger == 'yes':
             if tmptree.trigger[0] == 0 : continue  
-        h_cutflow.Fill('trigger'1)      
+        h_cutflow.Fill('trigger',1)      
         # jets
         bjets = []
         n_selected_jets = jets_pt.size()
@@ -346,7 +346,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         newtree.Fill()
     # End loop over entries
 
-    h_cutflow.SetMaximum(h_cutflow.GetMaximum())
+    h_cutflow.SetMinimum(0)
     # Write and close files
     fout.Write()
     fout.Close()

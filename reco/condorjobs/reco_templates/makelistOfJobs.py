@@ -14,12 +14,12 @@ def make_joblist():
     towrite = ''
     # Loop over files
     for ifile in selected_files:
-        towrite += '\n#',ifile+'\n'
+        towrite += '\n# '+ifile+'\n'
         tmpfile = ROOT.TFile(ifile)
         nev = tmpfile.Get('selected').GetEntries()
         evtstart = 0
         while evtstart<nev:
-            towrite += 'python ./tar_dir/top_reco.py --inputfiles',ifile,'--evtstart',str(evtstart),'--evtsperjob',str(evtsperjob)+'\n'
+            towrite += 'python ./tardir/top_reco.py --inputfiles '+ifile+' --evtstart '+str(evtstart)+' --evtsperjob '+str(evtsperjob)+'\n'
             evtstart += evtsperjob
         tmpfile.Close()
 
@@ -27,7 +27,8 @@ def make_joblist():
     fout.close()
 
 def LoadInputs():
-    global flist = []
+    global flist 
+    flist= []
        # 0,                 1         2          3         4                   5
     # (MC_sample_name, sample_type, Nevts_gen, x-sec, nevts_total_ntuple, btag_type)
     # Single Top
@@ -48,8 +49,10 @@ def LoadInputs():
     flist.append(['DY3JetsToLL_M','zjets',11015445,65.79,10655325,'zjets'])
     flist.append(['DY4JetsToLL_M','zjets',6402827,28.59,5843425,'zjets'])
     # QCD
-    flist.append(['QCD_Pt-15to3000','qcd',9991674,6662.6,9940092,'qcd'])
+    #flist.append(['QCD_Pt-15to3000','qcd',9991674,6662.6,9940092,'qcd'])
     # signal
     flist.append(['TT_CT10_TuneZ2star_8TeV','ttbar',21675970,245.9,21560109,'ttbar'])    
+    # data
+    flist.append(['SingleEl_Run2012ABCD','data',19748])
 
 make_joblist()

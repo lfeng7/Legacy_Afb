@@ -11,6 +11,10 @@ if not os.path.exists(outputdir):
     os.mkdir(outputdir)
     print 'Making '+outputdir
 
+if not os.path.exists('logs'):
+    os.mkdir('logs')
+    print 'Making dir logs'
+
 def make_joblist():
     fout = open('cleanup.sh','w')
 
@@ -19,7 +23,7 @@ def make_joblist():
     reco_hadd_files = [ifile[0]+'_reco.root' for ifile in flist]
     recos = zip(reco_files,reco_hadd_files)
 
-    towrite = ''
+    towrite = 'mv *.log logs \nrm *.tgz  *.cmd condor-*\n'
     # Loop over files
     for ifile in recos:
         towrite += 'hadd '+outputdir+'/'+ifile[1]+' '+ifile[0]+'\n'
@@ -49,8 +53,9 @@ def LoadInputs():
     flist.append(['DY3JetsToLL_M','zjets',11015445,65.79,10655325,'zjets'])
     flist.append(['DY4JetsToLL_M','zjets',6402827,28.59,5843425,'zjets'])
     # QCD
-    flist.append(['QCD_Pt-15to3000','qcd',9991674,6662.6,9940092,'qcd'])
+#    flist.append(['QCD_Pt-15to3000','qcd',9991674,6662.6,9940092,'qcd'])
     # signal
     flist.append(['TT_CT10_TuneZ2star_8TeV','ttbar',21675970,245.9,21560109,'ttbar'])    
-
+    # data
+    flist.append(['SingleEl_Run2012ABCD','data',19748])
 make_joblist()
