@@ -63,7 +63,7 @@ def pscale(scalefactor, vector) :
     return ROOT.TLorentzVector(scalefactor*vector.Px(),scalefactor*vector.Py(),scalefactor*vector.Pz(),newE)
 
 #Minimization function for kinematic fitting
-minf = 1000000000.
+#minf = 1000000000.
 def fcn(npar, deriv, f, par, flag) :
     global minf
     # Some constants
@@ -93,7 +93,7 @@ def fcn(npar, deriv, f, par, flag) :
     v.SetPy(newmety)
     v.SetPz(par[0])
     v.SetE(math.sqrt(v.Px()*v.Px()+v.Py()*v.Py()+v.Pz()*v.Pz()))
-    #print ' par0='+str(par[0])+' par1='+str(par[1])+' par2='+str(par[2])+' par3='+str(par[3])+' par4='+str(par[4])+' par5='+str(par[5])+''
+
     wl = v + l
     tl = wl + bl
     th = wh + bh
@@ -141,7 +141,7 @@ def fcn(npar, deriv, f, par, flag) :
         f[0] = f[0] - 2.0*math.log(pdiscblep*pdiscbhad*pdiscw1*pdiscw2*pdiscextra)
     if f[0] < minf :
         minf = f[0]
-
+    #print 'minf=%.2f'%minf,'logL=%.2f'%f[0],' par0=%.1f'%par[0],' par1=%.3f'%par[1],' par2=%.2f'%par[2],' par3=%.2f'%par[3],' par4=%.2f'%par[4],' par5=%.2f'%par[5]
 ############################################################################################################
 #At this point, we have selected all the leptons, met, and jets for the event. The fourvector of the lepton#
 #is called 'lepton', the 2 cursory (unfitted) fourvectors of the met are in 'met1/2', and the list of jet  #
@@ -286,16 +286,17 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
 #                minuit.FixParameter(j)
                 pass
             #minimize
+            minf = 1000000000.
             minuit.mnexcm('MIGRAD', arglist, 1,ierflag)
             if ierflag != 0 :
                 print 'PROBLEM IN FIT: ierflag = '+str(ierflag)+''
-                continue
+                minf = 1000000000 
             #Set fit Chi of this particular combination
             if iFit == 0 :
                 Chis1.append((minf,i))
             elif iFit == 1:
                 Chis2.append((minf,i))
-            minf = 1000000000.
+            # minf = 1000000000.
             #Get the best parameters back from minuit
             for j in range(6) :
                 tmp = ROOT.Double(1.0)
@@ -308,6 +309,8 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
     Chis1.sort()
     Chis2.sort()
     plot_final_chi = 1.0
+    #print 'Chis1',Chis1
+    #print 'Chis2',Chis2
     if len(Chis2) > 0 and Chis2[0][0] < Chis1[0][0] :
         j = Chis2[0][1]
         met = met2.Clone()
