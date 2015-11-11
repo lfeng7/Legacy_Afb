@@ -217,6 +217,7 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
     #For each combo, the extra jet goes in comboExtraJet
     #Remove any combos that have neither supposed b tagged as such, or any combo where the CSV value excludes one of the bs from being a b
     nbtags = len([ icsv for icsv in jetCandCSVs if icsv>0.679])
+    n_combos = len(combos)
     i = 0
     while True :
         twountagged = comboCSVs[i][0] < 0.679 and comboCSVs[i][1] < 0.679
@@ -352,6 +353,6 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
     wlep_p4 = (lepton + met).Clone()
     whad_p4 = Wtag.Clone()
 
-    toreturn = [ plot_final_chi,(tlep_p4,thad_p4,wlep_p4,whad_p4),(bestParValues) ]
+    toreturn = [ plot_final_chi,(tlep_p4,thad_p4,wlep_p4,whad_p4),(bestParValues),n_combos]
     return toreturn
 

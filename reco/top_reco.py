@@ -160,8 +160,9 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     reco_mass = ROOT.vector('float')()
     N_btag = ROOT.vector('int')()
     N_jets = ROOT.vector('int')()        
-    vecs += [reco_pt,reco_eta,reco_phi,reco_mass,N_btag,N_jets]
-    br_names += ['reco_pt','reco_eta','reco_phi','reco_mass','N_btag','N_jets']
+    N_combos = ROOT.vector('int')() 
+    vecs += [reco_pt,reco_eta,reco_phi,reco_mass,N_btag,N_jets,N_combos]
+    br_names += ['reco_pt','reco_eta','reco_phi','reco_mass','N_btag','N_jets','N_combos']
     # kinfit results 
     kinfit_results = ROOT.vector('float')() #'pZv','scaleLep','scaleblep','scalebhad','scaleWsub1','scaleWsub2'
     final_chi2 = ROOT.vector('float')()
@@ -327,12 +328,16 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         else : 
             mcordata = 'mc'
         reco_result = DoReco(jets_p4,jets_csv_list,lep_p4,metPt,metPhi,lep_type,mcordata)
+        if reco_result == 'none':
+            print 'No valid reco done! Will skip this event #',iev
+            continue
         # Add reco quantity to the tree
         N_btag.push_back(nbtags)
         N_jets.push_back(n_selected_jets)
         plot_final_chi = reco_result[0]
         reco_p4s = reco_result[1]
         bestFitParValues = reco_result[2]
+        N_combos.push_back(reco_result[3])
         final_chi2.push_back(plot_final_chi)
         for ip4 in reco_p4s:
             reco_pt.push_back(ip4.Pt())
