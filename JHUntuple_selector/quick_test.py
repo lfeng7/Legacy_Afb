@@ -1,4 +1,5 @@
-from utility import *
+from Legacy_Afb.Tools.fwlite_boilerplate import *
+import ROOT
 
 from optparse import OptionParser
 
@@ -42,14 +43,14 @@ if options.inputFiles != 'none':
     for ifile in files :    
         print ifile
 
-files = ['ntuples/sample_jhudiffmo/TT_jhutester_numEvent1000_99.root']
+# files = ['ntuples/sample_jhudiffmo/TT_jhutester_numEvent1000_99.root']
 #files = ['ntuples/sample_jhudiffmo/SingleEl_Run2012A_jhutester_numEvent1000_191.root']
 
 # Read input files
 events = Events(files)
 
 # Control constants
-nevt_cut = 10000
+nevt_cut = 1000
 event_type  = 'test'
 
 # Handles and labels
@@ -64,26 +65,28 @@ jet_p4_label = ("jhuAk5","AK5")
 trig_hndl = Handle('edm::TriggerResults')
 trig_label = ("TriggerResults","","HLT")
 
-# MET
-met_phi_hndl = Handle('double')
-met_hndl = Handle('double')
-met_phi_label = ("jhuGen","metphi")
-met_label = ("jhuGen","metpt")
+jets_csv_hndl = Handle('vector<double>')
+jets_csv_label = ("jhuAk5"        ,       "AK5csv")
 
-# JHU ntuple format
-jet_csv_hndl = Handle('vector<double>')
-jet_csv_label = ("jhuAk5","AK5csv")
-jet_flavor_hndl = Handle('vector<int>')
-jet_flavor_label =("jhuAk5","AK5PartonFlavour")
+el_iso_hndl = Handle('vector<double>')
+el_iso_label = ("jhuElePFlowLoose"   ,  "electronLooseiso" ,  "jhu" )
 
-# Book histograms
-h1 = ROOT.TH1D('jetspt','jetspt;pt GeV;events',50,0.,300.0)
-# cutflows
-h_cutflow = ROOT.TH1D('cutflow_TTbar',event_type+' cutflow;cuts;events',3,0.,3.)
-h_cutflow.SetBit(ROOT.TH1.kCanRebin)
+electronLooseispseudotight_hndl = Handle('vector<unsigned int>' )
+electronLooseispseudotight_label = ("jhuElePFlowLoose"   ,  "electronLooseispseudotight" ,  "jhu")
 
-# h3 = ROOT.TH1D('csv_all_jets', type+' CSV of all jets;csv;events',100,0,1)
 
+# Make output file with ttree
+fout = ROOT.TFile('testtree.root','recreate')
+outputtree = ROOT.TTree('selected','selected')
+
+jets_csv_vec = ROOT.vector('float')()
+lep_iso_vec = ROOT.vector('float')()
+electronLooseispseudotight = ROOT.vector('int')()
+vecs = [jets_csv_vec,lep_iso_vec,electronLooseispseudotight]
+br_names = ['jets_csv','lep_iso','electronLooseispseudotight']
+branches = zip(br_names,vecs)
+for ibr in branches:
+    outputtree.Branch(ibr[0],ibr[1])
 
 # Counter initiation 
 n_evt = 0
@@ -92,6 +95,7 @@ n_evt_csv = 0
 print 'Getting',events.size(),'events'
 # Event loop
 for evt in events:
+    for ivec in vecs: ivec.clear()
 
     # counting and stuff
     if n_evt == nevt_cut: break
@@ -99,32 +103,27 @@ for evt in events:
     n_evt += 1
     if n_evt%5000 == 1: print 'Loop over',n_evt,'event'
 
-    h_cutflow.Fill('all',1)
+    evt.getByLabel(jet_csv_label, jet_csv_hndl)
+    evt.getByLabel(el_iso_label,el_iso_hndl)
+    evt.getByLabel(electronLooseispseudotight_label,electronLooseispseudotight_hndl)
 
-    evt.getByLabel(trig_label,trig_hndl)
-    trig_ = trig_hndl.product()
-    iev = evt.object()
-    triggerNames = iev.triggerNames(trig_)
-    pathName='HLT_Ele27_WP80_v'
-    trigName = ''
-    for itrig in triggerNames.triggerNames():
-        if pathName in itrig : trigName = itrig
-    if pathName not in trigName :
-        print 'No trigger',pathName,'found in evt',n_evt,'! Will skip this event.'
-    passTrig=trig_.accept(triggerNames.triggerIndex(trigName))
-    
+    jets_csv = jet_csv_hndl.product()
+    el_iso = el_iso_hndl.product()
+    el_istight = electronLooseispseudotight_hndl.product()
 
-    if not passTrig : continue
-    h_cutflow.Fill('trigger',1)
+    if not el_iso.size()>0 and el_istight,size()>0 and jets_csv.size()>0 : continue
 
+    for ijet in jets_csv: jets_csv_vec.push_back(ijet)
+    for iel in el_iso : lep_iso_vec.push_back(iel)
+    for iel in el_istight: electronLooseispseudotight.push_back(iel)
+
+    outputtree.Fill()
 # End of event loop
 
 # Run summary
 print 'break at event',n_evt
 
+fout.Write()
+fout.Close()
 
-# Plotting and saving 
-histlist = [h_cutflow]
-
-plotting(histlist,event_type,"dump")
   
