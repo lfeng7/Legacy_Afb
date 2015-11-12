@@ -13,10 +13,15 @@
 # Start the v2 development.
 # Finish ttree making in selection
 # Start to include all corrections
+# Edit log
+# V3 , 11-13-15
+# Now switch to Nick's ntuple
 
 
-from utility import *
-from fwlite_boilerplate import *
+from Legacy_Afb.Tools.fwlite_boilerplate import *
+from Legacy_Afb.Tools.root_utility import *
+from Legacy_Afb.Tools.python_utility import *
+from Legacy_Afb.Tools.ttbar_utility import *
 import os
 import glob
 import math
@@ -192,6 +197,7 @@ def selection(rootfiles):
     el_charge_hndl = Handle('vector<int>')
     el_isLoose_hndl = Handle('vector<unsigned int>')
     el_isTight_hndl = Handle('vector<unsigned int>')
+    el_isPseudoTight_hndl = Handle('vector<unsigned int>')
     el_isModTight_hndl = Handle('vector<unsigned int>')
 
     mu_hndl = Handle('vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > >')
@@ -374,6 +380,8 @@ def selection(rootfiles):
         evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'istight',el_isTight_hndl)
         evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'modtight',el_isModTight_hndl)
         evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'charge',el_charge_hndl)
+        evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'pseudotight',el_isPseudoTight_hndl)
+
 
         evt.getByLabel('jhuMuonPFlow','muon',mu_hndl)
         evt.getByLabel('jhuMuonPFlow','muoniso',mu_iso_hndl)
@@ -394,6 +402,7 @@ def selection(rootfiles):
         el_isTight = el_isTight_hndl.product()
         el_isModTight = el_isModTight_hndl.product()
         el_charge = el_charge_hndl.product()
+        el_isPseudoTight = el_isPseudoTight_hndl.product()
 
         mu_p4 = mu_hndl.product()
         mu_is_loose = mu_isLoose_hndl.product()
@@ -466,11 +475,11 @@ def selection(rootfiles):
                 el_loose.append((el,icharge,el_iso[i]))
             # PFelectrons passed tight selection
             # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Signal
-            if el_isTight[i] and not el_isModTight[i] and el.pt()>30 and abs(el.eta())<2.5: 
-                if options.fakelep == 'no' and el_iso[i]<0.1:
-                    el_cand.append((el,icharge,el_iso[i]))
-                if options.fakelep == 'yes' and lepiso_cut < el_iso[i] < 1.0 :
-                    el_cand.append((el,icharge,el_iso[i]))
+            #signal region
+            if options.fakelep == 'no' and el_isTight[i] and not el_isModTight[i] and el.pt()>30 and abs(el.eta())<2.5 and el_iso[i]<0.1: 
+                el_cand.append((el,icharge,el_iso[i]))
+            elif options.fakelep == 'yes' and el_isPseudoTight[i] and not el_isModTight[i] and lepiso_cut < el_iso[i] < 1.0 and el.pt()>30 and abs(el.eta())<2.5:
+                el_cand.append((el,icharge,el_iso[i]))
         el_extra = list( ipar for ipar in el_loose if ipar not in el_cand)
 
         #### PF muons ####
