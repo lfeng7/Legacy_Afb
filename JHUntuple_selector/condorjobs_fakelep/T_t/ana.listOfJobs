@@ -1,3 +1,3 @@
-python ./tardir/selection.py --txtfiles tardir/inputfiles/T_t.txt --makeplots no --mcordata mc --mctype singletop  --maxevts -1 --type T_t --grid yes --maxfiles 10 --startfile 0
-python ./tardir/selection.py --txtfiles tardir/inputfiles/T_t.txt --makeplots no --mcordata mc --mctype singletop  --maxevts -1 --type T_t --grid yes --maxfiles 10 --startfile 10
-python ./tardir/selection.py --txtfiles tardir/inputfiles/T_t.txt --makeplots no --mcordata mc --mctype singletop  --maxevts -1 --type T_t --grid yes --maxfiles 10 --startfile 20
+python ./tardir/selection.py --txtfiles tardir/inputfiles/T_t.txt --makeplots no --mcordata mc --fakelep yes --mctype singletop  --maxevts -1 --type T_t --grid yes --maxfiles 10 --startfile 0
+python ./tardir/selection.py --txtfiles tardir/inputfiles/T_t.txt --makeplots no --mcordata mc --fakelep yes --mctype singletop  --maxevts -1 --type T_t --grid yes --maxfiles 10 --startfile 10
+python ./tardir/selection.py --txtfiles tardir/inputfiles/T_t.txt --makeplots no --mcordata mc --fakelep yes --mctype singletop  --maxevts -1 --type T_t --grid yes --maxfiles 10 --startfile 20

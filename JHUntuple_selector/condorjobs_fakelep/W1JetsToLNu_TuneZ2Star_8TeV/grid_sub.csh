@@ -1,5 +1,5 @@
 #! /bin/sh
-tar czvf tarball.tgz ../../selection.py ../../fwlite_boilerplate.py  ../../utility inputfiles
+tar czvf tarball.tgz ../../selection.py  inputfiles
 
 voms-proxy-init --voms cms
 
