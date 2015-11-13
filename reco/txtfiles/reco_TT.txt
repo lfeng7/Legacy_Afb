@@ -1,0 +1,157 @@
+******************************************************************************
+*Tree    :selected  : selected                                               *
+*Entries :     1780 : Total =         1570171 bytes  File  Size =     542009 *
+*        :          : Tree compression factor =   2.88                       *
+******************************************************************************
+*Br    0 :trigger   : vector<bool>                                           *
+*Entries :     1780 : Total  Size=      27358 bytes  File Size  =       3643 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   7.38     *
+*............................................................................*
+*Br    1 :mc_pileup_events : vector<float>                                   *
+*Entries :     1780 : Total  Size=      32752 bytes  File Size  =       6901 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   4.67     *
+*............................................................................*
+*Br    2 :gen_pt    : vector<float>                                          *
+*Entries :     1780 : Total  Size=      68377 bytes  File Size  =      45747 *
+*Baskets :        3 : Basket Size=      32000 bytes  Compression=   1.48     *
+*............................................................................*
+*Br    3 :gen_eta   : vector<float>                                          *
+*Entries :     1780 : Total  Size=      68384 bytes  File Size  =      45863 *
+*Baskets :        3 : Basket Size=      32000 bytes  Compression=   1.48     *
+*............................................................................*
+*Br    4 :gen_phi   : vector<float>                                          *
+*Entries :     1780 : Total  Size=      68384 bytes  File Size  =      46430 *
+*Baskets :        3 : Basket Size=      32000 bytes  Compression=   1.46     *
+*............................................................................*
+*Br    5 :gen_mass  : vector<float>                                          *
+*Entries :     1780 : Total  Size=      68391 bytes  File Size  =      39442 *
+*Baskets :        3 : Basket Size=      32000 bytes  Compression=   1.72     *
+*............................................................................*
+*Br    6 :gen_pdgid : vector<int>                                            *
+*Entries :     1780 : Total  Size=      68398 bytes  File Size  =       8347 *
+*Baskets :        3 : Basket Size=      32000 bytes  Compression=   8.14     *
+*............................................................................*
+*Br    7 :gen_side  : vector<string>                                         *
+*Entries :     1780 : Total  Size=      64831 bytes  File Size  =       5386 *
+*Baskets :        3 : Basket Size=      32000 bytes  Compression=  11.95     *
+*............................................................................*
+*Br    8 :gen_type  : vector<string>                                         *
+*Entries :     1780 : Total  Size=      38214 bytes  File Size  =       5179 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   7.28     *
+*............................................................................*
+*Br    9 :gen_is_ejets : vector<int>                                         *
+*Entries :     1780 : Total  Size=      32728 bytes  File Size  =       3971 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   8.11     *
+*............................................................................*
+*Br   10 :weight_pileup : vector<float>                                      *
+*Entries :     1780 : Total  Size=      32734 bytes  File Size  =       6826 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   4.72     *
+*............................................................................*
+*Br   11 :weight_top_pT : vector<float>                                      *
+*Entries :     1780 : Total  Size=      32734 bytes  File Size  =      10930 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   2.95     *
+*............................................................................*
+*Br   12 :weight_btag_eff : vector<float>                                    *
+*Entries :     1780 : Total  Size=      32746 bytes  File Size  =      10575 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   3.05     *
+*............................................................................*
+*Br   13 :weight_btag_eff_err : vector<float>                                *
+*Entries :     1780 : Total  Size=      32770 bytes  File Size  =      11548 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   2.79     *
+*............................................................................*
+*Br   14 :reco_pt   : vector<float>                                          *
+*Entries :     1780 : Total  Size=      54058 bytes  File Size  =      32021 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   1.67     *
+*............................................................................*
+*Br   15 :reco_eta  : vector<float>                                          *
+*Entries :     1780 : Total  Size=      54064 bytes  File Size  =      32989 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   1.62     *
+*............................................................................*
+*Br   16 :reco_phi  : vector<float>                                          *
+*Entries :     1780 : Total  Size=      54064 bytes  File Size  =      32962 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   1.63     *
+*............................................................................*
+*Br   17 :reco_mass : vector<float>                                          *
+*Entries :     1780 : Total  Size=      54070 bytes  File Size  =      29870 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   1.79     *
+*............................................................................*
+*Br   18 :N_btag    : vector<int>                                            *
+*Entries :     1780 : Total  Size=      32692 bytes  File Size  =       3744 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   8.60     *
+*............................................................................*
+*Br   19 :N_jets    : vector<int>                                            *
+*Entries :     1780 : Total  Size=      32692 bytes  File Size  =       4374 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   7.36     *
+*............................................................................*
+*Br   20 :final_chi2 : vector<float>                                         *
+*Entries :     1780 : Total  Size=      32716 bytes  File Size  =      12179 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   2.65     *
+*............................................................................*
+*Br   21 :kinfit_results : vector<float>                                     *
+*Entries :     1780 : Total  Size=      61313 bytes  File Size  =      36338 *
+*Baskets :        3 : Basket Size=      32000 bytes  Compression=   1.67     *
+*............................................................................*
+*Br   22 :final_nv_pz : vector<float>                                        *
+*Entries :     1780 : Total  Size=      32722 bytes  File Size  =      12428 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   2.59     *
+*............................................................................*
+*Br   23 :N_combos  : vector<int>                                            *
+*Entries :     1780 : Total  Size=      32704 bytes  File Size  =       4381 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   7.35     *
+*............................................................................*
+*Br   24 :N_combo_errs : vector<int>                                         *
+*Entries :     1780 : Total  Size=      32728 bytes  File Size  =       4306 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   7.48     *
+*............................................................................*
+*Br   25 :final_errflags : vector<int>                                       *
+*Entries :     1780 : Total  Size=      32740 bytes  File Size  =       3467 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   9.30     *
+*............................................................................*
+*Br   26 :w_PU      : vector<float>                                          *
+*Entries :     1780 : Total  Size=      32680 bytes  File Size  =       6788 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   4.74     *
+*............................................................................*
+*Br   27 :w_PU_up   : vector<float>                                          *
+*Entries :     1780 : Total  Size=      32698 bytes  File Size  =       6833 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   4.71     *
+*............................................................................*
+*Br   28 :w_PU_down : vector<float>                                          *
+*Entries :     1780 : Total  Size=      32710 bytes  File Size  =       6820 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   4.72     *
+*............................................................................*
+*Br   29 :w_btag    : vector<float>                                          *
+*Entries :     1780 : Total  Size=      32692 bytes  File Size  =      10489 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   3.07     *
+*............................................................................*
+*Br   30 :w_btag_up : vector<float>                                          *
+*Entries :     1780 : Total  Size=      32710 bytes  File Size  =      10367 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   3.11     *
+*............................................................................*
+*Br   31 :w_btag_down : vector<float>                                        *
+*Entries :     1780 : Total  Size=      32722 bytes  File Size  =      10622 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   3.03     *
+*............................................................................*
+*Br   32 :w_eleID   : vector<float>                                          *
+*Entries :     1780 : Total  Size=      32698 bytes  File Size  =       5774 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   5.58     *
+*............................................................................*
+*Br   33 :w_eleID_up : vector<float>                                         *
+*Entries :     1780 : Total  Size=      32716 bytes  File Size  =       5863 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   5.50     *
+*............................................................................*
+*Br   34 :w_eleID_down : vector<float>                                       *
+*Entries :     1780 : Total  Size=      32728 bytes  File Size  =       5714 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   5.64     *
+*............................................................................*
+*Br   35 :w_trigger : vector<float>                                          *
+*Entries :     1780 : Total  Size=      32710 bytes  File Size  =       3104 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=  10.38     *
+*............................................................................*
+*Br   36 :w_trigger_up : vector<float>                                       *
+*Entries :     1780 : Total  Size=      32728 bytes  File Size  =       3118 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=  10.33     *
+*............................................................................*
+*Br   37 :w_trigger_down : vector<float>                                     *
+*Entries :     1780 : Total  Size=      32740 bytes  File Size  =       3117 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=  10.34     *
+*............................................................................*
