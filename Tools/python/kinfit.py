@@ -155,6 +155,7 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
     ######################################################
     ##              EVENT RECONSTRUCTION                ##
     ######################################################
+    n_erflag = 0
     # Set some mass constant
     if lep_type in ['el','electron'] : MLEP = MELECTRON
     if lep_type in ['mu','muon'] : MLEP = MMUON
@@ -290,13 +291,15 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
             minf = 1000000000.
             minuit.mnexcm('MIGRAD', arglist, 1,ierflag)
             if ierflag != 0 :
-                print 'PROBLEM IN FIT: ierflag = '+str(ierflag)+''
-                minf = 1000000000 
+                #print 'PROBLEM IN FIT: ierflag = '+str(ierflag)+''
+                #minf = 1000000000 
+                n_erflag += 1
+                #pass
             #Set fit Chi of this particular combination
             if iFit == 0 :
-                Chis1.append((minf,i))
+                Chis1.append((minf,i,ierflag))
             elif iFit == 1:
-                Chis2.append((minf,i))
+                Chis2.append((minf,i,ierflag))
             # minf = 1000000000.
             #Get the best parameters back from minuit
             for j in range(6) :
@@ -323,6 +326,7 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
             bestParValues.append(bestParValues2[j][i])
         finalChi = Chis2[0][0]
         plot_final_chi = Chis2[0][0]
+        fit_ierflag = Chis2[0][2]
     else :
         j = Chis1[0][1]
         met = met1.Clone()
@@ -334,6 +338,7 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
             bestParValues.append(bestParValues1[j][i])
         finalChi = Chis1[0][0]
         plot_final_chi = Chis1[0][0]
+        fit_ierflag = Chis1[0][2]
     #Rescale the particle fourvectors based on the optimal parameters
     lepton = pscale(bestParValues[1], lepton)
     blep = pscale(bestParValues[2], blep)
@@ -353,6 +358,7 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
     wlep_p4 = (lepton + met).Clone()
     whad_p4 = Wtag.Clone()
 
-    toreturn = [ plot_final_chi,(tlep_p4,thad_p4,wlep_p4,whad_p4),(bestParValues),n_combos]
+    toreturn = [ plot_final_chi,(tlep_p4,thad_p4,wlep_p4,whad_p4),(bestParValues),n_combos,n_erflag,fit_ierflag]
+#    if n_erflag>0 and fit_ierflag != 0 :print 'final_chi,fit_ierflag,n_combos,n_erflag for current event: %.2f'%plot_final_chi,fit_ierflag,n_combos,n_erflag
     return toreturn
 

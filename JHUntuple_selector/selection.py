@@ -380,7 +380,7 @@ def selection(rootfiles):
         evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'istight',el_isTight_hndl)
         evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'modtight',el_isModTight_hndl)
         evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'charge',el_charge_hndl)
-        evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'pseudotight',el_isPseudoTight_hndl)
+        evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'ispseudotight',el_isPseudoTight_hndl)
 
 
         evt.getByLabel('jhuMuonPFlow','muon',mu_hndl)
@@ -478,7 +478,7 @@ def selection(rootfiles):
             #signal region
             if options.fakelep == 'no' and el_isTight[i] and not el_isModTight[i] and el.pt()>30 and abs(el.eta())<2.5 and el_iso[i]<0.1: 
                 el_cand.append((el,icharge,el_iso[i]))
-            elif options.fakelep == 'yes' and el_isPseudoTight[i] and not el_isModTight[i] and lepiso_cut < el_iso[i] < 1.0 and el.pt()>30 and abs(el.eta())<2.5:
+            elif options.fakelep == 'yes' and el_isPseudoTight[i] and not el_isModTight[i] and lepiso_cut < el_iso[i] < 1.2 and el.pt()>30 and abs(el.eta())<2.5:
                 el_cand.append((el,icharge,el_iso[i]))
         el_extra = list( ipar for ipar in el_loose if ipar not in el_cand)
 

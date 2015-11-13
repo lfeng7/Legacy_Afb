@@ -37,8 +37,7 @@ print options.inputFiles
 
 # Get the inputfiles.
 if options.inputFiles != 'none':
-    allfiles = glob.glob( options.inputFiles )
-    files = GetSomeFiles(allfiles,options.startfile,options.maxfiles)
+    files = glob.glob( options.inputFiles )
     print 'Getting these files:'
     for ifile in files :    
         print ifile
@@ -50,7 +49,7 @@ if options.inputFiles != 'none':
 events = Events(files)
 
 # Control constants
-nevt_cut = 1000
+nevt_cut = 10000
 event_type  = 'test'
 
 # Handles and labels
@@ -74,6 +73,8 @@ el_iso_label = ("jhuElePFlowLoose"   ,  "electronLooseiso" ,  "jhu" )
 electronLooseispseudotight_hndl = Handle('vector<unsigned int>' )
 electronLooseispseudotight_label = ("jhuElePFlowLoose"   ,  "electronLooseispseudotight" ,  "jhu")
 
+electronLooseistight_hndl = Handle('vector<unsigned int>' )
+electronLooseistight_label = ("jhuElePFlowLoose"  ,   "electronLooseistight" ,  "jhu")
 
 # Make output file with ttree
 fout = ROOT.TFile('testtree.root','recreate')
@@ -82,8 +83,9 @@ outputtree = ROOT.TTree('selected','selected')
 jets_csv_vec = ROOT.vector('float')()
 lep_iso_vec = ROOT.vector('float')()
 electronLooseispseudotight = ROOT.vector('int')()
-vecs = [jets_csv_vec,lep_iso_vec,electronLooseispseudotight]
-br_names = ['jets_csv','lep_iso','electronLooseispseudotight']
+electronLooseistight = ROOT.vector('int')()
+vecs = [jets_csv_vec,lep_iso_vec,electronLooseispseudotight,electronLooseistight]
+br_names = ['jets_csv','lep_iso','electronLooseispseudotight','electronLooseistight']
 branches = zip(br_names,vecs)
 for ibr in branches:
     outputtree.Branch(ibr[0],ibr[1])
@@ -101,21 +103,24 @@ for evt in events:
     if n_evt == nevt_cut: break
     #print 'loop over',n_evt,'events'
     n_evt += 1
-    if n_evt%5000 == 1: print 'Loop over',n_evt,'event'
+    if n_evt%5000 == 0: print 'Loop over',n_evt,'event'
 
-    evt.getByLabel(jet_csv_label, jet_csv_hndl)
+    evt.getByLabel(jets_csv_label, jets_csv_hndl)
     evt.getByLabel(el_iso_label,el_iso_hndl)
     evt.getByLabel(electronLooseispseudotight_label,electronLooseispseudotight_hndl)
+    evt.getByLabel(electronLooseistight_label,electronLooseistight_hndl)
 
-    jets_csv = jet_csv_hndl.product()
+    jets_csv = jets_csv_hndl.product()
     el_iso = el_iso_hndl.product()
-    el_istight = electronLooseispseudotight_hndl.product()
+    el_is_pseudotight = electronLooseispseudotight_hndl.product()
+    el_istight = electronLooseistight_hndl.product() 
 
-    if not el_iso.size()>0 and el_istight,size()>0 and jets_csv.size()>0 : continue
+    if not el_iso.size()>0 and el_istight.size()>0 and jets_csv.size()>0 : continue
 
     for ijet in jets_csv: jets_csv_vec.push_back(ijet)
     for iel in el_iso : lep_iso_vec.push_back(iel)
-    for iel in el_istight: electronLooseispseudotight.push_back(iel)
+    for iel in el_is_pseudotight: electronLooseispseudotight.push_back(iel)
+    for iel in el_istight: electronLooseistight.push_back(iel)
 
     outputtree.Fill()
 # End of event loop
