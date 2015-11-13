@@ -98,7 +98,7 @@ data_lumi = 19748
 csvm = 0.679
 
 # Get input files
-if options.fakelep == 'yes':
+if options.fakelep == 'no':
     prepend = './angles_files/signal/'
 else:
     prepend = './angles_files/sideband/'   # dir of output files to make histograms
@@ -137,7 +137,7 @@ flist.append(['DY2JetsToLL_M','zjets',2352304,215.1,2345857,'zjets'])
 flist.append(['DY3JetsToLL_M','zjets',11015445,65.79,10655325,'zjets'])
 flist.append(['DY4JetsToLL_M','zjets',6402827,28.59,5843425,'zjets'])
 # QCD
-flist.append(['QCD_Pt-15to3000','qcd',9991674,6662.6,9940092,'qcd'])
+#flist.append(['QCD_Pt-15to3000','qcd',9991674,6662.6,9940092,'qcd'])
 # signal
 flist.append(['TT_CT10_TuneZ2star_8TeV','ttbar',21675970,245.9,21560109,'ttbar'])
 
@@ -287,7 +287,7 @@ def MakeComparisonPlots():
     ########################################################
 
     # list of histogram to make stack plots
-    hlist = ['h_cos','h_xf','h_mtt','h_chi2','h_nz']
+    hlist = ['cos','xf','mtt','chi2','nz']
 
     stacks = []
     # Booking stack histograms 
@@ -324,8 +324,6 @@ def MakeComparisonPlots():
 
     # write some informations about current sample
     f_info = open('info_stackplots.txt','w')
-    info_ = 'Sample type : data'+'\n'+'Events weight %.2f : '%data_weight +'\n\n'
-    f_info.write(info_)
 
     ############ Make stack histograms for MC samples
 
@@ -341,6 +339,7 @@ def MakeComparisonPlots():
         # Find the color of the sample type
         sample_type = ifile[1]
         icolor = GetSampleColor(sample_type) # GetSampleColor is defined in ttbar_utility
+        #print sample_type,icolor
 
         # Calculate weight for this channel
         fraction = 1.0
@@ -379,11 +378,6 @@ def MakeComparisonPlots():
             leg.AddEntry(many_hists[0],sample_type,"F")
             if options.verbose == 'yes' : print 'Adding a new legend entry for type:',sample_type
 
-        # write some informations about current sample
-        info_ = 'Sample name : '+ifile[0]+'\n'+'Type: '+sample_type+'\n'+'Events weight : '+str(weight)+'\n'
-        info_ += 'Nevts : '+str(nevts_total)+'\n'+'Fraction of sample used : %.2f'%fraction+'\n\n'
-        f_info.write(info_)
-
         # for debugging
         if options.verbose == 'yes' :
             print 'weight is:',weight           
@@ -411,7 +405,7 @@ def MakeComparisonPlots():
     data_mc_log = ([])
 
     for item in data_mc_log :
-        comparison_plot(item[0],item[1],leg,dir_name,'not dump','log','p')
+        comparison_plot(item[1],item[0],leg,dir_name,'not dump','log','p')
 
     # Dump plots to web
     if options.dumpplots == 'yes':
@@ -420,7 +414,11 @@ def MakeComparisonPlots():
 
     ############ Save MC stackplots and data histograms into an root files    
     savelist = mc_stacks+data_hists+[leg]
-  #  saving(savelist,dir_name)
+    fstacks = ROOT.TFile('fstacks.root','recreate')
+    for item in savelist:
+    #    item.SetDirectory(fstacks)
+        item.Write()
+    fstacks.Close()
 
     # file closure
     f_info.close()

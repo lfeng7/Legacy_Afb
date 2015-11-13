@@ -19,7 +19,7 @@ parser.add_option('--inputfiles', metavar='F', type='string', action='store',
                   help='Input files')
 
 parser.add_option('--evtsperjob', metavar='F', type='int', action='store',
-                  default = -1,
+                  default = 1000,
                   dest='evtsperjob',
                   help='number of events to run for each job')
 
@@ -142,6 +142,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     # Make output ttree
     tmptree.SetBranchStatus('jets*',0)
     tmptree.SetBranchStatus('lep*',0)
+    tmptree.SetBranchStatus('lep_charge',1)
     if isFakeLep == 'yes':
         tmptree.SetBranchStatus('lep_iso',1)
     tmptree.SetBranchStatus('met*',0)
@@ -160,15 +161,17 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     reco_mass = ROOT.vector('float')()
     N_btag = ROOT.vector('int')()
     N_jets = ROOT.vector('int')()        
-    N_combos = ROOT.vector('int')() 
-    vecs += [reco_pt,reco_eta,reco_phi,reco_mass,N_btag,N_jets,N_combos]
-    br_names += ['reco_pt','reco_eta','reco_phi','reco_mass','N_btag','N_jets','N_combos']
+    vecs += [reco_pt,reco_eta,reco_phi,reco_mass,N_btag,N_jets]
+    br_names += ['reco_pt','reco_eta','reco_phi','reco_mass','N_btag','N_jets']
     # kinfit results 
     kinfit_results = ROOT.vector('float')() #'pZv','scaleLep','scaleblep','scalebhad','scaleWsub1','scaleWsub2'
     final_chi2 = ROOT.vector('float')()
     final_nv_pz = ROOT.vector('float')()
-    vecs += [final_chi2,kinfit_results,final_nv_pz]
-    br_names += ['final_chi2','kinfit_results','final_nv_pz']
+    N_combos = ROOT.vector('int')() 
+    N_combo_errs = ROOT.vector('int')()
+    final_errflags = ROOT.vector('int')()
+    vecs += [final_chi2,kinfit_results,final_nv_pz,N_combos,N_combo_errs,final_errflags]
+    br_names += ['final_chi2','kinfit_results','final_nv_pz','N_combos','N_combo_errs','final_errflags']
     
     # Corrections
     if sample_type != 'data':
@@ -338,6 +341,9 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         reco_p4s = reco_result[1]
         bestFitParValues = reco_result[2]
         N_combos.push_back(reco_result[3])
+        N_combo_errs.push_back(reco_result[4])
+        final_errflags.push_back(reco_result[5])
+
         final_chi2.push_back(plot_final_chi)
         for ip4 in reco_p4s:
             reco_pt.push_back(ip4.Pt())

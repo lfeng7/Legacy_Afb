@@ -3,9 +3,9 @@ fin = ROOT.TFile('selected_files/v2_trigger_removed/all/T_t_selected.root')
 tmptree = fin.Get('selected')
 
 for iev in range(500,tmptree.GetEntries()):
-    if not iev == 583: continue
+    #if not iev == 583: continue
     tmptree.GetEntry(iev)
-    print 'iev',iev
+    #print 'iev',iev
 
     jets_pt = tmptree.jets_pt
     jets_eta = tmptree.jets_eta
