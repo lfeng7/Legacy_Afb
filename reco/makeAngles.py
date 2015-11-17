@@ -1,7 +1,7 @@
 # Take in the selection output ttree, do reco reconstruction via kinfit
 
-# from Legacy_Afb.Tools.ttbar_utility import *
-# from Legacy_Afb.Tools.angles_tools import *
+from Legacy_Afb.Tools.ttbar_utility import *
+from Legacy_Afb.Tools.angles_tools import *
 import glob
 from optparse import OptionParser
 import ROOT
@@ -34,6 +34,11 @@ parser.add_option('--verbose', metavar='F', type='string', action='store',
                   default = 'no',
                   dest='verbose',
                   help='If you want more information than you usually need.')
+
+parser.add_option('--slim', metavar='F', type='string', action='store',
+                  default = 'no',
+                  dest='slim',
+                  help='If you want slimmed ttree with angles and stuff')
 
 parser.add_option('--fakelep', metavar='F', type='string', action='store',
                   default = 'no',
@@ -120,10 +125,14 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
         return 'evt_start > total_num_events in input ttree. Will stop here.'
         
     # Make output file
-    fout_name = sample_name+'_angles_'+str(evt_start)+'_'+str(evt_end)+'.root'
+    fout_name = sample_name+'_angles_'+str(evt_start)+'.root'
     fout = ROOT.TFile(fout_name,'recreate')
     # Make output ttree
+    if options.slim == 'yes':
+        tmptree.SetBranchStatus('*',0)
+        tmptree.SetBranchStatus('final_chi2',1)
     newtree = tmptree.CloneTree(0)
+    tmptree.SetBranchStatus('*',1)
 
     # Add new branches to the output tree
     vecs = []
@@ -166,7 +175,7 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
         for ivec in vecs: ivec.clear()    
 
         # Progress report
-        if iev%500 == 0 : print 'processing event',iev 
+        if iev%5000 == 0 : print 'processing event',iev 
         # Break at the given event number
         if iev == evt_end : print 'Finish processing. Quit at event',evt_end; break ;
         
@@ -257,9 +266,9 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
                 true_mtt = true_results[1]
                 true_cos_theta = true_results[2]
         # push back true quantities
-        xf_mc.push_back(true_xf)
-        mtt_mc.push_back(true_mtt)
-        cos_theta_mc.push_back(true_cos_theta)
+                xf_mc.push_back(true_xf)
+                mtt_mc.push_back(true_mtt)
+                cos_theta_mc.push_back(true_cos_theta)
         init_type.push_back(tmp_type)
 
         # Fill this entry
