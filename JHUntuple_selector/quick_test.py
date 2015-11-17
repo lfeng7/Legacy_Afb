@@ -1,4 +1,5 @@
 from Legacy_Afb.Tools.fwlite_boilerplate import *
+# from fwlite_boilerplate import *
 import ROOT
 
 from optparse import OptionParser
@@ -76,9 +77,14 @@ electronLooseispseudotight_label = ("jhuElePFlowLoose"   ,  "electronLooseispseu
 electronLooseistight_hndl = Handle('vector<unsigned int>' )
 electronLooseistight_label = ("jhuElePFlowLoose"  ,   "electronLooseistight" ,  "jhu")
 
+#PDF
+pdf_hndls = [Handle('vector<double>'),Handle('vector<double>'),Handle('vector<double>')]
+pdf_label = ('cteq66','CT10','GJR08VFnloE')
+
 # Make output file with ttree
 fout = ROOT.TFile('testtree.root','recreate')
 outputtree = ROOT.TTree('selected','selected')
+
 
 jets_csv_vec = ROOT.vector('float')()
 lep_iso_vec = ROOT.vector('float')()
@@ -86,7 +92,15 @@ electronLooseispseudotight = ROOT.vector('int')()
 electronLooseistight = ROOT.vector('int')()
 vecs = [jets_csv_vec,lep_iso_vec,electronLooseispseudotight,electronLooseistight]
 br_names = ['jets_csv','lep_iso','electronLooseispseudotight','electronLooseistight']
+#pdf
+pdf_vecs = [] 
+for i in range(len(pdf_label)): 
+    pdf_vecs += [ROOT.vector('float')()]
+    vecs += [pdf_vecs[i]]
+    br_names += [pdf_label[i]]
+
 branches = zip(br_names,vecs)
+
 for ibr in branches:
     outputtree.Branch(ibr[0],ibr[1])
 
@@ -109,6 +123,13 @@ for evt in events:
     evt.getByLabel(el_iso_label,el_iso_hndl)
     evt.getByLabel(electronLooseispseudotight_label,electronLooseispseudotight_hndl)
     evt.getByLabel(electronLooseistight_label,electronLooseistight_hndl)
+    # pdf
+    for i in range(len(pdf_hndls)):
+        evt.getByLabel(pdf_label[i],pdf_hndls[i])
+        pdf_ws = pdf_hndls.product()
+        pdf_w0 = pdf_ws[0]
+        for item in pdf_ws:
+            pdf_vecs[i].push_back(item/pdf_w0)
 
     jets_csv = jets_csv_hndl.product()
     el_iso = el_iso_hndl.product()
