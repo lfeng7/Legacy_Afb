@@ -1,0 +1,8 @@
+Take selected root files and do top pair reconstruction
+top_reco.py
+Do reconstruction. Output is *_reco.root
+condorjobs is the grid run dir for top_reco.py
+makeAngles.py
+Calculate cos_theta* from reco p4 of top pairs. Input is *_reco.root. Output *_angle.root
+reco_stacker.py
+Plotter of cos_theta*,mtt and xf. Input is *_angle.root
