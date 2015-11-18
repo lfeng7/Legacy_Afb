@@ -2,7 +2,9 @@
 __pycache__/
 *.py[cod]
 *$py.class
+# cmssw specific
 *.root
+__init__.py
 
 # C extensions
 *.so
