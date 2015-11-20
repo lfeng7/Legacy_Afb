@@ -129,7 +129,7 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
     fout = ROOT.TFile(fout_name,'recreate')
     # Make output ttree
     br_tokeep = ['gen_type','gen_is_ejets','N_btag','N_jets','final_chi2','kinfit_results','kinfit_results','N_combos','N_combo_errs']
-    br_tokeep += ['final_errflags']
+    br_tokeep += ['final_errflags','reco_*']
     if options.slim == 'yes':
         tmptree.SetBranchStatus('*',0)
         for ibr in br_tokeep:

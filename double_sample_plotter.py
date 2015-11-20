@@ -110,18 +110,29 @@ else:
   label1 = options.label1
   label2 = options.label2
 
-chain = ROOT.TChain("tree")
+# Find the name of the ttree
+tf = ROOT.TFile(file1)
+keys = tf.GetListOfKeys()
+for ikey in keys:
+    if ikey.GetClassName() == 'TTree' : treename = ikey.GetName()
+print 'Getting ttree',treename
+tf.Close()
+# Some default setting for output names and title
+if name == 'blank': name = var
+if title == '': title=cut
+
+chain = ROOT.TChain(treename)
 chain.Add(file1)
 newhist1 = ROOT.TH1F(name, name, bin, x, y)	
 chain.Draw(var+">>"+name,""+ cut, "goff")
 
-chain = ROOT.TChain("tree")
+chain = ROOT.TChain(treename)
 chain.Add(file2)
 newhist2 = ROOT.TH1F(name+"_two", name+"_two", bin, x, y)	
 chain.Draw(var+">>"+name+"_two",""+ cut, "goff")
 
 newhist1.SetStats(0)
-newhist1.SetLineColor(ROOT.kBlack)
+newhist1.SetLineColor(ROOT.kRed)
 newhist1.SetLineWidth(1)
 newhist1.SetLineStyle(1)	
 newhist1.SetFillColor(0)
@@ -152,6 +163,8 @@ if scale:
 	newhist1.Scale(1/newhist1.Integral())
 	newhist2.Scale(1/newhist2.Integral())
 
+newhist2.SetLineColor(ROOT.kBlue)
+
 newhist1.SetMaximum(max(newhist1.GetMaximum(),newhist2.GetMaximum())*1.1)
 newhist1.Draw()
 newhist2.Draw("same")
@@ -166,8 +179,9 @@ if label1 != "":
 print "entries file1: " + str(newhist1.GetEntries())
 print "entries file2: " + str(newhist2.GetEntries())
 
+plotdir = 'plots/'
 if save == True:
-	c.SaveAs(name + ".png")
+	c.SaveAs(plotdir+name + ".png")
 if not save:
 	print "Enter save/saveas, or other to close:"
 	save = raw_input()
