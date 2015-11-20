@@ -177,7 +177,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     chi2_mass = ROOT.vector('float')()
     chi2_scale = ROOT.vector('float')()
     chi2_csv = ROOT.vector('float')()
-    vec+=[total_chi2,chi2_mass,chi2_scale,chi2_csv]
+    vecs+=[total_chi2,chi2_mass,chi2_scale,chi2_csv]
     br_names+=['total_chi2','chi2_mass','chi2_scale','chi2_csv']
 
     # Corrections
@@ -247,7 +247,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         h_cutflow.Fill('no cut',1)
         #trigger
         if options.applytrigger == 'yes':
-            if tmptree.trigger[0] == 0 : continue  
+            if not tmptree.trigger[0] : continue  
         h_cutflow.Fill('trigger',1)      
         # jets
         bjets = []
