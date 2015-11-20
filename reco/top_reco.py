@@ -172,7 +172,14 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     final_errflags = ROOT.vector('int')()
     vecs += [final_chi2,kinfit_results,final_nv_pz,N_combos,N_combo_errs,final_errflags]
     br_names += ['final_chi2','kinfit_results','final_nv_pz','N_combos','N_combo_errs','final_errflags']
-    
+    # for chi2 study
+    total_chi2 =  ROOT.vector('float')()
+    chi2_mass = ROOT.vector('float')()
+    chi2_scale = ROOT.vector('float')()
+    chi2_csv = ROOT.vector('float')()
+    vec+=[total_chi2,chi2_mass,chi2_scale,chi2_csv]
+    br_names+=['total_chi2','chi2_mass','chi2_scale','chi2_csv']
+
     # Corrections
     if sample_type != 'data':
         # Load some SFs
@@ -353,6 +360,19 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         for i in range(1,len(bestFitParValues)):
             kinfit_results.push_back(bestFitParValues[i])
         final_nv_pz.push_back(bestFitParValues[0])
+        # study of chi2
+        all_chis1 = reco_result[6]
+        all_chis2 = reco_result[7]
+        total_chi2.push_back(all_chis1[0])
+        chi2_mass.push_back(all_chis1[1])
+        chi2_scale.push_back(all_chis1[2])
+        chi2_csv.push_back(all_chis1[3])
+        if len(all_chis2)>0:
+            total_chi2.push_back(all_chis2[0])
+            chi2_mass.push_back(all_chis2[1])
+            chi2_scale.push_back(all_chis2[2])
+            chi2_csv.push_back(all_chis2[3])            
+
         #Fill the newtree
         newtree.Fill()
     # End loop over entries

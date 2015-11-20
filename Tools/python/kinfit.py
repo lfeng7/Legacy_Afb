@@ -252,6 +252,10 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
     for i in range(len(combos)) :
         bestParValues1.append([0.0,0.0,0.0,0.0,0.0,0.0])
         bestParValues2.append([0.0,0.0,0.0,0.0,0.0,0.0])
+
+    # Study chi2
+    all_chis1,all_chis2 = [],[]
+
     #Now perform kinematic fits for each combination of jetsand both neutrino solutions.
     nFits = 1
     if met1.Pz() != met2.Pz() :
@@ -294,6 +298,7 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
                 pass
             #minimize
             minf = 1000000000.
+            # study of chi2
             finalchi_csv,finalchi_mass,finalchi_scale = -100,-100,-100
             minuit.mnexcm('MIGRAD', arglist, 1,ierflag)
             if ierflag != 0 :
@@ -304,8 +309,10 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
             #Set fit Chi of this particular combination
             if iFit == 0 :
                 Chis1.append((minf,i,ierflag))
+                all_chis1.append((minf,finalchi_mass,finalchi_scale,finalchi_csv))
             elif iFit == 1:
                 Chis2.append((minf,i,ierflag))
+                all_chis2.append((minf,finalchi_mass,finalchi_scale,finalchi_csv))                
             # minf = 1000000000.
             #Get the best parameters back from minuit
             for j in range(6) :
@@ -321,6 +328,8 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
     plot_final_chi = 1.0
     #print 'Chis1',Chis1
     #print 'Chis2',Chis2
+
+
     if len(Chis2) > 0 and Chis2[0][0] < Chis1[0][0] :
         j = Chis2[0][1]
         met = met2.Clone()
@@ -365,7 +374,18 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
     whad_p4 = Wtag.Clone()
 
     toreturn = [ plot_final_chi,(tlep_p4,thad_p4,wlep_p4,whad_p4),(bestParValues),n_combos,n_erflag,fit_ierflag]
-    toreturn += [finalchi_mass,finalchi_scale,finalchi_csv]
+
+    # Study of final chi2
+    all_chis1.sort()
+    all_chis2.sort()
+    if len(all_chis2)>0 :
+        if all_chis1[0][0]<all_chis2[0][0]:
+            toreturn += [ all_chis1[0],all_chis2[0]]
+        else:
+            toreturn += [ all_chis2[0],all_chis1[0]]
+    else :
+        toreturn += [ all_chis1[0],() ]
+        
 #    if n_erflag>0 and fit_ierflag != 0 :print 'final_chi,fit_ierflag,n_combos,n_erflag for current event: %.2f'%plot_final_chi,fit_ierflag,n_combos,n_erflag
     return toreturn
 
