@@ -66,6 +66,7 @@ def pscale(scalefactor, vector) :
 #minf = 1000000000.
 def fcn(npar, deriv, f, par, flag) :
     global minf
+    global finalchi_mass,finalchi_csv,finalchi_scale
     # Some constants
     #for debug purpose, see if MT is set correctly
     #print 'MT = ',MT
@@ -141,6 +142,9 @@ def fcn(npar, deriv, f, par, flag) :
         f[0] = f[0] - 2.0*math.log(pdiscblep*pdiscbhad*pdiscw1*pdiscw2*pdiscextra)
     if f[0] < minf :
         minf = f[0]
+        finalchi_mass = -2.0*lnL
+        finalchi_csv = -2.0*math.log(pdiscblep*pdiscbhad*pdiscw1*pdiscw2*pdiscextra)
+        finalchi_scale = minf - finalchi_mass - finalchi_csv
     #print 'minf=%.2f'%minf,'logL=%.2f'%f[0],' par0=%.1f'%par[0],' par1=%.3f'%par[1],' par2=%.2f'%par[2],' par3=%.2f'%par[3],' par4=%.2f'%par[4],' par5=%.2f'%par[5]
 ############################################################################################################
 #At this point, we have selected all the leptons, met, and jets for the event. The fourvector of the lepton#
@@ -149,6 +153,7 @@ def fcn(npar, deriv, f, par, flag) :
 ############################################################################################################
 def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
     global minf
+    global finalchi_mass,finalchi_csv,finalchi_scale    
     global lepton,blep,bhad,Wsub1,Wsub2,met
     global blepCSV,bhadCSV,WCSV1,WCSV2,extraCSV
     global MT,MLEP
@@ -289,6 +294,7 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
                 pass
             #minimize
             minf = 1000000000.
+            finalchi_csv,finalchi_mass,finalchi_scale = -100,-100,-100
             minuit.mnexcm('MIGRAD', arglist, 1,ierflag)
             if ierflag != 0 :
                 #print 'PROBLEM IN FIT: ierflag = '+str(ierflag)+''
@@ -359,6 +365,7 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
     whad_p4 = Wtag.Clone()
 
     toreturn = [ plot_final_chi,(tlep_p4,thad_p4,wlep_p4,whad_p4),(bestParValues),n_combos,n_erflag,fit_ierflag]
+    toreturn += [finalchi_mass,finalchi_scale,finalchi_csv]
 #    if n_erflag>0 and fit_ierflag != 0 :print 'final_chi,fit_ierflag,n_combos,n_erflag for current event: %.2f'%plot_final_chi,fit_ierflag,n_combos,n_erflag
     return toreturn
 
