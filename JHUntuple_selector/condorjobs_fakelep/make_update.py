@@ -6,6 +6,6 @@ for idir in alldir:
     # ignore files in current dir, only loop over dirs
     if len(idir.split('.'))>1 : continue
     towrite = 'cp -r template/inputfiles '+idir+'\n'
-    towrite = 'cp  template/grid_sub.csh '+idir+'\n'
+    towrite += 'cp  template/grid_sub.csh '+idir+'\n'
     fout.write(towrite)
 fout.close()

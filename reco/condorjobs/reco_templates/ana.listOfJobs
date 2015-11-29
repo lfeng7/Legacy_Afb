@@ -1,0 +1,3 @@
+
+# /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/work/Legacy_Afb/JHUntuple_selector/selected_files/v2_trigger_removed/all/T_s_selected.root
+python ./tardir/top_reco.py --inputfiles /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/work/Legacy_Afb/JHUntuple_selector/selected_files/v2_trigger_removed/all/T_s_selected.root --evtstart 0 --evtsperjob 200

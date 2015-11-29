@@ -1,0 +1,57 @@
+******************************************************************************
+*Tree    :selected  : selected                                               *
+*Entries :     1812 : Total =          544363 bytes  File  Size =     217470 *
+*        :          : Tree compression factor =   2.49                       *
+******************************************************************************
+*Br    0 :trigger   : vector<bool>                                           *
+*Entries :     1812 : Total  Size=      27838 bytes  File Size  =       3337 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   8.20     *
+*............................................................................*
+*Br    1 :reco_pt   : vector<float>                                          *
+*Entries :     1812 : Total  Size=      55018 bytes  File Size  =      32654 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   1.67     *
+*............................................................................*
+*Br    2 :reco_eta  : vector<float>                                          *
+*Entries :     1812 : Total  Size=      55024 bytes  File Size  =      33581 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   1.62     *
+*............................................................................*
+*Br    3 :reco_phi  : vector<float>                                          *
+*Entries :     1812 : Total  Size=      55024 bytes  File Size  =      33530 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   1.63     *
+*............................................................................*
+*Br    4 :reco_mass : vector<float>                                          *
+*Entries :     1812 : Total  Size=      55030 bytes  File Size  =      30371 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   1.80     *
+*............................................................................*
+*Br    5 :N_btag    : vector<int>                                            *
+*Entries :     1812 : Total  Size=      33268 bytes  File Size  =       3792 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   8.65     *
+*............................................................................*
+*Br    6 :N_jets    : vector<int>                                            *
+*Entries :     1812 : Total  Size=      33268 bytes  File Size  =       4414 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   7.43     *
+*............................................................................*
+*Br    7 :final_chi2 : vector<float>                                         *
+*Entries :     1812 : Total  Size=      33292 bytes  File Size  =      12374 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   2.65     *
+*............................................................................*
+*Br    8 :kinfit_results : vector<float>                                     *
+*Entries :     1812 : Total  Size=      62401 bytes  File Size  =      37037 *
+*Baskets :        3 : Basket Size=      32000 bytes  Compression=   1.67     *
+*............................................................................*
+*Br    9 :final_nv_pz : vector<float>                                        *
+*Entries :     1812 : Total  Size=      33298 bytes  File Size  =      12599 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   2.60     *
+*............................................................................*
+*Br   10 :N_combos  : vector<int>                                            *
+*Entries :     1812 : Total  Size=      33280 bytes  File Size  =       4417 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   7.42     *
+*............................................................................*
+*Br   11 :N_combo_errs : vector<int>                                         *
+*Entries :     1812 : Total  Size=      33304 bytes  File Size  =       4335 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   7.57     *
+*............................................................................*
+*Br   12 :final_errflags : vector<int>                                       *
+*Entries :     1812 : Total  Size=      33316 bytes  File Size  =       3469 *
+*Baskets :        2 : Basket Size=      32000 bytes  Compression=   9.46     *
+*............................................................................*
