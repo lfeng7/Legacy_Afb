@@ -108,7 +108,6 @@ def main():
     print("RealTime={0:6.2f} seconds, CpuTime={1:6.2f} seconds").format(rtime,ctime)
 
 
-
 # Do reconstruction for the given file, process only a specific part of it, and output to a new file
 # ex. tf1, 'Tbar_s','singletopbar' (for b-tagging correction purpose),2000,10000
 def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
@@ -149,6 +148,11 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
 
     vecs += [cos_theta,xf,mtt,cos_theta_mc,xf_mc,mtt_mc,init_type]
     br_names += ['cos_theta','xf','mtt','cos_theta_mc','xf_mc','mtt_mc','init_type']
+    # study issue of cos_theta_mc
+    cos_theta_mc_v2 = ROOT.vector('float')()
+    xf_mc_v2 = ROOT.vector('float')()
+    vecs+=[cos_theta_mc_v2,xf_mc_v2]
+    br_names += ['cos_theta_mc_v2','xf_mc_v2']
     # Add branches to the tree
     branches = zip(br_names,vecs)
     for ibr in branches:
@@ -264,11 +268,19 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
                 true_results = get_true_angles(true_t_p4,true_tbar_p4,true_q_p4,true_qbar_p4)
                 true_xf = true_results[0]
                 true_mtt = true_results[1]
-                true_cos_theta = true_results[2]
-        # push back true quantities
+                true_cos_theta = true_results[2]           
+                # push back true quantities
                 xf_mc.push_back(true_xf)
                 mtt_mc.push_back(true_mtt)
                 cos_theta_mc.push_back(true_cos_theta)
+
+                # debug issue of wrong cos_theta_mc
+                true_results_v2 = get_true_angles_v2(true_t_p4,true_tbar_p4,true_q_p4,true_qbar_p4)
+                true_xf_v2 = true_results_v2[0]
+                true_cos_theta_v2 = true_results_v2[2]  
+                xf_mc_v2.push_back(true_xf_v2)
+                cos_theta_mc_v2.push_back(true_cos_theta_v2) 
+
         init_type.push_back(tmp_type)
 
         # Fill this entry

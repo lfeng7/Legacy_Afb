@@ -136,3 +136,63 @@ def get_true_angles(reco_t,reco_tbar,q_p4,qbar_p4):
 
     return [x_f,ttbar_mass_data,cos_theta_cs_true]
 
+# Get cos(theta*) for top pair p4 using mc p4 and mc q and qbar
+# Use quark direction as positive direction
+def get_true_angles_v2(reco_t,reco_tbar,q_p4,qbar_p4):
+    
+    #Lorentz Declartions
+
+    sqrt_s=8000;
+    beam_energy=sqrt_s/2;
+
+    S = TLorentzRotation();
+
+    #intialize the rotations to the identity
+    R_data = TLorentzRotation() ;
+      
+    #Vectors of top and antitop
+    Top_Data = TLorentzVector();
+    ATop_Data = TLorentzVector() ;
+
+    # Set up t and tbar p4
+    Top_Data = reco_t.Clone()
+    ATop_Data = reco_tbar.Clone()
+
+    #assign the quark and antiquark fourvectors from the last two particles in the list of mc_ particles
+    quark = q_p4.Clone()
+    antiquark = qbar_p4.Clone()
+    
+    #Make the 4-vector of the ttbar
+    Q_Data = Top_Data + ATop_Data;
+    ttbar_mass_data=Q_Data.Mag(); # to return Mtt
+
+    #defining the Px, Py,and Pz, and energies to boost into the ttbar rest frame
+    Bx_data = -1*Q_Data.Px()/Q_Data.E();  
+    By_data = -1*Q_Data.Py()/Q_Data.E();  
+    Bz_data = -1*Q_Data.Pz()/Q_Data.E();
+    Qt = sqrt(Q_Data.Px()*Q_Data.Px()+Q_Data.Py()*Q_Data.Py());
+
+    #Feynman x
+    x_f = (quark.E()-antiquark.E())/beam_energy
+    
+    #Doing the boost
+    R_data = R_data.Boost(Bx_data,By_data,Bz_data);
+    Top_Data = R_data*Top_Data;
+    ATop_Data = R_data*ATop_Data;
+    #Reset the boost
+    R_data=S.Clone();
+    #Define three vectors for P,Pbar,top, quark and antiquark in ttbar c.m frame
+    top_data = TVector3(Top_Data.Px(),Top_Data.Py(),Top_Data.Pz())
+    true_quark_direction = TVector3(quark.Px(),quark.Py(),quark.Pz())
+    true_antiquark_direction = TVector3(antiquark.Px(),antiquark.Py(),antiquark.Pz())
+        
+    #Normalize vectors
+    top_data = top_data*(1.0/top_data.Mag());
+    true_quark_direction = true_quark_direction*(1.0/true_quark_direction.Mag());
+    #find the CS angle
+    cos_theta_cs_true=top_data.Dot(true_quark_direction);
+
+    return [x_f,ttbar_mass_data,cos_theta_cs_true]
+
+
+
