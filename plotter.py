@@ -63,6 +63,10 @@ parser.add_option('--label', metavar='F', type='string', action='store',
               default = "",
                   dest='label',
                   help='')
+parser.add_option('--label2', metavar='F', type='string', action='store',
+              default = "",
+                  dest='label2',
+                  help='')
 parser.add_option('--config', action='store_true',
               default = False,
                   dest='config',
@@ -102,6 +106,7 @@ else:
   save = options.save
   label = options.label
   cut2 = options.cut2
+  label2 = options.label2
 
 # Find the name of the ttree
 tf = ROOT.TFile(file)
@@ -120,13 +125,13 @@ newhist1 = ROOT.TH1F(name, name, bin, x, y)
 chain.Draw(var+">>"+name,""+ cut, "goff")
 hists = [newhist1]
 all_cuts = [cut]
-if cut2!=cut:
+if cut2!=cut and cut2!='':
     newhist2 = ROOT.TH1F(name+'2', name+'2', bin, x, y)  
     chain.Draw(var+">>"+name+'2',""+ cut2, "goff")
     hists.append(newhist2)
     all_cuts.append(cut2)
 
-icolor = [ROOT.kRed,ROOT.kBlue,ROOT.kGreen]
+icolor = [ROOT.kBlue,ROOT.kRed,ROOT.kGreen]
 ihist = 0
 ymax = 0
 for newhist in hists:
@@ -171,6 +176,7 @@ if log:
 newhist1.Draw()
 if len(hists)>1: hists[1].Draw('same')
 
+labels=[label,label2]
 
 if label != "" or len(all_cuts)>1:
     leg = ROOT.TLegend(0.65, 0.75, 0.89, 0.89)
@@ -179,7 +185,11 @@ if label != "" or len(all_cuts)>1:
     #leg.SetTextSize(0.02)
     ihist = 0
     for newhist in hists:
-        leg.AddEntry(newhist, all_cuts[ihist], "l")
+        if labels[ihist]=='': 
+            label_ = all_cuts[ihist]
+        else: 
+            label_ = labels[ihist]
+        leg.AddEntry(newhist, label_, "l")
         ihist +=1
     leg.Draw("same")
 print "entries: " + str(newhist.GetEntries())
