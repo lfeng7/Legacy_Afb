@@ -284,6 +284,7 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
         init_type.push_back(tmp_type)
 
         # Fill this entry
+        if options.slim == 'yes' and tmp_type!='qqbar':continue
         newtree.Fill()
 
     # Write and close files

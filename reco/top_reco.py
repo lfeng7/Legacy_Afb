@@ -140,7 +140,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     fout_name = sample_name+'_reco_'+str(evt_start)+'_'+str(evt_end)+'.root'
     fout = ROOT.TFile(fout_name,'recreate')
     # Make output ttree
-    tmptree.SetBranchStatus('jets*',0)
+    #tmptree.SetBranchStatus('jets*',0)
     tmptree.SetBranchStatus('lep*',0)
     tmptree.SetBranchStatus('lep_charge',1)
     if isFakeLep == 'yes':

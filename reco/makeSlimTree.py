@@ -1,0 +1,11 @@
+import ROOT
+fin = ROOT.TFile("TT_CT10_TuneZ2star_8TeV_reco.root")
+oldtree =fin.Get('selected')
+fout = ROOT.TFile('TT_CT10_TuneZ2star_8TeV_reco_slim.root','recreate')
+oldtree.SetBranchStatus('*',0)
+oldtree.SetBranchStatus('*chi2*',1)
+oldtree.SetBranchStatus('reco*',1)
+newtree = oldtree.CloneTree()
+fout.Write()
+fout.Close()
+fin.Close()
