@@ -67,6 +67,7 @@ def pscale(scalefactor, vector) :
 def fcn(npar, deriv, f, par, flag) :
     global minf
     global finalchi_mass,finalchi_csv,finalchi_scale
+    global final_mass_L
     # Some constants
     #for debug purpose, see if MT is set correctly
     #print 'MT = ',MT
@@ -145,6 +146,8 @@ def fcn(npar, deriv, f, par, flag) :
         finalchi_mass = -2.0*lnL
         finalchi_csv = -2.0*math.log(pdiscblep*pdiscbhad*pdiscw1*pdiscw2*pdiscextra)
         finalchi_scale = minf - finalchi_mass - finalchi_csv
+        final_mass_L = (math.log(pdfth),math.log(pdftl),math.log(pdfwh),math.log(pdfwl))
+
     #print 'minf=%.2f'%minf,'logL=%.2f'%f[0],' par0=%.1f'%par[0],' par1=%.3f'%par[1],' par2=%.2f'%par[2],' par3=%.2f'%par[3],' par4=%.2f'%par[4],' par5=%.2f'%par[5]
 ############################################################################################################
 #At this point, we have selected all the leptons, met, and jets for the event. The fourvector of the lepton#
@@ -153,7 +156,8 @@ def fcn(npar, deriv, f, par, flag) :
 ############################################################################################################
 def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
     global minf
-    global finalchi_mass,finalchi_csv,finalchi_scale    
+    global finalchi_mass,finalchi_csv,finalchi_scale 
+    global final_mass_L   
     global lepton,blep,bhad,Wsub1,Wsub2,met
     global blepCSV,bhadCSV,WCSV1,WCSV2,extraCSV
     global MT,MLEP
@@ -309,10 +313,10 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
             #Set fit Chi of this particular combination
             if iFit == 0 :
                 Chis1.append((minf,i,ierflag))
-                all_chis1.append((minf,finalchi_mass,finalchi_scale,finalchi_csv))
+                all_chis1.append((minf,finalchi_mass,finalchi_scale,finalchi_csv)+final_mass_L)
             elif iFit == 1:
                 Chis2.append((minf,i,ierflag))
-                all_chis2.append((minf,finalchi_mass,finalchi_scale,finalchi_csv))                
+                all_chis2.append((minf,finalchi_mass,finalchi_scale,finalchi_csv)+final_mass_L)                
             # minf = 1000000000.
             #Get the best parameters back from minuit
             for j in range(6) :

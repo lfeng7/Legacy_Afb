@@ -136,7 +136,8 @@ ihist = 0
 ymax = 0
 for newhist in hists:
     if len(hists)>1:
-        newhist.SetStats(0)
+        # newhist.SetStats(0)
+        pass
     newhist.SetLineColor(icolor[ihist])
     newhist.SetLineWidth(1)
     newhist.SetLineStyle(1) 
@@ -174,12 +175,37 @@ if log:
     c.SetLogy()
 
 newhist1.Draw()
-if len(hists)>1: hists[1].Draw('same')
+# find stat box of hist1
+# lof = newhist1.GetListOfFunctions()
+# statbox1 = newhist1.FindObject("stats")
+gPad.Update()
+statbox1 = newhist1.FindObject("stats")
+statbox1.SetTextColor(icolor[0])
+statbox1.SetX1NDC(0.8)
+statbox1.SetY1NDC(0.83)
+statbox1.SetX2NDC(1)
+statbox1.SetY2NDC(1)
+# Draw second hists if there's a second cut
+if len(hists)>1: 
+  hist2 = hists[1]
+  hist2.Draw('sames')
+  # set stat box
+  gPad.Update()
+  statbox2 = hist2.FindObject("stats")  
+  statbox2.SetTextColor(icolor[1])
+  statbox2.SetX1NDC(0.8)
+  statbox2.SetY1NDC(0.67)
+  statbox2.SetX2NDC(1)
+  statbox2.SetY2NDC(0.83)
+  statbox2.Draw('sames')
+
+statbox1.Draw('sames')
+
 
 labels=[label,label2]
 
 if label != "" or len(all_cuts)>1:
-    leg = ROOT.TLegend(0.65, 0.75, 0.89, 0.89)
+    leg = ROOT.TLegend(0.8,0.52,1,0.65)
     leg.SetFillColor(0)
     leg.SetLineColor(0)
     #leg.SetTextSize(0.02)

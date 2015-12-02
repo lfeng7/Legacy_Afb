@@ -177,8 +177,9 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     chi2_mass = ROOT.vector('float')()
     chi2_scale = ROOT.vector('float')()
     chi2_csv = ROOT.vector('float')()
-    vecs+=[total_chi2,chi2_mass,chi2_scale,chi2_csv]
-    br_names+=['total_chi2','chi2_mass','chi2_scale','chi2_csv']
+    chi2_mass_terms = ROOT.vector('float')()
+    vecs+=[total_chi2,chi2_mass,chi2_scale,chi2_csv,chi2_mass_terms]
+    br_names+=['total_chi2','chi2_mass','chi2_scale','chi2_csv','chi2_mass_terms']
 
     # Corrections
     if sample_type != 'data':
@@ -371,7 +372,9 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
             total_chi2.push_back(all_chis2[0])
             chi2_mass.push_back(all_chis2[1])
             chi2_scale.push_back(all_chis2[2])
-            chi2_csv.push_back(all_chis2[3])            
+            chi2_csv.push_back(all_chis2[3])    
+        # chi2 mass constraint terms: thad,tlep,whad,wlep
+        chi2_mass_terms.push_back(all_chis1[4],all_chis1[5],all_chis1[6],all_chis1[7])
 
         #Fill the newtree
         newtree.Fill()
