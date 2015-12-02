@@ -146,7 +146,7 @@ def fcn(npar, deriv, f, par, flag) :
         finalchi_mass = -2.0*lnL
         finalchi_csv = -2.0*math.log(pdiscblep*pdiscbhad*pdiscw1*pdiscw2*pdiscextra)
         finalchi_scale = minf - finalchi_mass - finalchi_csv
-        final_mass_L = (math.log(pdfth),math.log(pdftl),math.log(pdfwh),math.log(pdfwl))
+        final_mass_L = (-2.*math.log(pdfth/CDFT),-2.*math.log(pdftl/CDFT),-2.*math.log(pdfwh/CDFW),-2.*math.log(pdfwl/CDFW))
 
     #print 'minf=%.2f'%minf,'logL=%.2f'%f[0],' par0=%.1f'%par[0],' par1=%.3f'%par[1],' par2=%.2f'%par[2],' par3=%.2f'%par[3],' par4=%.2f'%par[4],' par5=%.2f'%par[5]
 ############################################################################################################
@@ -371,13 +371,13 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
     met.SetPy(newmety)
     met.SetPz(bestParValues[0])
     met.SetE(math.sqrt(met.Px()*met.Px()+met.Py()*met.Py()+met.Pz()*met.Pz()))
-    # Return top pair, Whad, Wlep, p4 and momentum scales
+    # Return final_chi2,tlep,thad,Wlep,Whad,blep,bhad, momentum scales
     tlep_p4 = (lepton+met+blep).Clone()
     thad_p4 = (Wtag+bhad).Clone()
     wlep_p4 = (lepton + met).Clone()
     whad_p4 = Wtag.Clone()
 
-    toreturn = [ plot_final_chi,(tlep_p4,thad_p4,wlep_p4,whad_p4),(bestParValues),n_combos,n_erflag,fit_ierflag]
+    toreturn = [ plot_final_chi,(tlep_p4,thad_p4,wlep_p4,whad_p4,blep,bhad),(bestParValues),n_combos,n_erflag,fit_ierflag]
 
     # Study of final chi2
     all_chis1.sort()
