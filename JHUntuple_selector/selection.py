@@ -596,6 +596,7 @@ def selection(rootfiles):
                 init_pars = []  
                 gentops = []  
                 genWs = []
+                genBs = []
                 w_daughters = []       
                 for ig in genpars:
                     # Get initial particles
@@ -625,6 +626,9 @@ def selection(rootfiles):
                                         whichside = 'lep'
                                 # append W
                                 genWs.append((dau,whichside))
+                        # find b from top decay
+                            if math.fabs(dau.pdgId()) == 5 :
+                                genBs.append((dau,whichside))
                         # append to gentop 
                         gentops.append((ig,whichside))
 
@@ -659,8 +663,8 @@ def selection(rootfiles):
                     gen_pdgid.push_back(ig.pdgId())
                     gen_side.push_back(iside)
                 # GenWs
-                if not len(genWs) == 2 :
-                    print 'Events with ',len(gentops),'gen Ws'
+                if not (len(genWs) == 2 and len(genBs) == 2)  :
+                    print 'Events with ',len(genWs),'gen Ws',len(genBs),'gen Bs from top'
                     continue
                 for i in range(2):
                     ig = genWs[i][0]
@@ -670,7 +674,17 @@ def selection(rootfiles):
                     gen_phi.push_back(ig.phi())
                     gen_mass.push_back(ig.mass())
                     gen_pdgid.push_back(ig.pdgId())
-                    gen_side.push_back(iside) 
+                    gen_side.push_back(iside)
+                # Gen Bs
+                for i in range(2):
+                    ig = genBs[i][0]
+                    iside = genBs[i][1]
+                    gen_pt.push_back(ig.pt())
+                    gen_eta.push_back(ig.eta())
+                    gen_phi.push_back(ig.phi())
+                    gen_mass.push_back(ig.mass())
+                    gen_pdgid.push_back(ig.pdgId())
+                    gen_side.push_back(iside)                 
 
                 # Find the decay type of the signal ttbar events
                 if not len(w_daughters) == 4:
