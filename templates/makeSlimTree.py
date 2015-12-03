@@ -13,6 +13,10 @@ parser.add_option('--inputfiles', metavar='F', type='string', action='store',
                   default = "",
                   dest='inputFiles',
                   help='Input files')
+parser.add_option('--maxevts', metavar='F', type='int', action='store',
+                  default = 20000,
+                  dest='maxevts',
+                  help='num evts to keep in slimmed tree')
 (options, args) = parser.parse_args()
 
 argv = []
@@ -28,7 +32,17 @@ fout = ROOT.TFile(sample_name+postfix,'recreate')
 fout.SetCompressionLevel(9)
 oldtree.SetBranchStatus('*w*',0)
 oldtree.SetBranchStatus('*weight*',0)
-newtree = oldtree.CloneTree()
+newtree = oldtree.CloneTree(0)
+
+#loop over events
+evts_passed = 0
+for iev in range(oldtree.GetEntries()):
+	oldtree.GetEntry(iev)
+	if evts_passed==options.maxevts: continue
+	if not oldtree.n_bTags>1 : continue
+	evts_passed += 1
+	newtree.Fill()
+
 fout.Write()
 fout.Close()
 fin.Close()
