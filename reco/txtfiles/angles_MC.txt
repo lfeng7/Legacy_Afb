@@ -1,0 +1,189 @@
+******************************************************************************
+*Tree    :selected  : selected                                               *
+*Entries :   198551 : Total =       198650009 bytes  File  Size =   63938549 *
+*        :          : Tree compression factor =   3.11                       *
+******************************************************************************
+*Br    0 :lep_charge : vector<int>                                           *
+*Entries :   198551 : Total  Size=    3581430 bytes  File Size  =     459043 *
+*Baskets :       66 : Basket Size=    1659904 bytes  Compression=   7.80     *
+*............................................................................*
+*Br    1 :trigger   : vector<bool>                                           *
+*Entries :   198551 : Total  Size=    2984719 bytes  File Size  =     325319 *
+*Baskets :       58 : Basket Size=    1382912 bytes  Compression=   9.17     *
+*............................................................................*
+*Br    2 :mc_pileup_events : vector<float>                                   *
+*Entries :   198551 : Total  Size=    3581850 bytes  File Size  =     693386 *
+*Baskets :       66 : Basket Size=    1659904 bytes  Compression=   5.16     *
+*............................................................................*
+*Br    3 :gen_pt    : vector<float>                                          *
+*Entries :   198551 : Total  Size=    7558155 bytes  File Size  =    5053901 *
+*Baskets :      123 : Basket Size=    3502592 bytes  Compression=   1.49     *
+*............................................................................*
+*Br    4 :gen_eta   : vector<float>                                          *
+*Entries :   198551 : Total  Size=    7558282 bytes  File Size  =    5063332 *
+*Baskets :      123 : Basket Size=    3502592 bytes  Compression=   1.49     *
+*............................................................................*
+*Br    5 :gen_phi   : vector<float>                                          *
+*Entries :   198551 : Total  Size=    7558282 bytes  File Size  =    5122967 *
+*Baskets :      123 : Basket Size=    3502592 bytes  Compression=   1.47     *
+*............................................................................*
+*Br    6 :gen_mass  : vector<float>                                          *
+*Entries :   198551 : Total  Size=    7558409 bytes  File Size  =    4296592 *
+*Baskets :      123 : Basket Size=    3502592 bytes  Compression=   1.76     *
+*............................................................................*
+*Br    7 :gen_pdgid : vector<int>                                            *
+*Entries :   198551 : Total  Size=    7558536 bytes  File Size  =     838463 *
+*Baskets :      123 : Basket Size=    3502592 bytes  Compression=   9.01     *
+*............................................................................*
+*Br    8 :gen_side  : vector<string>                                         *
+*Entries :   198551 : Total  Size=    7160665 bytes  File Size  =     539780 *
+*Baskets :      117 : Basket Size=    3318272 bytes  Compression=  13.26     *
+*............................................................................*
+*Br    9 :gen_type  : vector<string>                                         *
+*Entries :   198551 : Total  Size=    4196589 bytes  File Size  =     536610 *
+*Baskets :       75 : Basket Size=    1944576 bytes  Compression=   7.82     *
+*............................................................................*
+*Br   10 :gen_is_ejets : vector<int>                                         *
+*Entries :   198551 : Total  Size=    3581570 bytes  File Size  =     398076 *
+*Baskets :       66 : Basket Size=    1659904 bytes  Compression=   8.99     *
+*............................................................................*
+*Br   11 :weight_pileup : vector<float>                                      *
+*Entries :   198551 : Total  Size=    3581640 bytes  File Size  =     669492 *
+*Baskets :       66 : Basket Size=    1659904 bytes  Compression=   5.35     *
+*............................................................................*
+*Br   12 :weight_top_pT : vector<float>                                      *
+*Entries :   198551 : Total  Size=    3581640 bytes  File Size  =    1143075 *
+*Baskets :       66 : Basket Size=    1659904 bytes  Compression=   3.13     *
+*............................................................................*
+*Br   13 :weight_btag_eff : vector<float>                                    *
+*Entries :   198551 : Total  Size=    3581780 bytes  File Size  =    1104300 *
+*Baskets :       66 : Basket Size=    1659904 bytes  Compression=   3.24     *
+*............................................................................*
+*Br   14 :weight_btag_eff_err : vector<float>                                *
+*Entries :   198551 : Total  Size=    3582060 bytes  File Size  =    1212394 *
+*Baskets :       66 : Basket Size=    1660416 bytes  Compression=   2.95     *
+*............................................................................*
+*Br   15 :reco_pt   : vector<float>                                          *
+*Entries :   198551 : Total  Size=    5967436 bytes  File Size  =    3506907 *
+*Baskets :      100 : Basket Size=    2765312 bytes  Compression=   1.70     *
+*............................................................................*
+*Br   16 :reco_eta  : vector<float>                                          *
+*Entries :   198551 : Total  Size=    5967540 bytes  File Size  =    3610915 *
+*Baskets :      100 : Basket Size=    2765312 bytes  Compression=   1.65     *
+*............................................................................*
+*Br   17 :reco_phi  : vector<float>                                          *
+*Entries :   198551 : Total  Size=    5967540 bytes  File Size  =    3608752 *
+*Baskets :      100 : Basket Size=    2765312 bytes  Compression=   1.65     *
+*............................................................................*
+*Br   18 :reco_mass : vector<float>                                          *
+*Entries :   198551 : Total  Size=    5967644 bytes  File Size  =    3263435 *
+*Baskets :      100 : Basket Size=    2765312 bytes  Compression=   1.83     *
+*............................................................................*
+*Br   19 :N_btag    : vector<int>                                            *
+*Entries :   198551 : Total  Size=    3581150 bytes  File Size  =     380452 *
+*Baskets :       66 : Basket Size=    1659392 bytes  Compression=   9.41     *
+*............................................................................*
+*Br   20 :N_jets    : vector<int>                                            *
+*Entries :   198551 : Total  Size=    3581150 bytes  File Size  =     440757 *
+*Baskets :       66 : Basket Size=    1659392 bytes  Compression=   8.12     *
+*............................................................................*
+*Br   21 :final_chi2 : vector<float>                                         *
+*Entries :   198551 : Total  Size=    3581430 bytes  File Size  =    1283303 *
+*Baskets :       66 : Basket Size=    1659904 bytes  Compression=   2.79     *
+*............................................................................*
+*Br   22 :kinfit_results : vector<float>                                     *
+*Entries :   198551 : Total  Size=    6763724 bytes  File Size  =    3985651 *
+*Baskets :      112 : Basket Size=    3134976 bytes  Compression=   1.70     *
+*............................................................................*
+*Br   23 :final_nv_pz : vector<float>                                        *
+*Entries :   198551 : Total  Size=    3581500 bytes  File Size  =    1307651 *
+*Baskets :       66 : Basket Size=    1659904 bytes  Compression=   2.74     *
+*............................................................................*
+*Br   24 :N_combos  : vector<int>                                            *
+*Entries :   198551 : Total  Size=    3581290 bytes  File Size  =     440990 *
+*Baskets :       66 : Basket Size=    1659392 bytes  Compression=   8.12     *
+*............................................................................*
+*Br   25 :N_combo_errs : vector<int>                                         *
+*Entries :   198551 : Total  Size=    3581570 bytes  File Size  =     421284 *
+*Baskets :       66 : Basket Size=    1659904 bytes  Compression=   8.50     *
+*............................................................................*
+*Br   26 :final_errflags : vector<int>                                       *
+*Entries :   198551 : Total  Size=    3581710 bytes  File Size  =     316446 *
+*Baskets :       66 : Basket Size=    1659904 bytes  Compression=  11.31     *
+*............................................................................*
+*Br   27 :w_PU      : vector<float>                                          *
+*Entries :   198551 : Total  Size=    3581010 bytes  File Size  =     668073 *
+*Baskets :       66 : Basket Size=    1659392 bytes  Compression=   5.36     *
+*............................................................................*
+*Br   28 :w_PU_up   : vector<float>                                          *
+*Entries :   198551 : Total  Size=    3581220 bytes  File Size  =     669600 *
+*Baskets :       66 : Basket Size=    1659392 bytes  Compression=   5.35     *
+*............................................................................*
+*Br   29 :w_PU_down : vector<float>                                          *
+*Entries :   198551 : Total  Size=    3581360 bytes  File Size  =     669175 *
+*Baskets :       66 : Basket Size=    1659392 bytes  Compression=   5.35     *
+*............................................................................*
+*Br   30 :w_btag    : vector<float>                                          *
+*Entries :   198551 : Total  Size=    3581150 bytes  File Size  =    1096991 *
+*Baskets :       66 : Basket Size=    1659392 bytes  Compression=   3.26     *
+*............................................................................*
+*Br   31 :w_btag_up : vector<float>                                          *
+*Entries :   198551 : Total  Size=    3581360 bytes  File Size  =    1077915 *
+*Baskets :       66 : Basket Size=    1659392 bytes  Compression=   3.32     *
+*............................................................................*
+*Br   32 :w_btag_down : vector<float>                                        *
+*Entries :   198551 : Total  Size=    3581500 bytes  File Size  =    1107392 *
+*Baskets :       66 : Basket Size=    1659904 bytes  Compression=   3.23     *
+*............................................................................*
+*Br   33 :w_eleID   : vector<float>                                          *
+*Entries :   198551 : Total  Size=    3581220 bytes  File Size  =     567132 *
+*Baskets :       66 : Basket Size=    1659392 bytes  Compression=   6.31     *
+*............................................................................*
+*Br   34 :w_eleID_up : vector<float>                                         *
+*Entries :   198551 : Total  Size=    3581430 bytes  File Size  =     579160 *
+*Baskets :       66 : Basket Size=    1659904 bytes  Compression=   6.18     *
+*............................................................................*
+*Br   35 :w_eleID_down : vector<float>                                       *
+*Entries :   198551 : Total  Size=    3581570 bytes  File Size  =     561528 *
+*Baskets :       66 : Basket Size=    1659904 bytes  Compression=   6.38     *
+*............................................................................*
+*Br   36 :w_trigger : vector<float>                                          *
+*Entries :   198551 : Total  Size=    3581360 bytes  File Size  =     315988 *
+*Baskets :       66 : Basket Size=    1659392 bytes  Compression=  11.33     *
+*............................................................................*
+*Br   37 :w_trigger_up : vector<float>                                       *
+*Entries :   198551 : Total  Size=    3581570 bytes  File Size  =     316608 *
+*Baskets :       66 : Basket Size=    1659904 bytes  Compression=  11.31     *
+*............................................................................*
+*Br   38 :w_trigger_down : vector<float>                                     *
+*Entries :   198551 : Total  Size=    3581710 bytes  File Size  =     316703 *
+*Baskets :       66 : Basket Size=    1659904 bytes  Compression=  11.30     *
+*............................................................................*
+*Br   39 :cos_theta : vector<float>                                          *
+*Entries :   198551 : Total  Size=    3581360 bytes  File Size  =    1288162 *
+*Baskets :       66 : Basket Size=    1659392 bytes  Compression=   2.78     *
+*............................................................................*
+*Br   40 :xf        : vector<float>                                          *
+*Entries :   198551 : Total  Size=    3580870 bytes  File Size  =    1300382 *
+*Baskets :       66 : Basket Size=    1659392 bytes  Compression=   2.75     *
+*............................................................................*
+*Br   41 :mtt       : vector<float>                                          *
+*Entries :   198551 : Total  Size=    3580940 bytes  File Size  =    1239916 *
+*Baskets :       66 : Basket Size=    1659392 bytes  Compression=   2.89     *
+*............................................................................*
+*Br   42 :cos_theta_mc : vector<float>                                       *
+*Entries :   198551 : Total  Size=    2837880 bytes  File Size  =     491283 *
+*Baskets :       56 : Basket Size=    1315328 bytes  Compression=   5.77     *
+*............................................................................*
+*Br   43 :xf_mc     : vector<float>                                          *
+*Entries :   198551 : Total  Size=    2837356 bytes  File Size  =     489626 *
+*Baskets :       55 : Basket Size=    1314816 bytes  Compression=   5.79     *
+*............................................................................*
+*Br   44 :mtt_mc    : vector<float>                                          *
+*Entries :   198551 : Total  Size=    2837415 bytes  File Size  =     485319 *
+*Baskets :       55 : Basket Size=    1314816 bytes  Compression=   5.84     *
+*............................................................................*
+*Br   45 :init_type : vector<string>                                         *
+*Entries :   198551 : Total  Size=    3505755 bytes  File Size  =     643625 *
+*Baskets :       65 : Basket Size=    1624576 bytes  Compression=   5.44     *
+*............................................................................*
