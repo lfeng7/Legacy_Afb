@@ -20,25 +20,14 @@ argv = []
 postfix = '_slim.root'
 
 fin = ROOT.TFile(options.inputFiles)
-oldtree =fin.Get('selected')
+oldtree =fin.Get('angles')
 sample_name = options.inputFiles.split('/')
 sample_name = sample_name[len(sample_name)-1].split('.root')[0]
 
 fout = ROOT.TFile(sample_name+postfix,'recreate')
 fout.SetCompressionLevel(9)
-oldtree.SetBranchStatus('*',0)
-oldtree.SetBranchStatus('chi2_mass',1)
-oldtree.SetBranchStatus('final_chi2',1)
-oldtree.SetBranchStatus('total_chi2',1)
-oldtree.SetBranchStatus('chi2_mass_terms',1)
-#oldtree.SetBranchStatus('reco_pt',1)
-oldtree.SetBranchStatus('reco_mass',1)
-oldtree.SetBranchStatus('jets_pt',1)
-oldtree.SetBranchStatus('jets_mass',1)
-oldtree.SetBranchStatus('cos_theta*',1)
-oldtree.SetBranchStatus('mtt*',1)
-oldtree.SetBranchStatus('xf*',1)
-
+oldtree.SetBranchStatus('*w*',0)
+oldtree.SetBranchStatus('*weight*',0)
 newtree = oldtree.CloneTree()
 fout.Write()
 fout.Close()

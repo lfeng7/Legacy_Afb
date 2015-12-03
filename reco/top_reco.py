@@ -374,7 +374,8 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
             chi2_scale.push_back(all_chis2[2])
             chi2_csv.push_back(all_chis2[3])    
         # chi2 mass constraint terms: thad,tlep,whad,wlep
-        chi2_mass_terms.push_back(all_chis1[4],all_chis1[5],all_chis1[6],all_chis1[7])
+        for i in [4,5,6,7]:
+            chi2_mass_terms.push_back(all_chis1[i])
 
         #Fill the newtree
         newtree.Fill()
