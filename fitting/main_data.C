@@ -71,7 +71,7 @@ char prepend[100];
 
 //Global vars for running on the grid
 //hard coded path
-char run_env[400] = "/Users/ray/HEP/analysis/Legacy_Afb/templates/temp_angles";
+char run_env[400] = "/uscms_data/d3/lfeng7/Legacy_Afb/analysis/CMSSW_7_4_0/src/Legacy_Afb/templates/temp_angles";
 int on_the_grid = 0 ;
 
 //Function declarations
@@ -96,8 +96,8 @@ int main_data(int analyze, int onGrid, int comb_or_sep, char* r, char* mc_input_
 	//Set up the prepend for the directory of all the MC histogram files
 	if (onGrid == 0) {
 		strcpy(prepend,"./");
-		strcat(prepend,runname);
-		strcat(prepend,"_output/histo_files/");
+		//strcat(prepend,runname);
+		strcat(prepend,"histo_files/");
 	}
 	else if (onGrid == 1) {
 		strcpy(prepend,"tardir/");

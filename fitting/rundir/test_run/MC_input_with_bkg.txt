@@ -1,4 +1,4 @@
 TT_CT10.root		TT_CT10_qq		qq	21560109	245.9	     q#bar{q} #rightarrow t#bar{t}
 TT_CT10.root            TT_CT10_gg 		gg	21560109	245.9	     gg #rightarrow t#bar{t}
 TT_CT10.root            TT_CT10_bkg             bkg     21560109        245.9        gg #rightarrow t#bar{t}
-W4Jets_all.root         W4JetsToLNu             WJets   13326400        264.0        W+4Jets background all
+W4Jets_all.root         W4JetsToLNu_TuneZ2Star             WJets   13326400        264.0        W+4Jets background all
