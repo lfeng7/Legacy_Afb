@@ -237,5 +237,6 @@ def GetAnglesWeights(Top_MC,ATop_MC,cos_theta_cs_mc,alpha=-0.129):
     # return weights
     tmp_w_list = [ w_a,w_a_opp,w_s_xi,w_s_xi_opp,w_a_xi,w_a_xi_opp ]
     tmp_w_list += [ w_s_delta,w_s_delta_opp,w_a_delta,w_a_delta_opp ]
+    tmp_w_list += [beta_mc]
     return tmp_w_list
 

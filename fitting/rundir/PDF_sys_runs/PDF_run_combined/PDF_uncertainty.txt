@@ -1,0 +1,5 @@
+Number of Events: 2M
+Afb    = 0.0288 +/- 0.0205 (statistics) +/- 0.0047/0.0033 (PDF systematics) | MC truth 0.036 stdev 0.0008
+Rqqbar = 0.0752 +/- 0.0015 (statistics) +/- 0.0074/0.0068 (PDF systematics) | MC truth 0.075 stdev 0.0014
+Rbck   = 0.3304 +/- 0.0012 (statistics) +/- 0.0061/0.0034 (PDF systematics) | MC truth 0.33 stdev 0.0010
+delta  = 0.0475 +/- 0.1309 (statistics) +/- 0.5135/0.3323 (PDF systematics) | MC truth 0 stdev 0.0825

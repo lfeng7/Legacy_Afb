@@ -1,0 +1,18 @@
+MG_TTJets_SemiLep_qq_all_1		MG_TTJets_SemiLep_qq_all_1	qq	25273288	108.0	     q#bar{q} #rightarrow t#bar{t}
+MG_TTJets_SemiLep_gg_all_1		MG_TTJets_SemiLep_gg_all_1	gg	25273288	108.0	     gg #rightarrow t#bar{t}
+MG_TTJets_dilep_all			MG_TTJets_dilep_all		bck     12043695        26.1        t#bar{t} #rightarrow dileptonic background
+MG_TTJets_Hadronic_all			MG_TTJets_Hadronic_all		bck     10485781        111.7        t#bar{t} #rightarrow hadronic background
+DY1Jets_all.root			DY1Jets_all			bck	23994669	660.6	     DY1Jets (Z/#gamma + 1 Jet) background all
+DY2Jets_all.root                        DY2Jets_all                     bck     2345857         215.1        DY2Jets (Z/#gamma + 2 Jets) background all
+DY3Jets_all.root                        DY3Jets_all                     bck     10655325        65.79        DY3Jets (Z/#gamma + 3 Jets) background all
+DY4Jets_all.root                        DY4Jets_all                     bck     5843425         28.59        DY4Jets (Z/#gamma + 4 Jets) background all
+T_s-channel_all.root			T_s-channel_all			bck	259176		3.79	     T_s-channel background all
+T_t-channel_all.root			T_t-channel_all			bck	3748155		56.4	     T_t-channel background all
+T_tW-channel_all.root			T_tW-channel_all		bck	495559		11.1	     T_tW-channel background all
+Tbar_s-channel_all.root			Tbar_s-channel_all		bck	139604		1.76	     T_s-channel background all 
+Tbar_t-channel_all.root			Tbar_t-channel_all		bck     1930185         30.7	     T_t-channel background all
+Tbar_tW-channel_all.root		Tbar_tW-channel_all		bck     491463          11.1	     T_tW-channel background all
+W1Jets_all.root				W1Jets_all			WJets	23038253	6662.8	     W+1Jet background all
+W2Jets_all.root                         W2Jets_all                      WJets   33993463        2159.2       W+2Jets background all
+W3Jets_all.root                         W3Jets_all                      WJets   15507852        640.4	     W+3Jets background all
+W4Jets_all.root                         W4Jets_all                      WJets   13326400        264.0        W+4Jets background all
