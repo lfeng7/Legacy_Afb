@@ -46,7 +46,7 @@ sample_file* TAIL = NULL;
 int nSampleFiles = 0;
 //wether on the grid
 int on_the_grid = 0;
-char dir_angles[400] = "/uscms_data/d3/lfeng7/Legacy_Afb/analysis/CMSSW_7_4_0/src/Legacy_Afb/templates/temp_angles";
+char dir_angles[400] = "/uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/templates/temp_angles";
 
 //Function declarations
 //Add pdf_index as a parameter

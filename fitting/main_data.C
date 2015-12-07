@@ -67,11 +67,11 @@ int nDataFiles = 0;
 
 //automatic filescope variables
 int iters = 0;
-char prepend[100];
+char prepend[200];
 
 //Global vars for running on the grid
 //hard coded path
-char run_env[400] = "/uscms_data/d3/lfeng7/Legacy_Afb/analysis/CMSSW_7_4_0/src/Legacy_Afb/templates/temp_angles";
+char run_env[400] = "/uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/templates/temp_angles";
 int on_the_grid = 0 ;
 
 //Function declarations
@@ -311,7 +311,7 @@ void analyzeData() {
 	for (data_file *iter=DATA_HEAD;iter!=NULL;iter=iter->next) {
 		printf("	Analyzing data file #%d (%s) to find angles data\n",k,iter->filepath);
 		//Set up automatic file names
-		char out[50];
+		char out[200];
 		strcpy(out,"angles_data_");
 		strcat(out,iter->sample_name);
 		strcat(out,".root");
@@ -635,7 +635,7 @@ void mergeAndPlotData() {
 	TH1D* h_y_minus_5jet = (TH1D*)hist_minus_5jet->ProjectionY()->Clone("h_y_minus_5jet");
 	TH1D* h_z_minus_5jet = (TH1D*)hist_minus_5jet->ProjectionZ()->Clone("h_z_minus_5jet");
 	//rename the projections
-	char name[150];
+	char name[500];
 	strcpy(name,"All Data (Positively Charged Leptons, 4 jets)");
 	strcat(name, " X-Projection");
 	h_x_plus_4jet->SetTitle(name);

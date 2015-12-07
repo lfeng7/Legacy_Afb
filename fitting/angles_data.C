@@ -803,7 +803,7 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 	z_stack->Draw();
 	data_z->Draw("SAME PE1X0");
 	//save the plots
-	c->Print("fit_comparison.pdf","pdf");	
+	c->Print("fit_comparison.png","png");	
 
 	TCanvas* c1 = new TCanvas("c1","Sideband",900,900);
 	c1->Divide(2,2,0.01,0.01,0);

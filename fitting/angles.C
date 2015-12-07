@@ -43,7 +43,7 @@ int num_of_temp = 5;
 // template number
 int temp_num = 5;
 // signal events number scale.
-float signal_scale = 0.2;
+float signal_scale = 1;
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
