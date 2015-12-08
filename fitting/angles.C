@@ -294,12 +294,12 @@ void angles::Loop(int is_for_dist, int neventsgenerated, double crosssection)
 		//rescale the event weight by the cross section over the number of events
 		
 		// //For Powheg sample
-		// event_weight = event_weight * (crosssection/neventsgenerated) * (25523595./245.8)*signal_scale;
-		// event_weight_no_top_pT_reweight = event_weight_no_top_pT_reweight * (crosssection/neventsgenerated) * (25523595./245.8)*signal_scale;
+		event_weight = event_weight * (crosssection/neventsgenerated) * (25523595./245.8)*signal_scale;
+		event_weight_no_top_pT_reweight = event_weight_no_top_pT_reweight * (crosssection/neventsgenerated) * (25523595./245.8)*signal_scale;
 
 		// For MG sample
-		event_weight = event_weight * (crosssection/neventsgenerated) * (25273288./108.0)*signal_scale;
-		event_weight_no_top_pT_reweight = event_weight_no_top_pT_reweight * (crosssection/neventsgenerated) * (25273288./108.0)*signal_scale;
+		//event_weight = event_weight * (crosssection/neventsgenerated) * (25273288./108.0)*signal_scale;
+		//event_weight_no_top_pT_reweight = event_weight_no_top_pT_reweight * (crosssection/neventsgenerated) * (25273288./108.0)*signal_scale;
 
 		//add event to the symmetric histograms based on lepton charge
 		if (lepton_charge > 0) {

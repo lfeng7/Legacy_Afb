@@ -1,4 +1,17 @@
-TT_CT10.root		TT_CT10_qq		qq	21560109	245.9	     q#bar{q} #rightarrow t#bar{t}
-TT_CT10.root            TT_CT10_gg 		gg	21560109	245.9	     gg #rightarrow t#bar{t}
-TT_CT10.root            TT_CT10_bkg             bkg     21560109        245.9        gg #rightarrow t#bar{t}
-W4Jets_all.root         W4JetsToLNu_TuneZ2Star             WJets   13326400        264.0        W+4Jets background all
+TT_CT10_qq.root				TT_CT10_qq			qq	21560109	245.9	     q#bar{q} #rightarrow t#bar{t}
+TT_CT10_gg.root				TT_CT10_gg 			gg	21560109	245.9	     gg #rightarrow t#bar{t}
+TT_CT10_bkg.root			TT_CT10_bkg             	bkg     21560109        245.9        non l+jets t#bar{t}
+DY1Jets_all.root			DY1JetsToLL_M			bck	23994669	660.6	     DY1Jets (Z/#gamma + 1 Jet) background all
+DY2Jets_all.root                        DY2JetsToLL_M                   bck     2345857         215.1        DY2Jets (Z/#gamma + 2 Jets) background all
+DY3Jets_all.root                        DY3JetsToLL_M			bck     10655325        65.79        DY3Jets (Z/#gamma + 3 Jets) background all
+DY4Jets_all.root                        DY4JetsToLL_M              	bck     5843425         28.59        DY4Jets (Z/#gamma + 4 Jets) background all
+T_s-channel_all.root			T_s				bck	259176		3.79	     T_s-channel background all
+T_t-channel_all.root			T_t				bck	3748155		56.4	     T_t-channel background all
+T_tW-channel_all.root			T_tW				bck	495559		11.1	     T_tW-channel background all
+Tbar_s-channel_all.root			Tbar_s				bck	139604		1.76	     T_s-channel background all 
+Tbar_t-channel_all.root			Tbar_t				bck     1930185         30.7	     T_t-channel background all
+Tbar_tW-channel_all.root		Tbar_tW				bck     491463          11.1	     T_tW-channel background all
+W1Jets_all.root				W1JetsToLNu_TuneZ2Star		WJets	23038253	6662.8	     W+1Jet background all
+W2Jets_all.root                         W2JetsToLNu_TuneZ2Star      	WJets   33993463        2159.2       W+2Jets background all
+W3Jets_all.root                         W3JetsToLNu_TuneZ2Star        	WJets   15507852        640.4	     W+3Jets background all
+W4Jets_all.root                         W4JetsToLNu_TuneZ2Star        	WJets   13326400        264.0        W+4Jets background all
