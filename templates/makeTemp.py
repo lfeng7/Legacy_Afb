@@ -8,6 +8,7 @@ import ROOT
 from array import array
 from angles_tools import *
 import math
+ROOT.gROOT.SetBatch(True)
 
 # Job steering
 
@@ -193,6 +194,8 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
     trigger_reweight_hi = array('f',[1.])
     pileup = array('f',[0.])
     pileup_real = array('f',[0.])
+
+    correction_weight = array('f',[1.])
     # names 
     br_defs += [('ttbar_mass',ttbar_mass,'ttbar_mass/F')]
     br_defs += [('Qt',Qt,'Qt/F')]
@@ -240,6 +243,9 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
     br_defs += [('trigger_reweight_hi',trigger_reweight_hi,'trigger_reweight_hi/F')]
     br_defs += [('pileup',pileup,'pileup/F')]
     br_defs += [('pileup_real',pileup_real,'pileup_real/F')]
+
+    br_defs += [('correction_weight',correction_weight,'correction_weight/F')]
+
     # study beta
     beta_v0 = array('f',[0.])
     beta_v1 = array('f',[0.])
@@ -254,6 +260,11 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
     # Add branches to the tree
     for ibr in br_defs:
         newtree.Branch(ibr[0],ibr[1],ibr[2])
+    # Some added branches
+    all_vecs = []
+    charge_ratio = ROOT.vector('string')()
+    newtree.Branch('charge_ratio',charge_ratio)
+    all_vecs += [charge_ratio]
 
     # Add cutflow diagrams
     h_cutflow = ROOT.TH1D('cutflow_extra',' cutflow extra;cuts;events',5,0.,5.)
@@ -268,6 +279,19 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
             is_ttbar = 1
     if is_ttbar == 1:
         print 'Is ttbar MC sample!'
+
+    # a special normalization for top pT reweighting only
+    if tmptree.FindBranch('weight_top_pT'):
+        tmp_h0 = ROOT.TH1F('tmp_h0','tmp_h0',10,3,6)
+        tmp_h1 = ROOT.TH1F('tmp_h1','tmp_h1',10,3,6)
+        tmptree.Draw('N_jets>>tmp_h0')
+        tmptree.Draw('N_jets>>tmp_h1','weight_top_pT')
+        toppt_scale = tmp_h1.Integral()/tmp_h0.Integral()
+        # new_w_top_pt = w_top_pt/toppt_scale
+        print 'toppt_scale',toppt_scale
+        tmp_h0.SetDirectory(0)
+        tmp_h1.SetDirectory(0)
+
 
     # Loop over entries
     n_evt = 0
@@ -292,6 +316,8 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         if options.ttbar_type=='gg' and not (tmptree.gen_type[0]=='e_jets' and tmptree.init_type[0]!='qqbar'):continue
 
         # Fill branches
+        for ivec in all_vecs: ivec.clear()
+
         ttbar_mass[0] = tmptree.mtt[0]
         # reco_p4 is a list of tlep_p4,thad_p4,wlep_p4,whad_p4
         tlep_pt = tmptree.reco_pt[0]
@@ -377,16 +403,15 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         if tmptree.FindBranch('gen_pdgid'):
             motherPIDs[0],motherPIDs[1] = tmptree.gen_pdgid[0],tmptree.gen_pdgid[1]
         # a bunch of MC correction weights. Applies only for MC, literaly
-        # So far, only weight_top_pT,w_btag,w_eleID,w_trigger are there.
-        corr_ws = [top_pT_reweight[0],btag_eff_reweight[0],btag_eff_reweight_hi[0],btag_eff_reweight_low[0]]
-        corr_ws += [lepID_reweight[0],lepID_reweight_hi[0],lepID_reweight_low[0],trigger_reweight[0]]
-        corr_ws +=[trigger_reweight_hi[0],trigger_reweight_low[0]]
-        for iw in corr_ws: iw=1.0
+        # So far, only weight_top_pT,w_btag,w_eleID,w_trigger,PU are there.
+        top_pT_reweight[0],btag_eff_reweight[0],btag_eff_reweight_hi[0],btag_eff_reweight_low[0] = 1,1,1,1
+        lepID_reweight[0],lepID_reweight_hi[0],lepID_reweight_low[0],trigger_reweight[0] = 1,1,1,1
+        trigger_reweight_hi[0],trigger_reweight_low[0] = 1,1
         pileup_real[0] = -10
         if tmptree.FindBranch('w_PU'):
             pileup_reweight[0] = tmptree.w_PU[0]
             if tmptree.FindBranch('weight_top_pT'):
-                top_pT_reweight[0]  = tmptree.weight_top_pT[0]
+                top_pT_reweight[0]  = tmptree.weight_top_pT[0]/toppt_scale
             btag_eff_reweight[0]    = tmptree.w_btag[0]
             btag_eff_reweight_hi[0] = tmptree.w_btag_up[0]
             btag_eff_reweight_low[0]= tmptree.w_btag_down[0]
@@ -398,6 +423,16 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
             trigger_reweight_low[0] = tmptree.w_trigger_down[0]
             # PU
             pileup_real[0] = tmptree.mc_pileup_events[0]
+            # total weight
+            correction_weight[0] = top_pT_reweight[0]*btag_eff_reweight[0]*lepID_reweight[0]*trigger_reweight[0]*pileup_reweight[0]
+            correction_weight[0]*= lepIso_reweight[0]*tracking_reweight[0]
+
+        # Added branch
+        if n_valid_jets[0] == 4 and Q_l[0]==  1 : charge_ratio.push_back('4jets,l+')
+        if n_valid_jets[0] == 4 and Q_l[0]== -1 : charge_ratio.push_back('4jets,l-')
+        if n_valid_jets[0] == 5 and Q_l[0]==  1 : charge_ratio.push_back('5jets,l+')
+        if n_valid_jets[0] == 5 and Q_l[0]== -1 : charge_ratio.push_back('5jets,l-')
+
         # Fill events that pass additional cuts
         newtree.Fill()
 
