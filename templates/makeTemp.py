@@ -262,7 +262,7 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         newtree.Branch(ibr[0],ibr[1],ibr[2])
     # Some added branches
     all_vecs = []
-    charge_ratio = ROOT.vector('string')()
+    charge_ratio = ROOT.vector('int')()
     newtree.Branch('charge_ratio',charge_ratio)
     all_vecs += [charge_ratio]
 
@@ -428,10 +428,10 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
             correction_weight[0]*= lepIso_reweight[0]*tracking_reweight[0]
 
         # Added branch
-        if n_valid_jets[0] == 4 and Q_l[0]==  1 : charge_ratio.push_back('4jets,l+')
-        if n_valid_jets[0] == 4 and Q_l[0]== -1 : charge_ratio.push_back('4jets,l-')
-        if n_valid_jets[0] == 5 and Q_l[0]==  1 : charge_ratio.push_back('5jets,l+')
-        if n_valid_jets[0] == 5 and Q_l[0]== -1 : charge_ratio.push_back('5jets,l-')
+        if n_valid_jets[0] == 4 and Q_l[0]==  1 : charge_ratio.push_back(1)
+        if n_valid_jets[0] == 4 and Q_l[0]== -1 : charge_ratio.push_back(2)
+        if n_valid_jets[0] == 5 and Q_l[0]==  1 : charge_ratio.push_back(3)
+        if n_valid_jets[0] == 5 and Q_l[0]== -1 : charge_ratio.push_back(4)
 
         # Fill events that pass additional cuts
         newtree.Fill()
