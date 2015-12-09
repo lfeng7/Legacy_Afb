@@ -21,15 +21,16 @@ parser.add_option('--var', metavar='F', type='string', action='store',
                   help='var to plot')
 
 parser.add_option('--cut', metavar='F', type='string', action='store',
-          default="",
+                  default="",
                   dest='cut',
                   help='')
 
 parser.add_option('--Min', metavar='F', type='float', action='store',
-          default=0,
+                  default=0,
                   dest='Min',
                   help='')
 parser.add_option('--Max', metavar='F', type='float', action='store',
+                  default=0,
                   dest='Max',
                   help='')
 
@@ -69,6 +70,12 @@ parser.add_option('--dir', metavar='F', type='string', action='store',
               default = "",
                   dest='dir',
                   help='')
+
+parser.add_option('--yields', metavar='F', type='string', action='store',
+              default = "no",
+                  dest='yields',
+                  help='If you want to make a yields table')
+
 (options, args) = parser.parse_args()
 
 argv = []
@@ -88,6 +95,7 @@ def main():
     yaxis_name = options.yaxis
     rundir = options.dir
     weight = options.weight
+    makeyields = options.yields
 
     if xaxis_name == '': xaxis_name = var
 
@@ -116,7 +124,10 @@ def main():
     ttree_data = fdata.Get(treename)
     # Make histogram
     hname_data = hname+'_data'
-    h_data = ROOT.TH1F(hname_data, hname_data, bin, xmin, xmax)  
+    h_data = ROOT.TH1F()
+    h_data.SetName(hname_data)    
+    if xmin != xmax:
+        h_data = ROOT.TH1F(hname_data, hname_data, bin, xmin, xmax)        
     ttree_data.Draw(var+">>"+hname_data,""+ cut, "goff")
     h_data.SetDirectory(0)
     fdata.Close()
@@ -141,7 +152,10 @@ def main():
         ttree_mc = tmpf.Get(treename)
         # Make histogram
         hname_mc = hname+'_'+isample[0]
-        h_mc = ROOT.TH1F(hname_mc, hname_mc, bin, xmin, xmax) 
+        h_mc = ROOT.TH1F()
+        h_mc.SetName(hname_mc)
+        if xmin!=xmax:
+            h_mc = ROOT.TH1F(hname_mc, hname_mc, bin, xmin, xmax) 
         if cut == '': 
             ttree_mc.Draw(var+">>"+hname_mc,weight, "goff")
         else :
@@ -175,17 +189,44 @@ def main():
             tmp_h = item[4]
             if i == len(isamples)-1 : tmp_h.SetLineColor(1)
             mc_stack.Add(tmp_h)
-
+    # Write out yields
+    if makeyields == 'yes':
+        table_yields = []
+        f_yds = open('plots/yields.csv','w')
+        nevts_data = int(h_data.Integral())
+        for item in mc_samples:
+            tmp_h = item[4]
+            tmp_type = item[1]
+            tmp_name = item[0]
+            nevts = tmp_h.Integral()
+            table_yields +=[(tmp_name,tmp_type,int(nevts))]
+        for itype in alltypes:
+            tmp_list = [item[2] for item in table_yields if item[1]==itype]
+            if len(tmp_list)==0 : continue
+            nevts_mc = sum(tmp_list)
+            per_mc = nevts_mc*1.0/nevts_data
+            f_yds.write(itype+'    '+str(nevts_mc)+'    %.3f\n'%per_mc)
+        f_yds.write('data    '+str(nevts_data)+'    1.0')
+        f_yds.close()
 
         # for i,isample in enumerate(mc_samples):
         #     sample_type = isample[1]
         #     if sample_type == itype :
         #         mc_stack.Add(hlist_mc[i])     
 
+    # special care for charge ratio stack
+    draw_option = 'h'
+    if var == 'charge_ratio':
+        draw_option = 'bar1'
+    #     mc_stack.GetXaxis().FindFixBin(1.5)
+        # mc_stack.GetXaxis().SetBinLabel(mc_stack.GetXaxis().FindFixBin(1.5),"4jets, l+");
+        # mc_stack.GetXaxis().SetBinLabel(mc_stack.GetXaxis().FindFixBin(2.5),"4jets, l-");
+        # mc_stack.GetXaxis().SetBinLabel(mc_stack.GetXaxis().FindFixBin(3.5),"5jets, l+");
+        # mc_stack.GetXaxis().SetBinLabel(mc_stack.GetXaxis().FindFixBin(4.5),"5jets, l-");    
 
     # Make data/MC comparison plot
     leg.AddEntry(h_data,'data')
-    c_plot = comparison_plot_v1(mc_stack,h_data,leg,hname)
+    c_plot = comparison_plot_v1(mc_stack,h_data,leg,hname+'_'+var,draw_option)
     c_plot.SetName('cplot')
     # Write out
     plotdir = 'plots/'
@@ -211,8 +252,8 @@ def GetSampleColor(itype):
 import math
 ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
 
-def comparison_plot_v1(mc_,data_,legend,event_type='plots',logy=False):
-    global fout
+def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'h',logy=False):
+    global fout,var
     prefix = 'plots'
     # check if plotting dir is made. If not , make it now
     if not os.path.exists(prefix):
@@ -226,9 +267,9 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',logy=False):
     c1 = ROOT.TCanvas(data_.GetName()+'_compare')
     if logy == "log" : 
         c1.SetLogy()
-        name = plotdir+event_type+'_'+mc_.GetName()+'_compare_log.png'
+        name = plotdir+event_type+'_compare_log.png'
     else :
-        name = plotdir+event_type+'_'+mc_.GetName()+'_compare.png'
+        name = plotdir+event_type+'_compare.png'
     # Find the max of both histograms
     max_mc = mc_.GetMaximum()
     max_data = data_.GetMaximum()
@@ -304,7 +345,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',logy=False):
     x_resid_pad.SetBorderMode(0)
     x_resid_pad.Draw(); x_histo_pad.Draw()
     x_histo_pad.cd(); 
-    mc_.Draw('h');
+    mc_.Draw(draw_option);
     mc_.GetYaxis().SetTitle("events")
     mc_.GetYaxis().SetTitleOffset(1.0)
     mc_.GetXaxis().SetLabelOffset(999)   
