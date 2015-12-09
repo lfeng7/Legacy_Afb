@@ -300,7 +300,10 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     x_resid_pad.SetBorderMode(0)
     x_resid_pad.Draw(); x_histo_pad.Draw()
     x_histo_pad.cd(); 
-    mc_.Draw(); data_.Draw('SAME PE1X0'); mc_.GetXaxis().SetLabelOffset(999)
+    mc_.Draw('h'); data_.Draw('SAME PE1X0');
+    mc_.GetYaxis().SetTitle("events") 
+    mc_.GetXaxis().SetLabelOffset(999)
+    mc_.GetYaxis().SetTitleOffset(1.2)
     legend.Draw()
     x_resid_pad.cd(); 
     h_res.Draw('PE1X0 '); xline.Draw()
@@ -309,10 +312,10 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     # Saving
     c1.SaveAs(name)
     c1.Write()
-        
     # dump to webpage
     if upload == "dump":
-        os.system('scp -r '+plotdir+'  ~/index.php pha:/home/lfeng/public_html/research/Dump/')
+        os.system('scp -r '+plotdir+' pha:/home/lfeng/public_html/research/Dump/')
     # file closure
     fout.Close()
-    
+    return (c1)
+
