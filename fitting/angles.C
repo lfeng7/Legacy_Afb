@@ -21,7 +21,7 @@ bool genAsymmetricHisto = false; //Set to true if you want
 								//the asymmetric histogram
 								//generated from given w_a
 //limits on distributions of parameters
-double min_ttbar_mass = 350.0;
+double min_ttbar_mass = 300.0;
 double max_ttbar_mass = 1750.0;
 double min_Feynman_x = 0.0;
 double max_Feynman_x = 0.6;
@@ -38,6 +38,8 @@ int nBins_lnL = 150;
 int pdf_index = -1;
 // Number of tagged bs required
 int b_tag_cuts = 2;
+// kinfit chi2 cut
+float kinfit_chi2_cut = 100;
 // total number of templates
 int num_of_temp = 5;
 // template number
@@ -272,9 +274,9 @@ void angles::Loop(int is_for_dist, int neventsgenerated, double crosssection)
 		if (n_bTags<b_tag_cuts)
 			continue;		
 
-		// //cut on chi^2
-		// if (ln_L > 20.)
-		// 	continue;
+		//cut on chi^2
+		if (ln_L > kinfit_chi2_cut)
+			continue;
 
 		//set the event weight
 		// Comment: Here, the detector modeling sys can be evaluated

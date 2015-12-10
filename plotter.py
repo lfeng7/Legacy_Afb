@@ -167,6 +167,7 @@ for newhist in hists:
 # set ymax for hists
 for newhist in hists:
     newhist.SetMaximum(1.2*ymax)
+    newhist.SetMinimum(0)
 
 c = TCanvas()
 c.cd()

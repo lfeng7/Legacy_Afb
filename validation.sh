@@ -11,3 +11,8 @@ python -i plotter.py --file reco/angles_files/TT_CT10_TuneZ2star_8TeV_reco_angle
 
 # two vars plots
 python -i double_var_plotter.py --file templates/TT_CT10_TuneZ2star_8TeV_reco_angles_0_template_qq_0.root --var1 beta_v0 --var2 beta_v1 --cut "beta_v1>-1" --name beta_qqbar --Min 0 --Max 1 
+
+# Study cos_theta,Mtt,xf by cutting on chi2
+python -i plotter.py --file reco/angles_files/SingleEl_Run2012ABCD_reco_angles_0.root  --save True --name mtt_chi2_data --var "mtt" --xaxis "Mtt" --Min 300  --Max 1500 --cut "final_chi2<25" --cut2 "final_chi2>25" --title "Data" --scale True
+python -i plotter.py --file reco/angles_files/SingleEl_Run2012ABCD_reco_angles_0.root  --save True --name cos_chi2_data --var "cos_theta" --xaxis "cos#theta*" --Min -1  --Max 1 --cut "final_chi2<25" --cut2 "final_chi2>25" --title "Data" --scale True
+

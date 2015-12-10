@@ -923,7 +923,7 @@ void fitCombined(char* runName) {
 	//arg6 - upper value 
 	minimizer->SetParameter(0,"Rqqbar", 0.06, 0.03,  0.0, 1.0);
 
-	minimizer->SetParameter(1,"Rbck",   0.18, 0.03,  0.0, 1.0); //floating
+	minimizer->SetParameter(1,"Rbck",   0.23, 0.03,  0.0, 1.0); //floating
 	// minimizer->SetParameter(1,"Rbck",   0.171, 0.03,  0.0, 1.0); //fixed
 	// minimizer->SetParameter(1,"Rbck",   0.3633, 0.03,  0.0, 1.0); //fixed, 1.1*Rbck
 	// minimizer->SetParameter(1,"Rbck",   0.2837, 0.03,  0.0, 1.0); //fixed, restricted eta
@@ -932,7 +932,7 @@ void fitCombined(char* runName) {
 	// minimizer->SetParameter(1,"Rbck",   0.3158, 0.03,  0.0, 1.0); //fixed, 1.1*Rbck, harder jet cuts
 	// minimizer->SetParameter(1,"Rbck",   0.1738, 0.03,  0.0, 1.0); //fixed, restricted costheta
 
-	minimizer->SetParameter(2,"RWjets", 0.15, 0.05,0.0,1.0); //floating
+	minimizer->SetParameter(2,"RWjets", 0.03, 0.05,0.0,1.0); //floating
 	// minimizer->SetParameter(2,"RWjets", 0.037, 0.05,0.0,1.0); //fixed
 	// minimizer->SetParameter(2,"RWjets", 0.1298, 0.05,0.0,1.0); //fixed, restricted costheta
 

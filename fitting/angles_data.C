@@ -817,6 +817,17 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 	(sideband->ProjectionZ())->Draw();
 	c1->Print("sideband.pdf","pdf");
 	
+	// Save final stacks and data hist into a root file for post processing
+	printf("Writing final stack and data hists into a root file!\n");
+	TFile* stack_file = new TFile("final_stack.root","Recreate");
+	stack_file->cd()
+	x_stack->Write();data_x->Write();
+	y_stack->Write();data_y->Write();
+	z_stack->Write();data_z->Write();
+	event_numbers_stack->Write();event_numbers_data->Write();
+	stack_file->Write();
+	stack_file->Close();
+
 	//finally, save the results of the fit to a text file.
 	FILE* o = fopen("fit_results.txt","w");
 	fprintf(o,"*************		FIT       RESULTS		*************\n");
