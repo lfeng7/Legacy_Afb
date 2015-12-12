@@ -1,5 +1,6 @@
 # This small macro will do stacker plot and compare with data 
 # just give var and working directory, with a txt file containing MC channel name, type, xsec and nevts_gen
+# will make plots/ in current dir and put all .png and .root file in plots/
 # 12-7-2015
 
 import ROOT
@@ -123,9 +124,7 @@ def main():
     print 'Getting ttree',treename
     ttree_data = fdata.Get(treename)
     # Make histogram
-    hname_data = hname+'_data'
-    h_data = ROOT.TH1F()
-    h_data.SetName(hname_data)    
+    hname_data = hname+'_data'    
     if xmin != xmax:
         h_data = ROOT.TH1F(hname_data, hname_data, bin, xmin, xmax)        
     ttree_data.Draw(var+">>"+hname_data,""+ cut, "goff")
@@ -152,8 +151,6 @@ def main():
         ttree_mc = tmpf.Get(treename)
         # Make histogram
         hname_mc = hname+'_'+isample[0]
-        h_mc = ROOT.TH1F()
-        h_mc.SetName(hname_mc)
         if xmin!=xmax:
             h_mc = ROOT.TH1F(hname_mc, hname_mc, bin, xmin, xmax) 
         if cut == '': 
@@ -172,6 +169,12 @@ def main():
         h_mc.SetLineColor(icolor)
         h_mc.SetMarkerStyle(0)
         h_mc.SetYTitle('events')
+        # Special setting for charge ratio plot
+        if var == 'charge_ratio':
+            h_mc.SetBarWidth(0.70);
+            h_mc.SetBarOffset(0.15);
+            h_mc.SetMarkerStyle();
+            h_mc.SetMarkerColor(icolor)
         hlist_mc.append(h_mc)
         mc_samples[i] += (h_mc,)
         # Determine if we want to add an entry to legend
@@ -214,19 +217,23 @@ def main():
         #     if sample_type == itype :
         #         mc_stack.Add(hlist_mc[i])     
 
-    # special care for charge ratio stack
-    draw_option = 'h'
-    if var == 'charge_ratio':
-        draw_option = 'bar1'
-    #     mc_stack.GetXaxis().FindFixBin(1.5)
-        # mc_stack.GetXaxis().SetBinLabel(mc_stack.GetXaxis().FindFixBin(1.5),"4jets, l+");
-        # mc_stack.GetXaxis().SetBinLabel(mc_stack.GetXaxis().FindFixBin(2.5),"4jets, l-");
-        # mc_stack.GetXaxis().SetBinLabel(mc_stack.GetXaxis().FindFixBin(3.5),"5jets, l+");
-        # mc_stack.GetXaxis().SetBinLabel(mc_stack.GetXaxis().FindFixBin(4.5),"5jets, l-");    
-
     # Make data/MC comparison plot
     leg.AddEntry(h_data,'data')
-    c_plot = comparison_plot_v1(mc_stack,h_data,leg,hname+'_'+var,draw_option)
+    if var != 'charge_ratio':
+        c_plot = comparison_plot_v1(mc_stack,h_data,leg,hname+'_'+var,draw_option)
+    else :
+        fout = ROOT.TFile('plots/'+hname+'_'+var+'_plots.root','recreate')        
+        c_plot = ROOT.TCanvas()
+        mc_stack.Draw('bar1')
+        mc_stack.GetXaxis().SetBinLabel(mc_stack.GetXaxis().FindFixBin(1.5),"4jets, l+");
+        mc_stack.GetXaxis().SetBinLabel(mc_stack.GetXaxis().FindFixBin(2.5),"4jets, l-");
+        mc_stack.GetXaxis().SetBinLabel(mc_stack.GetXaxis().FindFixBin(3.5),"5jets, l+");
+        mc_stack.GetXaxis().SetBinLabel(mc_stack.GetXaxis().FindFixBin(4.5),"5jets, l-");
+        h_data.Draw('same PE1X0')
+        leg.Draw() 
+        c_plot.Update()
+        c_plot.SaveAs('plots/'+hname+'_'+var+'_compare.png') 
+
     c_plot.SetName('cplot')
     # Write out
     plotdir = 'plots/'
@@ -237,8 +244,9 @@ def main():
     fout.cd()
     mc_stack.Write()
     h_data.Write()
+    leg.Write()
     fout.Write()
-    fout.Close()
+    # fout.Close()
 
 def GetSampleColor(itype):
     if itype=='gg' : return 38
@@ -350,11 +358,18 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'h',log
     mc_.GetYaxis().SetTitleOffset(1.0)
     mc_.GetXaxis().SetLabelOffset(999)   
     data_.Draw('SAME PE1X0'); 
+    # Draw data stat box
+    ROOT.gStyle.SetOptStat("e");
+    data_.SetStats(1)
+    data_.Draw('SAMEs PE1X0'); 
+    x_histo_pad.Update()
+    statbox1 = data_.FindObject("stats")
+    statbox1.Draw('sames')
+
     legend.Draw()
     x_resid_pad.cd(); 
     h_res.Draw('PE1X0 '); xline.Draw()
-    # h_res.GetXaxis().SetTitle(xaxis_name)
-
+    h_res.GetXaxis().SetTitle(xaxis_name)
     c1.Update()    
     # Saving
     c1.SaveAs(name)

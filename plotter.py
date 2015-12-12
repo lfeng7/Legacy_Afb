@@ -25,6 +25,7 @@ parser.add_option('--Min', metavar='F', type='float', action='store',
                   help='')
 parser.add_option('--Max', metavar='F', type='float', action='store',
                   dest='Max',
+                  default=0,
                   help='')
 parser.add_option('--name', metavar='F', type='string', action='store',
               default = "blank",
@@ -121,13 +122,22 @@ if title == '': title=cut
 
 chain = ROOT.TChain(treename)
 chain.Add(file)
-newhist1 = ROOT.TH1F(name, name, bin, x, y)  
-chain.Draw(var+">>"+name,""+ cut, "goff")
+# Making histograms
+if x!=y:
+  newhist1 = ROOT.TH1F(name, name, bin, x, y)
+  chain.Draw(var+">>"+name,""+ cut, "goff")
+else:
+  chain.Draw(var+">>"+name,""+ cut, "goff")
+  newhist1 = gDirectory.Get(name)  
 hists = [newhist1]
 all_cuts = [cut]
 if cut2!=cut and cut2!='':
-    newhist2 = ROOT.TH1F(name+'2', name+'2', bin, x, y)  
-    chain.Draw(var+">>"+name+'2',""+ cut2, "goff")
+    if x!=y:
+      newhist2 = ROOT.TH1F(name+'2', name+'2', bin, x, y)  
+      chain.Draw(var+">>"+name+'2',""+ cut2, "goff")
+    else:
+      chain.Draw(var+">>"+name+'2',""+ cut2, "goff")  
+      newhist2 = gDirectory.Get(name+'2')          
     hists.append(newhist2)
     all_cuts.append(cut2)
 
@@ -167,7 +177,10 @@ for newhist in hists:
 # set ymax for hists
 for newhist in hists:
     newhist.SetMaximum(1.2*ymax)
-    newhist.SetMinimum(0)
+    if ymax > 1 :
+      newhist.SetMinimum(1)
+    else:
+      newhist.SetMinimum(0.001)
 
 c = TCanvas()
 c.cd()
