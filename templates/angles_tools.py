@@ -77,7 +77,7 @@ def get_angles_v1(reco_t,reco_tbar):
     
     #Lorentz Declartions
 
-    sqrt_s=600;
+    sqrt_s=8000;
     beam_energy=sqrt_s/2;
 
     S = TLorentzRotation();
@@ -249,6 +249,12 @@ def get_true_angles_v1(reco_t,reco_tbar,q_pz,qbar_pz,q_id,qbar_id):
     Top_Data = reco_t.Clone()
     ATop_Data = reco_tbar.Clone()
 
+    # check the cos_theta in lab frame
+    top_vec = Top_Data.Vect()
+    top_vec *= 1/top_vec.Mag()
+    z_vec = TVector3(0,0,1)
+    cs_lab = top_vec.Dot(z_vec)
+
     # find the true quark direction
     q_pz_list = [q_pz,qbar_pz]
     q_id_list = [q_id,qbar_id]
@@ -306,7 +312,7 @@ def get_true_angles_v1(reco_t,reco_tbar,q_pz,qbar_pz,q_id,qbar_id):
     #find the CS angle
     cos_theta_cs_true=top_data.Dot(true_quark_direction);
 
-    return [x_f,ttbar_mass_data,cos_theta_cs_true]
+    return [cos_theta_cs_true,cs_lab]
 
 # Get reweighting weights for qqbar->ttbar templates
 def GetAnglesWeights(Top_MC,ATop_MC,cos_theta_cs_mc,alpha=-0.129):

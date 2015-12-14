@@ -271,6 +271,7 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
     beta2 = array('f',3*[0.])
     delta_mag = array('f',[0.])
     cos_theta_mc_v1 = array('f',[-10.])
+    cs_lab = array('f',[-10.])
     br_defs += [('cos_theta_mc_v1',cos_theta_mc_v1,'cos_theta_mc_v1/F')]    
     br_defs += [('positive_z',positive_z,'positive_z/I')]
     br_defs += [('cs_bisector',cs_bisector,'cs_bisector/F')]
@@ -278,6 +279,9 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
     br_defs += [('beta1',beta1,'beta1[3]/F')]
     br_defs += [('beta2',beta2,'beta2[3]/F')]
     br_defs += [('delta_mag',delta_mag,'delta_mag/F')]
+    br_defs += [('cs_lab',cs_lab,'cs_lab/F')]    
+   
+
 
       
     # Add branches to the tree
@@ -320,7 +324,7 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
     n_evt = 0
     for iev in range(evt_start,tmptree.GetEntries()):
         # Progress report
-        if iev%50 == 0 : print 'processing event',iev 
+        if iev%1000 == 0 : print 'processing event',iev 
         # Break at the given event number
         if iev == evt_end : print 'Finish processing. Quit at event',evt_end; break ;
         
@@ -420,6 +424,7 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         mtt_mc[0] = -1
         mt_mc[0],m_tbar_mc[0] = -1,-1        
         positive_z[0],cs_bisector[0],delta_mag[0] = -10,-10,-1000
+        cs_lab[0],cos_theta_mc_v1[0] = -10,-10
         for i in range(3):
             beta_mc[i],beta1[i],beta2[i] = 0,0,0
 
@@ -442,7 +447,8 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
             init2.SetPtEtaPhiM(gen_pt[1],gen_eta[1],gen_phi[1],gen_mass[1])
             # Get MC angles
             # def get_true_angles_v1(reco_t,reco_tbar,q_pz,qbar_pz,q_id,qbar_id):
-            cos_theta_mc_v1[0] = get_true_angles_v1(top_MC,Atop_MC,init1.Pz(),init2.Pz(),gen_pdgid[0],gen_pdgid[1])[2]
+            cos_theta_mc_v1[0] = get_true_angles_v1(top_MC,Atop_MC,init1.Pz(),init2.Pz(),gen_pdgid[0],gen_pdgid[1])[0]
+            cs_lab[0] = get_true_angles_v1(top_MC,Atop_MC,init1.Pz(),init2.Pz(),gen_pdgid[0],gen_pdgid[1])[1]
 
             # Study beta
             mtt_mc[0]= (top_MC+Atop_MC).M()
