@@ -83,7 +83,7 @@ double angles_data::Loop(double Rqqbar, double Rbck, double RWJets, double xi, d
 	Long64_t nbytes = 0, nb = 0;
 
 	//ln(L) which will be returned
-	double lnL = 0.0;
+	double logL = 0.0;
 
 	int count_fit = 0;
 	int count_not_fit = 0;
@@ -102,7 +102,7 @@ double angles_data::Loop(double Rqqbar, double Rbck, double RWJets, double xi, d
 		if (Feynman_x<0.0) 
 			Feynman_x = -1.0*Feynman_x;
 		//cut on whether the event is in range of the training set
-		if (cos_theta_cs>=x_low && cos_theta_cs<=x_high && Feynman_x>=y_low && Feynman_x<=y_high && ttbar_mass>=z_low && ttbar_mass<=z_high && n_bTags >= num_b_tag_cuts) {
+		if (cos_theta_cs>=x_low && cos_theta_cs<=x_high && Feynman_x>=y_low && Feynman_x<=y_high && ttbar_mass>=z_low && ttbar_mass<=z_high && n_bTags >= num_b_tag_cuts && lnL < lnL_low) {
 			//use parameters of event to look up values of functions from histograms (depending on lepton charge and jet number)
 			double ev_fqqs = 0.0;
 			double ev_fqqs_xi = 0.0;
@@ -211,7 +211,7 @@ double angles_data::Loop(double Rqqbar, double Rbck, double RWJets, double xi, d
 				//take -2*ln(L)
 				double ev_lnL = -2.0*TMath::Log(ev_L);
 				//add to running total of -2ln(L)
-				lnL += ev_lnL;
+				logL += ev_lnL;
 				if (iterations==0 || plot == 1)
 					event_likelihoods->Fill(ev_lnL);
 				if (ev_lnL<min_ev_lnL)
@@ -257,7 +257,7 @@ double angles_data::Loop(double Rqqbar, double Rbck, double RWJets, double xi, d
 		c->Print("ev_lnL_final.pdf","pdf");
 	}
 	//return the log likelihood
-	return lnL;
+	return logL;
 }
 
 //Main loop function: returns a log likelihood for the function over all events
@@ -282,7 +282,7 @@ double angles_data::Loop(double Rqqbar_4jet, double Rbck_4jet, double RW4Jets, d
 	}
 
 	//create variable to hold ln(L) which will be returned
-	double lnL = 0.0;
+	double logL = 0.0;
 
 	int count_fit = 0;
 	int count_not_fit = 0;
@@ -325,7 +325,7 @@ double angles_data::Loop(double Rqqbar_4jet, double Rbck_4jet, double RW4Jets, d
 			Afb = Afb_5jet;
 		}
 		//cut on whether the event is in range of the training set
-		if (cos_theta_cs>=x_low && cos_theta_cs<=x_high && Feynman_x>=y_low && Feynman_x<=y_high && ttbar_mass>=z_low && ttbar_mass<=z_high && n_bTags >= num_b_tag_cuts) {
+		if (cos_theta_cs>=x_low && cos_theta_cs<=x_high && Feynman_x>=y_low && Feynman_x<=y_high && ttbar_mass>=z_low && ttbar_mass<=z_high && n_bTags >= num_b_tag_cuts && lnL < lnL_low) {
 			//use parameters of event to look up values of four functions from histograms (depending on lepton charge)
 			double ev_fqqs = 0.0;
 			double ev_fqqs_xi = 0.0;
@@ -436,7 +436,7 @@ double angles_data::Loop(double Rqqbar_4jet, double Rbck_4jet, double RW4Jets, d
 				//take -2*ln(L)
 				double ev_lnL = -2.0*TMath::Log(ev_L);
 				//add to running total of -2ln(L)
-				lnL += ev_lnL;
+				logL += ev_lnL;
 			}
 			else
 				++count_almost_fit;
@@ -454,7 +454,7 @@ double angles_data::Loop(double Rqqbar_4jet, double Rbck_4jet, double RW4Jets, d
 	//		count_not_fit, 100.0*count_not_fit/(count_fit+count_almost_fit+count_not_fit));
 	//return the log likelihood
 	//fprintf(test, "%.8f 		%.8f\n",delta_4jet,lnL);
-	return lnL;
+	return logL;
 }
 
 //other loop function for making plots of the final fit compared to the data
@@ -512,7 +512,7 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 			Feynman_x = -1.0*Feynman_x;
 		
 		//cut on whether the event is in range of the training set
-		if (cos_theta_cs>=x_low && cos_theta_cs<=x_high && Feynman_x>=y_low && Feynman_x<=y_high && ttbar_mass>=z_low && ttbar_mass<=z_high && n_bTags >= num_b_tag_cuts) {
+		if (cos_theta_cs>=x_low && cos_theta_cs<=x_high && Feynman_x>=y_low && Feynman_x<=y_high && ttbar_mass>=z_low && ttbar_mass<=z_high && n_bTags >= num_b_tag_cuts && lnL < lnL_low) {
 			//Fill the data histogram with the appropriate values
 			double ev_fqqs_plus_4jet = fqqs_plus_4jet->GetBinContent(fqqs_plus_4jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
 			double ev_fqqs_minus_4jet = fqqs_minus_4jet->GetBinContent(fqqs_minus_4jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
@@ -918,7 +918,7 @@ double angles_data::Loop(double Rqqbar_4jet, double sigma_Rqqbar_4jet, double Rb
 			Feynman_x = -1.0*Feynman_x;
 		
 		//cut on whether the event is in range of the training set
-		if (cos_theta_cs>=x_low && cos_theta_cs<=x_high && Feynman_x>=y_low && Feynman_x<=y_high && ttbar_mass>=z_low && ttbar_mass<=z_high && n_bTags >= num_b_tag_cuts) {
+		if (cos_theta_cs>=x_low && cos_theta_cs<=x_high && Feynman_x>=y_low && Feynman_x<=y_high && ttbar_mass>=z_low && ttbar_mass<=z_high && n_bTags >= num_b_tag_cuts && lnL < lnL_low) {
 			//Fill the data histogram with the appropriate values
 			double ev_fqqs_plus_4jet = fqqs_plus_4jet->GetBinContent(fqqs_plus_4jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
 			double ev_fqqs_minus_4jet = fqqs_minus_4jet->GetBinContent(fqqs_minus_4jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
@@ -1332,6 +1332,7 @@ void angles_data::LoadHistogramsCombined() {
 	//find limits of training set histograms
 	nbins_lnL = gtt_4jet->GetNbinsX();
 	lnL_low = gtt_4jet->GetXaxis()->GetXmin(); lnL_high = gtt_4jet->GetXaxis()->GetXmax();
+	printf("lnL_high = %.2f\n",lnL_high);
 	nbinsx = fqqs_plus_4jet->GetNbinsX(); nbinsy = fqqs_plus_4jet->GetNbinsY(); nbinsz = fqqs_plus_4jet->GetNbinsZ();
 	x_low = fqqs_plus_4jet->GetXaxis()->GetXmin(); x_high = fqqs_plus_4jet->GetXaxis()->GetXmax();
 	y_low = fqqs_plus_4jet->GetYaxis()->GetXmin(); y_high = fqqs_plus_4jet->GetYaxis()->GetXmax();
