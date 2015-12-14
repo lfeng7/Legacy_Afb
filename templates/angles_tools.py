@@ -77,7 +77,7 @@ def get_angles_v1(reco_t,reco_tbar):
     
     #Lorentz Declartions
 
-    sqrt_s=8000;
+    sqrt_s=600;
     beam_energy=sqrt_s/2;
 
     S = TLorentzRotation();
@@ -132,7 +132,7 @@ def get_angles_v1(reco_t,reco_tbar):
     proton2_data = TVector3(Proton2_data.Px(),Proton2_data.Py(),Proton2_data.Pz())
    
     # study the consequenc of boost of proton momentum
-    delta_mag = proton_data.Mag() - proton2_data.Mag()
+    delta_mag = proton_data.Mag()
     beta1 = proton_data.Clone()
     beta1 *= 1/proton1_e
     beta1 = (beta1.Px(),beta1.Py(),beta1.Pz())
@@ -228,7 +228,7 @@ def get_true_angles(reco_t,reco_tbar,q_p4,qbar_p4):
 
 # Get cos(theta*) for top pair p4 using mc p4 and mc init particles
 # Use quark direction as positive direction
-def get_true_angles_v2(reco_t,reco_tbar,q_pz,qbar_pz,q_id,qbar_id):
+def get_true_angles_v1(reco_t,reco_tbar,q_pz,qbar_pz,q_id,qbar_id):
     
     #Lorentz Declartions
 
@@ -242,17 +242,29 @@ def get_true_angles_v2(reco_t,reco_tbar,q_pz,qbar_pz,q_id,qbar_id):
       
     #Vectors of beam1 and beam2 for unit bisector purpose
     # TLorentzVector(px,py,pz,E)
-    Top_Data = TLorentzVector(0,0,1,2);
-    ATop_Data = TLorentzVector() ;
+    beam1 = TLorentzVector(0.0,0.0,sqrt(beam_energy*beam_energy -1*1),beam_energy)
+    beam2 = TLorentzVector(0.0,0.0,-1*beam1.Pz(),beam_energy)
 
     # Set up t and tbar p4
     Top_Data = reco_t.Clone()
     ATop_Data = reco_tbar.Clone()
 
-    #assign the quark and antiquark fourvectors from the last two particles in the list of mc_ particles
-    quark = (q_pz,q_id)
-    antiquark = (qbar_pz,qbar_id)
-    
+    # find the true quark direction
+    q_pz_list = [q_pz,qbar_pz]
+    q_id_list = [q_id,qbar_id]
+    positive_z = 0
+    num_qs = 0
+    for i in range(2):
+        if q_id_list[i] in [1,2,3,4]:
+            num_qs += 1
+            if q_pz_list[i]>0:
+                positive_z = 1
+            else:
+                positive_z = -1
+    if num_qs != 1 :
+        positive_z = 0
+
+  
     #Make the 4-vector of the ttbar
     Q_Data = Top_Data + ATop_Data;
     ttbar_mass_data=Q_Data.Mag(); # to return Mtt
@@ -264,20 +276,33 @@ def get_true_angles_v2(reco_t,reco_tbar,q_pz,qbar_pz,q_id,qbar_id):
     Qt = sqrt(Q_Data.Px()*Q_Data.Px()+Q_Data.Py()*Q_Data.Py());
 
     #Feynman x
-    x_f = (quark.E()-antiquark.E())/beam_energy
-    
+    # x_f = (quark.E()-antiquark.E())/beam_energy
+    x_f = 2*Q_Data.Pz()/sqrt_s; # to return x_f 
+
     #Doing the boost
     R_data = R_data.Boost(Bx_data,By_data,Bz_data);
     Top_Data = R_data*Top_Data;
     ATop_Data = R_data*ATop_Data;
+    beam1 = R_data*beam1
+    beam2 = R_data*beam2
     #Reset the boost
     R_data=S.Clone();
     #Define three vectors for P,Pbar,top, quark and antiquark in ttbar c.m frame
     top_data = TVector3(Top_Data.Px(),Top_Data.Py(),Top_Data.Pz())
-        
-    #Normalize vectors
     top_data = top_data*(1.0/top_data.Mag());
-    true_quark_direction = true_quark_direction*(1.0/true_quark_direction.Mag());
+
+    beam1_vec = beam1.Vect()
+    beam2_vec = beam2.Vect()
+    if beam1_vec.Mag()>beam2_vec.Mag():
+        beam1_vec *= -1.0
+    else:
+        beam2_vec *= -1.0
+    bisector = beam1_vec*(1.0/beam1_vec.Mag())+beam2_vec*(1.0/beam2_vec.Mag()) 
+
+    # Find true quark direction
+    if positive_z*bisector.Pz()< -0.1:
+        bisector *= -1.0
+    true_quark_direction = bisector
     #find the CS angle
     cos_theta_cs_true=top_data.Dot(true_quark_direction);
 

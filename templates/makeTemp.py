@@ -270,6 +270,8 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
     beta1 = array('f',3*[0.])
     beta2 = array('f',3*[0.])
     delta_mag = array('f',[0.])
+    cos_theta_mc_v1 = array('f',[-10.])
+    br_defs += [('cos_theta_mc_v1',cos_theta_mc_v1,'cos_theta_mc_v1/F')]    
     br_defs += [('positive_z',positive_z,'positive_z/I')]
     br_defs += [('cs_bisector',cs_bisector,'cs_bisector/F')]
     br_defs += [('beta_mc',beta_mc,'beta_mc[3]/F')]
@@ -438,12 +440,16 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
                     Atop_MC.SetPtEtaPhiM(gen_pt[i],gen_eta[i],gen_phi[i],gen_mass[i]) 
             init1.SetPtEtaPhiM(gen_pt[0],gen_eta[0],gen_phi[0],gen_mass[0])
             init2.SetPtEtaPhiM(gen_pt[1],gen_eta[1],gen_phi[1],gen_mass[1])
+            # Get MC angles
+            # def get_true_angles_v1(reco_t,reco_tbar,q_pz,qbar_pz,q_id,qbar_id):
+            cos_theta_mc_v1[0] = get_true_angles_v1(top_MC,Atop_MC,init1.Pz(),init2.Pz(),gen_pdgid[0],gen_pdgid[1])[2]
+
             # Study beta
             mtt_mc[0]= (top_MC+Atop_MC).M()
             mt_mc[0] = top_MC.M() 
             m_tbar_mc[0] = Atop_MC.M()
 
-            beta_v1[0] = Get_beta_v0(mt_mc[0],m_tbar_mc[0],mtt_mc[0])
+            beta_v0[0] = Get_beta_v0(mt_mc[0],m_tbar_mc[0],mtt_mc[0])
             # beta study v1. Use simple definition assuming mt1=mt2  
             beta_v1[0] = Get_beta_v1(mt_mc[0],m_tbar_mc[0],mtt_mc[0])      
             # beta study v2. Use beta = sqrt(1-2*(m1*m2+m2*m2)/Mtt*Mtt+(m1*m1-m2*m2)^2/Mtt^4)
