@@ -297,12 +297,12 @@ def get_true_angles_v1(reco_t,reco_tbar,q_pz,qbar_pz,q_id,qbar_id):
         beam1_vec *= -1.0
     else:
         beam2_vec *= -1.0
-    bisector = beam1_vec*(1.0/beam1_vec.Mag())+beam2_vec*(1.0/beam2_vec.Mag()) 
+    bisector = beam1_vec*(1.0/beam1_vec.Mag())+beam2_vec*(1.0/beam2_vec.Mag())
 
     # Find true quark direction
     if positive_z*bisector.Pz()< -0.1:
         bisector *= -1.0
-    true_quark_direction = bisector
+    true_quark_direction = bisector*(1.0/bisector.Mag())
     #find the CS angle
     cos_theta_cs_true=top_data.Dot(true_quark_direction);
 
