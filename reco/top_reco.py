@@ -146,7 +146,8 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     if isFakeLep == 'yes':
         tmptree.SetBranchStatus('lep_iso',1)
     tmptree.SetBranchStatus('met*',0)
-    tmptree.SetBranchStatus('pileup*',0)
+    # tmptree.SetBranchStatus('pileup*',0)
+    tmptree.SetBranchStatus('weight_*',0)
     newtree = tmptree.CloneTree(0)
     tmptree.SetBranchStatus('*',1)
 
