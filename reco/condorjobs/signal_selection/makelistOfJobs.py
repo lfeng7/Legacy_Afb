@@ -2,7 +2,7 @@ import ROOT
 
 # global constants
 evtsperjob =  2000
-prepend = '/uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/work/Legacy_Afb/JHUntuple_selector/selected_files/v2_trigger_removed/all/'
+prepend = '/uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v2_trigger_removed/all/'
 postfix = '_selected.root'
 
 def make_joblist():
@@ -14,6 +14,7 @@ def make_joblist():
     towrite = ''
     # Loop over files
     for ifile in selected_files:
+        print 'making jobs for',ifile
         towrite += '\n# '+ifile+'\n'
         tmpfile = ROOT.TFile(ifile)
         nev = tmpfile.Get('selected').GetEntries()
