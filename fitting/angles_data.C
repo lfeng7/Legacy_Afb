@@ -819,7 +819,7 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 	(sideband->ProjectionZ())->Draw();
 	c1->Print("sideband.pdf","pdf");
 	
-	// Save final stacks and data hist into a root file for post processing
+	// Save final stacks and data hist and legend into a root file for post processing
 	printf("Writing final stack and data hists into a root file!\n");
 	TFile* stack_file = new TFile("final_stack.root","Recreate");
 	stack_file->cd();
@@ -827,6 +827,7 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 	y_stack->Write();data_y->Write();
 	z_stack->Write();data_z->Write();
 	event_numbers_stack->Write();event_numbers_data->Write();
+	leg->Write();
 	stack_file->Write();
 	stack_file->Close();
 
@@ -1237,6 +1238,18 @@ double angles_data::Loop(double Rqqbar_4jet, double sigma_Rqqbar_4jet, double Rb
 	data_z->Draw("SAME PE1X0");
 	//save the plots
 	c->Print("fit_comparison.pdf","pdf");	
+
+	// Save final stacks and data hist and legend into a root file for post processing
+	printf("Writing final stack and data hists into a root file!\n");
+	TFile* stack_file = new TFile("final_stack.root","Recreate");
+	stack_file->cd();
+	x_stack->Write();data_x->Write();
+	y_stack->Write();data_y->Write();
+	z_stack->Write();data_z->Write();
+	event_numbers_stack->Write();event_numbers_data->Write();
+	leg->Write();
+	stack_file->Write();
+	stack_file->Close();
 
 	TCanvas* c1 = new TCanvas("c1","Sideband",900,900);
 	c1->Divide(2,2,0.01,0.01,0);
