@@ -82,7 +82,7 @@ parser.add_option('--yields', metavar='F', type='string', action='store',
 argv = []
 
 def main():
-    global xaxis_name 
+    global xaxis_name , fout
 
     cut = options.cut
     var = options.var
@@ -134,7 +134,8 @@ def main():
     # Loop over all MC files to make MC stack and legend
     mc_stack = ROOT.THStack(hname+'_stack',var+' comparison')
     sample_types = []
-    leg = ROOT.TLegend(0.85,0.65,1.0,1.0)
+    leg = ROOT.TLegend(0.8467049,0.5426087,0.9971347,0.8904348)
+    leg.SetName('legend')
     hlist_mc = []
     for i,isample in enumerate(mc_samples):
         # find input root file
@@ -197,19 +198,22 @@ def main():
         table_yields = []
         f_yds = open('plots/yields.csv','w')
         nevts_data = int(h_data.Integral())
+        nevts_mc_total = 0
         for item in mc_samples:
             tmp_h = item[4]
             tmp_type = item[1]
             tmp_name = item[0]
             nevts = tmp_h.Integral()
+            nevts_mc_total += int(nevts)
             table_yields +=[(tmp_name,tmp_type,int(nevts))]
         for itype in alltypes:
             tmp_list = [item[2] for item in table_yields if item[1]==itype]
             if len(tmp_list)==0 : continue
             nevts_mc = sum(tmp_list)
-            per_mc = nevts_mc*1.0/nevts_data
+            per_mc = nevts_mc*1.0/nevts_mc_total
             f_yds.write(itype+'    '+str(nevts_mc)+'    %.3f\n'%per_mc)
-        f_yds.write('data    '+str(nevts_data)+'    1.0')
+        f_yds.write('mc      '+str(int(nevts_mc_total))+'    1.0\n')
+        f_yds.write('data    '+str(nevts_data)+'     1.0')
         f_yds.close()
 
         # for i,isample in enumerate(mc_samples):
@@ -220,7 +224,7 @@ def main():
     # Make data/MC comparison plot
     leg.AddEntry(h_data,'data')
     if var != 'charge_ratio':
-        c_plot = comparison_plot_v1(mc_stack,h_data,leg,hname+'_'+var,draw_option)
+        c_plot = comparison_plot_v1(mc_stack,h_data,leg,hname+'_'+var)
     else :
         fout = ROOT.TFile('plots/'+hname+'_'+var+'_plots.root','recreate')        
         c_plot = ROOT.TCanvas()

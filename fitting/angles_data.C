@@ -776,6 +776,7 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 	event_numbers_data->SetLineWidth(2);
 	//add a legend to the plot
 	TLegend *leg = new TLegend(0.56,0.73,0.88,0.88);
+	leg->SetName("legend");
 	leg->AddEntry(data_x,"Data","LPEX0");
 	leg->AddEntry(qq_x,"q#bar{q} #rightarrow t#bar{t}(j)","F");
 	leg->AddEntry(gg_x,"gg(qg) #rightarrow t#bar{t}(j)","F");
@@ -1208,6 +1209,7 @@ double angles_data::Loop(double Rqqbar_4jet, double sigma_Rqqbar_4jet, double Rb
 	//add a legend to the plot
 	// TLegend *leg = new TLegend(0.56,0.73,0.88,0.88);
 	TLegend *leg = new TLegend(0.14,0.73,0.46,0.88);
+	leg->SetName("legend");
 	leg->AddEntry(data_x,"Data","LPEX0");
 	leg->AddEntry(qq_x,"q#bar{q} #rightarrow t#bar{t}(j)","F");
 	leg->AddEntry(gg_x,"gg(qg) #rightarrow t#bar{t}(j)","F");

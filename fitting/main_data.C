@@ -921,10 +921,10 @@ void fitCombined(char* runName) {
 	//arg4 - estimated distance to minimum
 	//arg5 - lower value
 	//arg6 - upper value 
-	minimizer->SetParameter(0,"Rqqbar", 0.06, 0.03,  0.0, 1.0);
+	minimizer->SetParameter(0,"Rqqbar", 0.07, 0.03,  0.0, 1.0);
 
-	minimizer->SetParameter(1,"Rbck",   0.205, 0.03,  0.0, 1.0); //floating
-	// minimizer->SetParameter(1,"Rbck",   0.171, 0.03,  0.0, 1.0); //fixed
+	// minimizer->SetParameter(1,"Rbck",   0.205, 0.03,  0.0, 1.0); //floating
+	minimizer->SetParameter(1,"Rbck",   0.184, 0.03,  0.0, 1.0); //fixed
 	// minimizer->SetParameter(1,"Rbck",   0.3633, 0.03,  0.0, 1.0); //fixed, 1.1*Rbck
 	// minimizer->SetParameter(1,"Rbck",   0.2837, 0.03,  0.0, 1.0); //fixed, restricted eta
 	// minimizer->SetParameter(1,"Rbck",   0.3121, 0.03,  0.0, 1.0); //fixed, 1.1*Rbck, restricted eta
@@ -932,13 +932,13 @@ void fitCombined(char* runName) {
 	// minimizer->SetParameter(1,"Rbck",   0.3158, 0.03,  0.0, 1.0); //fixed, 1.1*Rbck, harder jet cuts
 	// minimizer->SetParameter(1,"Rbck",   0.1738, 0.03,  0.0, 1.0); //fixed, restricted costheta
 
-	minimizer->SetParameter(2,"RWjets", 0.03, 0.03,0.0,1.0); //floating
-	// minimizer->SetParameter(2,"RWjets", 0.037, 0.05,0.0,1.0); //fixed
+	// minimizer->SetParameter(2,"RWjets", 0.03, 0.03,0.0,1.0); //floating
+	minimizer->SetParameter(2,"RWjets", 0.037, 0.05,0.0,1.0); //fixed
 	// minimizer->SetParameter(2,"RWjets", 0.1298, 0.05,0.0,1.0); //fixed, restricted costheta
 
 	minimizer->SetParameter(3,"xi", 	0.00, 0.50, -1.0, 1.0);
 	minimizer->SetParameter(4,"delta",  0.00, 0.50, -1.0, 1.0);
-	minimizer->SetParameter(5,"Afb",    0.05, 0.10, -1.0, 1.0);
+	minimizer->SetParameter(5,"Afb",    0.00, 0.10, -1.0, 1.0);
 	//minimizer->FixParameter(0);
 	// minimizer->FixParameter(1);	//Rbck
 	// minimizer->FixParameter(2);	//RWjets
@@ -991,30 +991,30 @@ void fitSeparated(char* runName) {
 	//arg4 - estimated distance to minimum
 	//arg5 - lower value
 	//arg6 - upper value 
-	minimizer->SetParameter(0,"Rqqbar_4jet", 0.10, 0.05,  0.0, 1.0);
+	minimizer->SetParameter(0,"Rqqbar_4jet", 0.8, 0.05,  0.0, 1.0);
 
-	minimizer->SetParameter(1,"Rbck_4jet",   0.20, 0.05,  0.0, 1.0);   //floating
-	// minimizer->SetParameter(1,"Rbck_4jet",   0.193, 0.05,  0.0, 1.0); //fixed
+	// minimizer->SetParameter(1,"Rbck_4jet",   0.20, 0.05,  0.0, 1.0);   //floating
+	minimizer->SetParameter(1,"Rbck_4jet",   0.192, 0.05,  0.0, 1.0); //fixed
 	// minimizer->SetParameter(1,"Rbck_4jet",   0.2170, 0.05,  0.0, 1.0);  //fixed, 1.1*Rbck
 
-	minimizer->SetParameter(2,"R_W4Jets",    0.18, 0.05,  0.0, 1.0); //floating
-	// minimizer->SetParameter(2,"R_W4Jets",    0.043, 0.05,  0.0, 1.0); //fixed
+	// minimizer->SetParameter(2,"R_W4Jets",    0.18, 0.05,  0.0, 1.0); //floating
+	minimizer->SetParameter(2,"R_W4Jets",    0.043, 0.05,  0.0, 1.0); //fixed
 
 	minimizer->SetParameter(3,"Rqqbar_5jet", 0.05, 0.05,  0.0, 1.0);
 
-	minimizer->SetParameter(4,"Rbck_5jet",   0.15, 0.05,  0.0, 1.0);   //floating
+	minimizer->SetParameter(4,"Rbck_5jet",   0.165, 0.05,  0.0, 1.0);   //floating
 	// minimizer->SetParameter(4,"Rbck_5jet",   0.140, 0.05,  0.0, 1.0); //fixed
 	// minimizer->SetParameter(4,"Rbck_5jet",   0.2823, 0.05,  0.0, 1.0);   //fixed, 1.1*Rbck
 	
-	minimizer->SetParameter(5,"R_W5Jets",    0.11, 0.05,  0.0, 1.0); //floating
-	// minimizer->SetParameter(5,"R_W5Jets",    0.028, 0.05,  0.0, 1.0); //fixed
+	// minimizer->SetParameter(5,"R_W5Jets",    0.06, 0.05,  0.0, 1.0); //floating
+	minimizer->SetParameter(5,"R_W5Jets",    0.024, 0.05,  0.0, 1.0); //fixed
 
 	minimizer->SetParameter(6,"xi_4jet", 	 0.00, 0.50, -1.0, 1.0);
 	minimizer->SetParameter(7,"xi_5jet", 	 0.00, 0.50, -1.0, 1.0);
 	minimizer->SetParameter(8,"delta_4jet",  0.00, 0.50, -1.0, 1.0);
 	minimizer->SetParameter(9,"delta_5jet",  0.00, 0.50, -1.0, 1.0);
-	minimizer->SetParameter(10,"Afb_4jet",    0.05, 0.10, -1.0, 1.0);
-	minimizer->SetParameter(11,"Afb_5jet",    0.05, 0.10, -1.0, 1.0);
+	minimizer->SetParameter(10,"Afb_4jet",    0.00, 0.10, -1.0, 1.0);
+	minimizer->SetParameter(11,"Afb_5jet",    0.00, 0.10, -1.0, 1.0);
 	// minimizer->FixParameter(0);
 	// minimizer->FixParameter(1);			//Rbck_4jet
 	// minimizer->FixParameter(2);		//R_W4Jets
