@@ -5,6 +5,7 @@ from Legacy_Afb.Tools.angles_tools import *
 import glob
 from optparse import OptionParser
 import ROOT
+
 # from angles_tools import *
 
 # Job steering
@@ -148,11 +149,7 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
 
     vecs += [cos_theta,xf,mtt,cos_theta_mc,xf_mc,mtt_mc,init_type]
     br_names += ['cos_theta','xf','mtt','cos_theta_mc','xf_mc','mtt_mc','init_type']
-    # study issue of cos_theta_mc
-    cos_theta_mc_v2 = ROOT.vector('float')()
-    xf_mc_v2 = ROOT.vector('float')()
-    vecs+=[cos_theta_mc_v2,xf_mc_v2]
-    br_names += ['cos_theta_mc_v2','xf_mc_v2']
+
     # Add branches to the tree
     branches = zip(br_names,vecs)
     for ibr in branches:
@@ -249,37 +246,34 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
                 tmp_type = 'qg'
             else : 
                 tmp_type = 'unknown'
-            # Make 4vecs for t,tbar,q,qbar
-            if tmp_type == 'qqbar':
-                true_t_p4 = ROOT.TLorentzVector()
-                true_tbar_p4 = ROOT.TLorentzVector()
-                true_q_p4 = ROOT.TLorentzVector()
-                true_qbar_p4 = ROOT.TLorentzVector()
-                # Loop over gen pars to set p4
-                q_pdgids = [1,2,3,4]
-                qbar_pdgids = [-1,-2,-3,-4]
-                for i in range(gen_pt.size()):
-                    ipt = gen_pt[i]; ieta = gen_eta[i]; iphi = gen_phi[i]; imass = gen_mass[i];
-                    if gen_pdgid[i] in q_pdgids : true_q_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
-                    if gen_pdgid[i] in qbar_pdgids : true_qbar_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
-                    if gen_pdgid[i] == 6 : true_t_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
-                    if gen_pdgid[i] == -6 : true_tbar_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
-                # Get true cos,xf,mtt
-                true_results = get_true_angles(true_t_p4,true_tbar_p4,true_q_p4,true_qbar_p4)
-                true_xf = true_results[0]
-                true_mtt = true_results[1]
-                true_cos_theta = true_results[2]           
-                # push back true quantities
-                xf_mc.push_back(true_xf)
-                mtt_mc.push_back(true_mtt)
-                cos_theta_mc.push_back(true_cos_theta)
 
-                # debug issue of wrong cos_theta_mc
-                true_results_v2 = get_true_angles_v2(true_t_p4,true_tbar_p4,true_q_p4,true_qbar_p4)
-                true_xf_v2 = true_results_v2[0]
-                true_cos_theta_v2 = true_results_v2[2]  
-                xf_mc_v2.push_back(true_xf_v2)
-                cos_theta_mc_v2.push_back(true_cos_theta_v2) 
+            # Make 4vecs for t,tbar,q,qbar
+            true_t_p4 = ROOT.TLorentzVector()
+            true_tbar_p4 = ROOT.TLorentzVector()
+            true_q_p4 = ROOT.TLorentzVector()
+            # Loop over gen pars to set p4
+            q_pdgids = [1,2,3,4]
+            q_ids,q_pzs = [],[]
+            for i in range(gen_pt.size()):
+                ipt = gen_pt[i]; ieta = gen_eta[i]; iphi = gen_phi[i]; imass = gen_mass[i];
+                if gen_pdgid[i] in q_pdgids : 
+                    true_q_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
+                    q_ids.append(gen_pdgid[i])
+                    q_pzs.append(true_q_p4.Pz())
+                if gen_pdgid[i] == 6 : true_t_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
+                if gen_pdgid[i] == -6 : true_tbar_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
+            # Get true cos,xf,mtt
+            q_pz = 0.0
+            if len(q_ids) == 1:
+                q_pz = q_pzs[0]
+            true_results = get_true_angles(true_t_p4,true_tbar_p4,q_pz)
+            true_xf = true_results[0]
+            true_mtt = true_results[1]
+            true_cos_theta = true_results[2]           
+            # push back true quantities
+            xf_mc.push_back(true_xf)
+            mtt_mc.push_back(true_mtt)
+            cos_theta_mc.push_back(true_cos_theta)
 
         init_type.push_back(tmp_type)
 
