@@ -73,7 +73,7 @@ double F_delta_5jet = 0.0;
 // Number of tagged bs required
 int num_b_tag_cuts = 2;
 // lnL cut
-double lnL_cut = 35;
+double lnL_cut = 100;
 
 //Main loop function: returns a log likelihood for the function over all events
 //COMBINED CASE

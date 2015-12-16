@@ -44,12 +44,12 @@ parser.add_option('--fakelep', metavar='F', type='string', action='store',
                   help='If run on selected events with fake lepton.')
 
 parser.add_option('--lepisocut', metavar='F', type='float', action='store',
-                  default = 0.15,
+                  default = 0.2,
                   dest='lepisocut',
                   help='Lower bound for fake electron isolation.')
 
 parser.add_option('--nbcut', metavar='F', type='int', action='store',
-                  default = 1,
+                  default = 2,
                   dest='nbcut',
                   help='Number of b-tagged jets cut')
 
@@ -264,7 +264,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         # leptons  
         if isFakeLep == 'yes':
             lep_isos = tmptree.lep_iso
-            if not lep_isos.size() >= options.nlepcut : continue
+            if not lep_isos.size() == options.nlepcut : continue
             toskip = 0
             for ilep in lep_isos:
                 if ilep < options.lepisocut : toskip = 1

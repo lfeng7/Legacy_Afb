@@ -50,7 +50,7 @@ def plotting(histlist,event_type='MC',upload = False,logy=False,legend = None,op
     fout.Write()
     # dump to webpage
     if upload == "dump":
-        os.system('scp -r '+plotdir+'  ~/index.php pha:/home/lfeng/public_html/research/Dump/')
+        os.system('scp -r '+plotdir+'  pha:/home/lfeng/public_html/research/Dump/')
     # file closure
     fout.Close()
 

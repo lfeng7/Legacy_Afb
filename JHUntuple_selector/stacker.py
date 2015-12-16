@@ -145,7 +145,7 @@ flist.append(['DY2JetsToLL_M','zjets',2352304,215.1,2345857,'zjets'])
 flist.append(['DY3JetsToLL_M','zjets',11015445,65.79,10655325,'zjets'])
 flist.append(['DY4JetsToLL_M','zjets',6402827,28.59,5843425,'zjets'])
 # QCD
-# flist.append(['QCD_Pt-15to3000','qcd',9991674,6662.6,9940092,'qcd'])
+flist.append(['QCD_Pt-15to3000','qcd',9991674,6662.6,9940092,'qcd'])
 # signal
 flist.append(['TT_CT10_TuneZ2star_8TeV','ttbar',21675970,245.9,21560109,'ttbar'])
 
