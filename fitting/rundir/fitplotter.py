@@ -47,11 +47,10 @@ def main():
     data_y = fdata.Get('data_y')
     data_z = fdata.Get('data_z')
     event_numbers_data = fdata.Get('event_numbers_data') 
+    leg = fdata.Get('legend')
     all_plots = [(x_stack,data_x,'cs'),(y_stack,data_y,'fx'),(z_stack,data_z,'mtt')]
 
     # Make data/MC comparison plot
-    leg = ROOT.TLegend(0.85,0.65,1.0,1.0)
-    leg.AddEntry(data_x,'data')
     for item in all_plots:
         mc_stack=item[0]
         data_hist = item[1]
@@ -62,6 +61,9 @@ def main():
     c1 = ROOT.TCanvas()
     event_numbers_stack.Draw('bar1')
     event_numbers_data.Draw('same PE1X0') 
+    leg.SetX1(0.8467049);leg.SetY1(0.5426087);leg.SetX2(0.9971347);leg.SetY2(0.8904348);        
+    leg.Draw('same')
+    
     c1.SaveAs(rundir+'plots/charge_compare.png')       
 
 def GetSampleColor(itype):
@@ -183,7 +185,6 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'h',log
     x_resid_pad.cd(); 
     h_res.Draw('PE1X0 '); xline.Draw()
     # h_res.GetXaxis().SetTitle(xaxis_name)
-
     c1.Update()    
     # Saving
     c1.SaveAs(name)
@@ -220,7 +221,7 @@ def comparison_plot(mc_,data_,legend,event_type='MC',draw_option = 'h',logy=Fals
     # Draw two histgrams
     mc_.Draw('draw_option')
     data_.Draw('SAME PE1X0')
-    # legend.Draw()
+    leg.Draw('same')
 
     # Saving
     c1.SaveAs(name)
