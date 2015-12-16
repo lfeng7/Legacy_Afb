@@ -86,6 +86,12 @@ parser.add_option('--nbcut', metavar='F', type='int', action='store',
                   dest='nbcut',
                   help='Number of b-tagged jets cut')
 
+parser.add_option('--njcut', metavar='F', type='int', action='store',
+                  default = 5,
+                  dest='njcut',
+                  help='Number of jets cut')
+
+
 parser.add_option('--nlepcut', metavar='F', type='int', action='store',
                   default = 1,
                   dest='nlepcut',
@@ -221,6 +227,7 @@ def MakeHistograms():
                 for ijet in tmptree.jets_csv:
                     if ijet>csvm : bjets.append(ijet)
                 if not len(bjets) >= options.nbcut : continue
+                if not len(tmptree.jets_csv) <= options.njcut: continue
                 # leptons  
                 if options.fakelep == 'yes':
                     lep_isos = tmptree.lep_iso
@@ -309,6 +316,7 @@ def MakeHistograms():
                     for ijet in tmptree.jets_csv:
                         if ijet>csvm : bjets.append(ijet)
                     if not len(bjets) >= options.nbcut : continue
+                    if not len(tmptree.jets_csv) <= options.njcut: continue
                     # leptons  
                     if options.fakelep == 'yes':
                         lep_isos = tmptree.lep_iso
@@ -345,6 +353,7 @@ def MakeHistograms():
                 for ijet in tmptree.jets_csv:
                     if ijet>csvm : bjets.append(ijet)
                 if not len(bjets) >= options.nbcut : continue
+                if not len(tmptree.jets_csv) <= options.njcut: continue
                 # leptons  
                 if options.fakelep == 'yes':
                     lep_isos = tmptree.lep_iso
