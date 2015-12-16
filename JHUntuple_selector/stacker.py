@@ -1,7 +1,8 @@
 # This small macro will read in all edm files in a directory and count the total number of events 
 # v2. Will take a ttree, make histograms, and stack with data. And calculate correction weights for MC
 
-from utility import *
+from Legacy_Afb.Tools.root_utility import *
+from Legacy_Afb.Tools.python_utility import *
 
 from optparse import OptionParser
 
