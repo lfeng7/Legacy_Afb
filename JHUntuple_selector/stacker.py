@@ -222,9 +222,9 @@ def MakeHistograms():
                     if ijet>csvm : bjets.append(ijet)
                 if not len(bjets) >= options.nbcut : continue
                 # leptons  
-                lep_isos = tmptree.lep_iso
-                if not lep_isos.size() >= options.nlepcut : continue
                 if options.fakelep == 'yes':
+                    lep_isos = tmptree.lep_iso
+                    if not lep_isos.size() == options.nlepcut : continue                    
                     toskip = 0
                     for ilep in lep_isos:
                         if ilep < options.lepisocut : toskip = 1
@@ -246,13 +246,15 @@ def MakeHistograms():
                 lep_pts = tmptree.lep_pt
                 lep_etas = tmptree.lep_eta
                 lep_charges = tmptree.lep_charge
-                lep_isos = tmptree.lep_iso
+                if options.fakelep == 'yes':
+                    lep_isos = tmptree.lep_iso
                 h_Nleps.Fill(lep_pts.size())
                 for i in range(lep_pts.size()) :
                     h_lep_pt.Fill(lep_pts[i])
                     h_lep_eta.Fill(lep_etas[i])
                     h_lep_charge.Fill(lep_charges[i])
-                    h_lep_iso.Fill(lep_isos[i])
+                    if options.fakelep == 'yes':
+                        h_lep_iso.Fill(lep_isos[i])
                 #MET
                 h_MET.Fill(tmptree.met_pt[0])
                 #npv
@@ -308,9 +310,9 @@ def MakeHistograms():
                         if ijet>csvm : bjets.append(ijet)
                     if not len(bjets) >= options.nbcut : continue
                     # leptons  
-                    lep_isos = tmptree.lep_iso
-                    if not lep_isos.size() >= options.nlepcut : continue
                     if options.fakelep == 'yes':
+                        lep_isos = tmptree.lep_iso
+                        if not lep_isos.size() == options.nlepcut : continue                        
                         toskip = 0
                         for ilep in lep_isos:
                             if ilep < options.lepisocut : toskip = 1
@@ -344,9 +346,9 @@ def MakeHistograms():
                     if ijet>csvm : bjets.append(ijet)
                 if not len(bjets) >= options.nbcut : continue
                 # leptons  
-                lep_isos = tmptree.lep_iso
-                if not lep_isos.size() >= options.nlepcut : continue
                 if options.fakelep == 'yes':
+                    lep_isos = tmptree.lep_iso
+                    if not lep_isos.size() >= options.nlepcut : continue                    
                     toskip = 0
                     for ilep in lep_isos:
                         if ilep < options.lepisocut : toskip = 1
@@ -430,13 +432,15 @@ def MakeHistograms():
                 lep_pts = tmptree.lep_pt
                 lep_etas = tmptree.lep_eta
                 lep_charges = tmptree.lep_charge
-                lep_isos = tmptree.lep_iso
+                if options.fakelep == 'yes':
+                    lep_isos = tmptree.lep_iso
                 h_Nleps.Fill(lep_pts.size(),event_weight)
                 for i in range(lep_pts.size()) :
                     h_lep_pt.Fill(lep_pts[i],event_weight)
                     h_lep_eta.Fill(lep_etas[i],event_weight)
                     h_lep_charge.Fill(lep_charges[i],event_weight)
-                    h_lep_iso.Fill(lep_isos[i],event_weight)
+                    if options.fakelep == 'yes':
+                        h_lep_iso.Fill(lep_isos[i],event_weight)
                 # MET
                 h_MET.Fill(tmptree.met_pt[0],event_weight)
                 # npv
