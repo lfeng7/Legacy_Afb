@@ -491,7 +491,7 @@ def MakeComparisonPlots():
     stacklist = zip(hlist,stacks)
 
     # Make a legend
-    leg = ROOT.TLegend(0.85,0.65,1.0,1.0)
+    leg = ROOT.TLegend(0.7550143,0.4991304,0.9054441,0.8469565)
 
     # Process data files
 

@@ -321,6 +321,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
 
     legend.SetShadowColor(0)
     legend.SetLineColor(0)
+    legend.SetFillColor(0)
     legend.Draw()
 
     x_resid_pad.cd(); 
