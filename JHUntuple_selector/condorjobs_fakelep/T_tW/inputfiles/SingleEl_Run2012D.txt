@@ -1,1 +1,0 @@
-/eos/uscms/store/user/lfeng7/ntuples/jhu_diffmo_v2/SingleElectron/crab_SingleEl_Run2012D/151103_125421/0000/*.root

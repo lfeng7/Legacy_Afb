@@ -1,13 +1,14 @@
 fout = open('ana.listOfJobs','w')
-num_files = 71
-filesperjob =  10
+num_files = 41 
+filesperjob = 5 
 startfile = 0
-txtfile = 'DY3JetsToLL_M.txt'
-sampletype = 'DY3JetsToLL_M'
+txtfile = 'QCD_Pt-15to3000.txt'
+sampletype = 'QCD_Pt-15to3000'
 mcordata = 'mc'
+fakelep = 'no'
 while startfile < num_files :
 	toprint = 'python ./tardir/selection.py --txtfiles tardir/inputfiles/'+txtfile+' --makeplots no --mcordata '+mcordata
-	toprint += ' --mctype zjets  --maxevts -1 --type '+sampletype+' --grid yes --maxfiles '+str(filesperjob)+' --startfile '+str(startfile)+'\n'
+	toprint += ' --fakelep '+fakelep+' --mctype qcd --maxevts -1 --type '+sampletype+' --grid yes --maxfiles '+str(filesperjob)+' --startfile '+str(startfile)+'\n'
 	fout.write(toprint)
 	startfile += filesperjob
 

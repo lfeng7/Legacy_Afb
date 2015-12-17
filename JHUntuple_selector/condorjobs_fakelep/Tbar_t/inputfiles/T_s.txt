@@ -1,1 +1,0 @@
-/eos/uscms/store/user/eminizer/T_s-channel_TuneZ2star_8TeV-powheg-tauola/T_s_v1/151103_230733/0000/*.root
