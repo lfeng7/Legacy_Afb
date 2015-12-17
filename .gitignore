@@ -1,6 +1,8 @@
 # my repo specific files to untrack
-./JHUntuple_selector/condorjobs/T_t/inputfiles
-git rm --cached ./JHUntuple_selector/condorjobs/T_t/inputfiles
+./JHUntuple_selector/condorjobs/*/inputfiles
+git rm --cached ./JHUntuple_selector/condorjobs/*/inputfiles
+./JHUntuple_selector/condorjobs_fakelep/*/inputfiles
+git rm --cached ./JHUntuple_selector/condorjobs_fakelep/*/inputfiles
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
