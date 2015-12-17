@@ -184,7 +184,7 @@ def main():
             sample_types.append(sample_type)
         tmpf.Close()
     # Add hists into stack in certain order
-    alltypes = ['tt_bkg','bck','WJets','gg','qq','signal']
+    alltypes = ['qcd','tt_bkg','bck','WJets','gg','qq','signal']
     for itype in alltypes :
         isamples = [item for item in mc_samples if item[1]==itype]
         if len(isamples)==0:
@@ -258,6 +258,7 @@ def GetSampleColor(itype):
     if itype=='bck' : return 41
     if itype=='WJets': return ROOT.kGreen-3
     if itype=='tt_bkg': return ROOT.kMagenta
+    if itype=='qcd': return ROOT.kYellow
     return 0
 
 # This is specifically for comparing the stacked MC plots with data adding residule plots too
