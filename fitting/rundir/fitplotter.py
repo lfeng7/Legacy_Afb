@@ -32,6 +32,10 @@ parser.add_option('--dir', metavar='F', type='string', action='store',
 
 argv = []
 
+
+canvas_title = 'CMS Private Work, 19.7 fb^{-1} at #sqrt{s} = 8 TeV'
+
+
 def main():
     global rundir
 
@@ -50,6 +54,9 @@ def main():
     leg = fdata.Get('legend')
     all_plots = [(x_stack,data_x,'cs'),(y_stack,data_y,'fx'),(z_stack,data_z,'mtt')]
 
+    leg.SetX1NDC(0.6187291);leg.SetY1NDC(0.5104762);leg.SetX2NDC(0.9214047);leg.SetY2NDC(0.855873);  
+    leg.SetFillColor(0)   
+
     # Make data/MC comparison plot
     for item in all_plots:
         mc_stack=item[0]
@@ -61,8 +68,7 @@ def main():
     c1 = ROOT.TCanvas()
     event_numbers_stack.Draw('bar1')
     event_numbers_data.Draw('same PE1X0') 
-    leg.SetX1(0.8467049);leg.SetY1(0.5426087);leg.SetX2(0.9971347);leg.SetY2(0.8904348);        
-    leg.Draw('same')
+    # leg.Draw('same')
     
     c1.SaveAs(rundir+'plots/charge_compare.png')       
 
@@ -174,17 +180,29 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'h',log
     mc_.GetYaxis().SetTitleOffset(1.0)
     mc_.GetXaxis().SetLabelOffset(999)   
     data_.Draw('SAME PE1X0'); 
+    mc_.SetTitle(canvas_title)
     # Draw data stat box
     ROOT.gStyle.SetOptStat("e");
     data_.SetStats(1)
     data_.Draw('SAMEs PE1X0'); 
     x_histo_pad.Update()
     statbox1 = data_.FindObject("stats")
+    statbox1.SetLineColor(0)
     statbox1.Draw('sames')
+
+    leg = legend.Clone()
+    # leg.SetX1NDC(0.7550143);leg.SetY1NDC(0.4991304);leg.SetX2NDC(0.9054441);leg.SetY2NDC(0.8469565);            
+    leg.SetShadowColor(0)
+    leg.SetLineColor(0)
+    leg.Draw()
 
     x_resid_pad.cd(); 
     h_res.Draw('PE1X0 '); xline.Draw()
     # h_res.GetXaxis().SetTitle(xaxis_name)
+
+    obj_title = c1.FindObject("title")
+    obj_title.SetShadowColor(0)
+    obj_title.SetLineColor(0)    
     c1.Update()    
     # Saving
     c1.SaveAs(name)

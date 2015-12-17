@@ -183,11 +183,11 @@ def main():
         mc_samples[i] += (h_mc,)
         # Determine if we want to add an entry to legend
         if sample_type not in sample_types: 
-            leg.AddEntry(h_mc,sample_type,"F")
+            leg.AddEntry(h_mc,GetSampleName(sample_type),"F")
             sample_types.append(sample_type)
         tmpf.Close()
     # Add hists into stack in certain order
-    alltypes = ['qcd','tt_bkg','bck','WJets','gg','qq','signal']
+    alltypes = ['qcd','bck','WJets','tt_bkg','gg','qq','signal']
     for itype in alltypes :
         isamples = [item for item in mc_samples if item[1]==itype]
         if len(isamples)==0:
@@ -262,6 +262,18 @@ def GetSampleColor(itype):
     if itype=='WJets': return ROOT.kGreen-3
     if itype=='tt_bkg': return ROOT.kMagenta
     if itype=='qcd': return ROOT.kYellow
+    return 0
+
+def GetSampleName(itype):
+    if itype=='gg' : return 'gg/qg->t#bar{t}'
+    if itype=='qq' : return 'q#bar{q}->t#bar{t}'
+    if itype=='tt' or itype=='signal': return 't#bar{t}'
+    if itype=='bck' : return 'other bkg'
+    if itype=='WJets': return 'W+jets'
+    if itype=='tt_bkg': return 'dilep/had t#bar{t}'
+    if itype=='qcd': return 'QCD MJ'
+    if itype=='singletop': return 'single top'
+    if itype=='zjets': return 'z+jets'
     return 0
 
 # This is specifically for comparing the stacked MC plots with data adding residule plots too
