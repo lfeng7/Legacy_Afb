@@ -184,7 +184,7 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
 
         h_cutflow.Fill('no cut',1)
         # Apply trigger....
-        if not tmptree.trigger[0] : continue
+        if not tmptree.trigger[0] and options.applytrigger == 'yes' : continue
         h_cutflow.Fill('trigger',1)
         # Skip events that kinfit did not converge ( error flag == 4 )
         if not tmptree.final_errflags[0]==0 : continue

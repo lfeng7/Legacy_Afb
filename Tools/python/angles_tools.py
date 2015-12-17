@@ -125,7 +125,7 @@ def get_true_angles(mc_t,mc_tbar,qz=0):
     # find the unit bisectors direction
     bisector_vec = (proton_vec+proton2_vec)*(1.0/(proton_vec+proton2_vec).Mag());
     # Make sure unit bisectors direction is the same as mc_q direction
-    if bisector_vec*qz < -0.1 : # aka bisector and true qz are in opposite direction and qz exists!
+    if bisector_vec.Pz()*qz < -0.1 : # aka bisector and true qz are in opposite direction and qz exists!
         bisector_vec *= -1.0
     #find the CS angle
     cos_theta_cs=top_vec.Dot(bisector_vec);
