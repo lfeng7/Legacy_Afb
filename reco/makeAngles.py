@@ -5,6 +5,7 @@ from Legacy_Afb.Tools.angles_tools import *
 import glob
 from optparse import OptionParser
 import ROOT
+
 # from angles_tools import *
 
 # Job steering
@@ -108,7 +109,6 @@ def main():
     print("RealTime={0:6.2f} seconds, CpuTime={1:6.2f} seconds").format(rtime,ctime)
 
 
-
 # Do reconstruction for the given file, process only a specific part of it, and output to a new file
 # ex. tf1, 'Tbar_s','singletopbar' (for b-tagging correction purpose),2000,10000
 def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
@@ -149,6 +149,7 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
 
     vecs += [cos_theta,xf,mtt,cos_theta_mc,xf_mc,mtt_mc,init_type]
     br_names += ['cos_theta','xf','mtt','cos_theta_mc','xf_mc','mtt_mc','init_type']
+
     # Add branches to the tree
     branches = zip(br_names,vecs)
     for ibr in branches:
@@ -183,7 +184,7 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
 
         h_cutflow.Fill('no cut',1)
         # Apply trigger....
-        if not tmptree.trigger[0] : continue
+        if not tmptree.trigger[0] and options.applytrigger == 'yes' : continue
         h_cutflow.Fill('trigger',1)
         # Skip events that kinfit did not converge ( error flag == 4 )
         if not tmptree.final_errflags[0]==0 : continue
@@ -245,33 +246,39 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
                 tmp_type = 'qg'
             else : 
                 tmp_type = 'unknown'
+
             # Make 4vecs for t,tbar,q,qbar
-            if tmp_type == 'qqbar':
-                true_t_p4 = ROOT.TLorentzVector()
-                true_tbar_p4 = ROOT.TLorentzVector()
-                true_q_p4 = ROOT.TLorentzVector()
-                true_qbar_p4 = ROOT.TLorentzVector()
-                # Loop over gen pars to set p4
-                q_pdgids = [1,2,3,4]
-                qbar_pdgids = [-1,-2,-3,-4]
-                for i in range(gen_pt.size()):
-                    ipt = gen_pt[i]; ieta = gen_eta[i]; iphi = gen_phi[i]; imass = gen_mass[i];
-                    if gen_pdgid[i] in q_pdgids : true_q_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
-                    if gen_pdgid[i] in qbar_pdgids : true_qbar_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
-                    if gen_pdgid[i] == 6 : true_t_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
-                    if gen_pdgid[i] == -6 : true_tbar_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
-                # Get true cos,xf,mtt
-                true_results = get_true_angles(true_t_p4,true_tbar_p4,true_q_p4,true_qbar_p4)
-                true_xf = true_results[0]
-                true_mtt = true_results[1]
-                true_cos_theta = true_results[2]
-        # push back true quantities
-                xf_mc.push_back(true_xf)
-                mtt_mc.push_back(true_mtt)
-                cos_theta_mc.push_back(true_cos_theta)
+            true_t_p4 = ROOT.TLorentzVector()
+            true_tbar_p4 = ROOT.TLorentzVector()
+            true_q_p4 = ROOT.TLorentzVector()
+            # Loop over gen pars to set p4
+            q_pdgids = [1,2,3,4]
+            q_ids,q_pzs = [],[]
+            for i in range(gen_pt.size()):
+                ipt = gen_pt[i]; ieta = gen_eta[i]; iphi = gen_phi[i]; imass = gen_mass[i];
+                if gen_pdgid[i] in q_pdgids : 
+                    true_q_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
+                    q_ids.append(gen_pdgid[i])
+                    q_pzs.append(true_q_p4.Pz())
+                if gen_pdgid[i] == 6 : true_t_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
+                if gen_pdgid[i] == -6 : true_tbar_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
+            # Get true cos,xf,mtt
+            q_pz = 0.0
+            if len(q_ids) == 1:
+                q_pz = q_pzs[0]
+            true_results = get_true_angles(true_t_p4,true_tbar_p4,q_pz)
+            true_xf = true_results[0]
+            true_mtt = true_results[1]
+            true_cos_theta = true_results[2]           
+            # push back true quantities
+            xf_mc.push_back(true_xf)
+            mtt_mc.push_back(true_mtt)
+            cos_theta_mc.push_back(true_cos_theta)
+
         init_type.push_back(tmp_type)
 
         # Fill this entry
+        if options.slim == 'yes' and tmp_type!='qqbar':continue
         newtree.Fill()
 
     # Write and close files

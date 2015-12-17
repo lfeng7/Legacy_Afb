@@ -1,0 +1,1 @@
+root -l -b -q tardir/main_MC.C(0,1,"test1","tardir/MC_input_with_bkg.txt",0)

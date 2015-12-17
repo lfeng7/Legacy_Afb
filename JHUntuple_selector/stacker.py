@@ -1,7 +1,10 @@
 # This small macro will read in all edm files in a directory and count the total number of events 
 # v2. Will take a ttree, make histograms, and stack with data. And calculate correction weights for MC
 
-from utility import *
+from Legacy_Afb.Tools.root_utility import *
+from Legacy_Afb.Tools.python_utility import *
+from Legacy_Afb.Tools.ttbar_utility import *
+
 
 from optparse import OptionParser
 
@@ -74,7 +77,7 @@ parser.add_option('--fakelep', metavar='F', type='string', action='store',
                   help='If run on selected events with fake lepton.')
 
 parser.add_option('--lepisocut', metavar='F', type='int', action='store',
-                  default = 0.15,
+                  default = 0.2,
                   dest='lepisocut',
                   help='Lower bound for fake electron isolation.')
 
@@ -82,6 +85,12 @@ parser.add_option('--nbcut', metavar='F', type='int', action='store',
                   default = 1,
                   dest='nbcut',
                   help='Number of b-tagged jets cut')
+
+parser.add_option('--njcut', metavar='F', type='int', action='store',
+                  default = 5,
+                  dest='njcut',
+                  help='Number of jets cut')
+
 
 parser.add_option('--nlepcut', metavar='F', type='int', action='store',
                   default = 1,
@@ -118,23 +127,23 @@ flist = []
 
 #    0,                 1         2          3         4                   5
 # (MC_sample_name, sample_type, Nevts_gen, x-sec, nevts_total_ntuple, btag_type)
-# # Single Top
-# flist.append(['T_s','singletop',259961,3.79,259176,'singletop'] )
-# flist.append(['T_t','singletop',3758227,56.4,3748155,'singletop'] )
-# flist.append(['T_tW','singletop',497658,11.1,495559,'singletop'])
-# flist.append(['Tbar_s','singletop',139974, 1.76,139604,'singletopbar'])
-# flist.append(['Tbar_t','singletop',1935072, 30.7,1930185,'singletopbar'])
-# flist.append(['Tbar_tW','singletop',493460,11.1,491463,'singletopbar'])
-# # Wjets
-# flist.append(['W1JetsToLNu_TuneZ2Star_8TeV','wjets',23141598,6662.8,23038253,'wjets'])
-# flist.append(['W2JetsToLNu_TuneZ2Star_8TeV','wjets',34044921,2159.2,33993463,'wjets'])
-# flist.append(['W3JetsToLNu_TuneZ2Star_8TeV','wjets',15539503,640.4,15507852,'wjets'])
-# flist.append(['W4JetsToLNu_TuneZ2Star_8TeV','wjets',13382803,246.0,13326400,'wjets'])
-# # DYjets
-# flist.append(['DY1JetsToLL_M','zjets',24045248,660.6,23802736,'zjets'])
-# flist.append(['DY2JetsToLL_M','zjets',2352304,215.1,2345857,'zjets'])
-# flist.append(['DY3JetsToLL_M','zjets',11015445,65.79,10655325,'zjets'])
-# flist.append(['DY4JetsToLL_M','zjets',6402827,28.59,5843425,'zjets'])
+# Single Top
+flist.append(['T_s','singletop',259961,3.79,259176,'singletop'] )
+flist.append(['T_t','singletop',3758227,56.4,3748155,'singletop'] )
+flist.append(['T_tW','singletop',497658,11.1,495559,'singletop'])
+flist.append(['Tbar_s','singletop',139974, 1.76,139604,'singletopbar'])
+flist.append(['Tbar_t','singletop',1935072, 30.7,1930185,'singletopbar'])
+flist.append(['Tbar_tW','singletop',493460,11.1,491463,'singletopbar'])
+# Wjets
+flist.append(['W1JetsToLNu_TuneZ2Star_8TeV','wjets',23141598,6662.8,23038253,'wjets'])
+flist.append(['W2JetsToLNu_TuneZ2Star_8TeV','wjets',34044921,2159.2,33993463,'wjets'])
+flist.append(['W3JetsToLNu_TuneZ2Star_8TeV','wjets',15539503,640.4,15507852,'wjets'])
+flist.append(['W4JetsToLNu_TuneZ2Star_8TeV','wjets',13382803,246.0,13326400,'wjets'])
+# DYjets
+flist.append(['DY1JetsToLL_M','zjets',24045248,660.6,23802736,'zjets'])
+flist.append(['DY2JetsToLL_M','zjets',2352304,215.1,2345857,'zjets'])
+flist.append(['DY3JetsToLL_M','zjets',11015445,65.79,10655325,'zjets'])
+flist.append(['DY4JetsToLL_M','zjets',6402827,28.59,5843425,'zjets'])
 # QCD
 flist.append(['QCD_Pt-15to3000','qcd',9991674,6662.6,9940092,'qcd'])
 # signal
@@ -180,19 +189,19 @@ def MakeHistograms():
         savetoroot([],'selected_hists',tmptype_name,event_type+'_control_plots')
 
         # Physics objects
-        h_lep_pt = ROOT.TH1D('lep_pt',event_type+' selected lepton pT;pT(GeV);events',nbins,0.,200.)
-        h_lep_eta = ROOT.TH1D('lep_eta',event_type+' selected lepton eta;eta;events',nbins,-2.7,2.7)
-        h_lep_charge = ROOT.TH1D('lep_charge',event_type+' charge of the selected lepton ;charge;events',20,-2,2)
-        h_m3 = ROOT.TH1D('m3',event_type+' M3;M3(GeV);events',40,0.,1000.)
-        h_Njets = ROOT.TH1D('Njets',event_type+' Num selected jets;Njets;events',5,3,8)
-        h_jets_pt = ROOT.TH1D('jets_pt',event_type+' selected jets pT;pT(GeV);events',nbins,30.,400.)
-        h_jets_eta = ROOT.TH1D('jets_eta',event_type+' selected jets eta;eta;events',nbins,-2.7,2.7)
-        h_MET = ROOT.TH1D('MET',event_type+' MET;MET(GeV);events',nbins,0.,200.)
-        h_Nbjets = ROOT.TH1D('Nbjets',event_type+' Num tagged bjets;Nbjets;events',4,0,4)
+        h_lep_pt = ROOT.TH1D('lep_pt',event_type+' selected lepton pT;lep p_{T}(GeV);Events',nbins,0.,200.)
+        h_lep_eta = ROOT.TH1D('lep_eta',event_type+' selected lepton eta;lep #eta;Events',nbins,-2.7,2.7)
+        h_lep_charge = ROOT.TH1D('lep_charge',event_type+' charge of the selected lepton ;lep charge;Events',20,-2,2)
+        h_m3 = ROOT.TH1D('m3',event_type+' M3;M3(GeV);Events',40,0.,1000.)
+        h_Njets = ROOT.TH1D('Njets',event_type+' Num selected jets;N_{jets};Events',5,3,8)
+        h_jets_pt = ROOT.TH1D('jets_pt',event_type+' selected jets pT;jets p_{T}(GeV);Events',nbins,30.,400.)
+        h_jets_eta = ROOT.TH1D('jets_eta',event_type+' selected jets eta;jets #eta;Events',nbins,-2.7,2.7)
+        h_MET = ROOT.TH1D('MET',event_type+' MET;MET(GeV);Events',nbins,0.,200.)
+        h_Nbjets = ROOT.TH1D('Nbjets',event_type+' Num tagged bjets;Number of b-jets;Events',4,0,4)
         h_npv = ROOT.TH1D('npv',htitle+';Number of Primary Vertices;Events',35,0,35)
-        h_5jets_pt = ROOT.TH1D('5jets_pt',event_type+' selected 4 or 5 leading jets pT;pT(GeV);events',nbins,30.,400.)
-        h_lep_iso = ROOT.TH1D('lep_iso',htitle+';RelIso;events',nbins,0,1.0)
-        h_Nleps = ROOT.TH1D('Nleps',event_type+' Num selected leptons;Num leps;events',4,0,4)
+        h_5jets_pt = ROOT.TH1D('5jets_pt',event_type+' selected 4 or 5 leading jets pT;5 jets p_{T}(GeV);Events',nbins,30.,400.)
+        h_lep_iso = ROOT.TH1D('lep_iso',htitle+';Lepton Relative Isolation;Events',nbins,0,1.0)
+        h_Nleps = ROOT.TH1D('Nleps',event_type+' Number of leptons;N_{leps};Events',4,0,4)
 
         # Make a list of histograms for write
         tmplist = [h_cutflow,h_cutflow_norm,h_lep_pt,h_lep_eta,h_lep_charge, h_m3,h_Njets,h_jets_pt,h_jets_eta,h_MET,h_Nbjets,h_npv]
@@ -212,16 +221,17 @@ def MakeHistograms():
                 #######################################################
                 # trigger
                 if options.applytrigger == 'yes':
-                    if tmptree.trigger[0] == 0 : continue
+                    if not tmptree.trigger[0]: continue
                 # jets
                 bjets = []
                 for ijet in tmptree.jets_csv:
                     if ijet>csvm : bjets.append(ijet)
                 if not len(bjets) >= options.nbcut : continue
+                if not len(tmptree.jets_csv) <= options.njcut: continue
                 # leptons  
-                lep_isos = tmptree.lep_iso
-                if not lep_isos.size() >= options.nlepcut : continue
                 if options.fakelep == 'yes':
+                    lep_isos = tmptree.lep_iso
+                    if not lep_isos.size() == options.nlepcut : continue                    
                     toskip = 0
                     for ilep in lep_isos:
                         if ilep < options.lepisocut : toskip = 1
@@ -243,13 +253,15 @@ def MakeHistograms():
                 lep_pts = tmptree.lep_pt
                 lep_etas = tmptree.lep_eta
                 lep_charges = tmptree.lep_charge
-                lep_isos = tmptree.lep_iso
+                if options.fakelep == 'yes':
+                    lep_isos = tmptree.lep_iso
                 h_Nleps.Fill(lep_pts.size())
                 for i in range(lep_pts.size()) :
                     h_lep_pt.Fill(lep_pts[i])
                     h_lep_eta.Fill(lep_etas[i])
                     h_lep_charge.Fill(lep_charges[i])
-                    h_lep_iso.Fill(lep_isos[i])
+                    if options.fakelep == 'yes':
+                        h_lep_iso.Fill(lep_isos[i])
                 #MET
                 h_MET.Fill(tmptree.met_pt[0])
                 #npv
@@ -298,16 +310,17 @@ def MakeHistograms():
                     #######################################################
                     # trigger
                     if options.applytrigger == 'yes':
-                        if tmptree.trigger[0] == 0 : continue
+                        if not tmptree.trigger[0] : continue
                     # jets
                     bjets = []
                     for ijet in tmptree.jets_csv:
                         if ijet>csvm : bjets.append(ijet)
                     if not len(bjets) >= options.nbcut : continue
+                    if not len(tmptree.jets_csv) <= options.njcut: continue
                     # leptons  
-                    lep_isos = tmptree.lep_iso
-                    if not lep_isos.size() >= options.nlepcut : continue
                     if options.fakelep == 'yes':
+                        lep_isos = tmptree.lep_iso
+                        if not lep_isos.size() == options.nlepcut : continue                        
                         toskip = 0
                         for ilep in lep_isos:
                             if ilep < options.lepisocut : toskip = 1
@@ -340,10 +353,11 @@ def MakeHistograms():
                 for ijet in tmptree.jets_csv:
                     if ijet>csvm : bjets.append(ijet)
                 if not len(bjets) >= options.nbcut : continue
+                if not len(tmptree.jets_csv) <= options.njcut: continue
                 # leptons  
-                lep_isos = tmptree.lep_iso
-                if not lep_isos.size() >= options.nlepcut : continue
                 if options.fakelep == 'yes':
+                    lep_isos = tmptree.lep_iso
+                    if not lep_isos.size() >= options.nlepcut : continue                    
                     toskip = 0
                     for ilep in lep_isos:
                         if ilep < options.lepisocut : toskip = 1
@@ -427,13 +441,15 @@ def MakeHistograms():
                 lep_pts = tmptree.lep_pt
                 lep_etas = tmptree.lep_eta
                 lep_charges = tmptree.lep_charge
-                lep_isos = tmptree.lep_iso
+                if options.fakelep == 'yes':
+                    lep_isos = tmptree.lep_iso
                 h_Nleps.Fill(lep_pts.size(),event_weight)
                 for i in range(lep_pts.size()) :
                     h_lep_pt.Fill(lep_pts[i],event_weight)
                     h_lep_eta.Fill(lep_etas[i],event_weight)
                     h_lep_charge.Fill(lep_charges[i],event_weight)
-                    h_lep_iso.Fill(lep_isos[i],event_weight)
+                    if options.fakelep == 'yes':
+                        h_lep_iso.Fill(lep_isos[i],event_weight)
                 # MET
                 h_MET.Fill(tmptree.met_pt[0],event_weight)
                 # npv
@@ -475,7 +491,7 @@ def MakeComparisonPlots():
     stacklist = zip(hlist,stacks)
 
     # Make a legend
-    leg = ROOT.TLegend(0.85,0.65,1.0,1.0)
+    leg = ROOT.TLegend(0.7550143,0.4991304,0.9054441,0.8469565)
 
     # Process data files
 

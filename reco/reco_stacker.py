@@ -2,7 +2,7 @@
 # v2. Will take a ttree, make histograms, and stack with data. And calculate correction weights for MC
 
 from Legacy_Afb.Tools.ttbar_utility import * 
-from Legacy_Afb.Tools import *
+from Legacy_Afb.Tools.root_utility import *
 
 from optparse import OptionParser
 

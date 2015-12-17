@@ -1,0 +1,6 @@
+corrections,Rqqbar,Rbck,Delta,Afb
+btag_eff_reweight,0.0003,0.0001,0.01815,0.00195
+lepID_reweight,0.00015,0.0004,0.0478,0.00085
+lepIso_reweight,0.0,5e-05,0.0043,0.00075
+tracking_reweight,0.00035,0.00065,0.0204,0.00095
+trigger_reweight,0.0001,0.0002,0.02035,0.0005

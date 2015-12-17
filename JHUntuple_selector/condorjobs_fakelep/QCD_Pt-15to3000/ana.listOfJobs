@@ -1,9 +1,0 @@
-python ./tardir/selection.py --txtfiles tardir/inputfiles/QCD_Pt-15to3000.txt --makeplots no --mcordata mc --fakelep yes --mctype qcd --maxevts -1 --type QCD_Pt-15to3000 --grid yes --maxfiles 5 --startfile 0
-python ./tardir/selection.py --txtfiles tardir/inputfiles/QCD_Pt-15to3000.txt --makeplots no --mcordata mc --fakelep yes --mctype qcd --maxevts -1 --type QCD_Pt-15to3000 --grid yes --maxfiles 5 --startfile 5
-python ./tardir/selection.py --txtfiles tardir/inputfiles/QCD_Pt-15to3000.txt --makeplots no --mcordata mc --fakelep yes --mctype qcd --maxevts -1 --type QCD_Pt-15to3000 --grid yes --maxfiles 5 --startfile 10
-python ./tardir/selection.py --txtfiles tardir/inputfiles/QCD_Pt-15to3000.txt --makeplots no --mcordata mc --fakelep yes --mctype qcd --maxevts -1 --type QCD_Pt-15to3000 --grid yes --maxfiles 5 --startfile 15
-python ./tardir/selection.py --txtfiles tardir/inputfiles/QCD_Pt-15to3000.txt --makeplots no --mcordata mc --fakelep yes --mctype qcd --maxevts -1 --type QCD_Pt-15to3000 --grid yes --maxfiles 5 --startfile 20
-python ./tardir/selection.py --txtfiles tardir/inputfiles/QCD_Pt-15to3000.txt --makeplots no --mcordata mc --fakelep yes --mctype qcd --maxevts -1 --type QCD_Pt-15to3000 --grid yes --maxfiles 5 --startfile 25
-python ./tardir/selection.py --txtfiles tardir/inputfiles/QCD_Pt-15to3000.txt --makeplots no --mcordata mc --fakelep yes --mctype qcd --maxevts -1 --type QCD_Pt-15to3000 --grid yes --maxfiles 5 --startfile 30
-python ./tardir/selection.py --txtfiles tardir/inputfiles/QCD_Pt-15to3000.txt --makeplots no --mcordata mc --fakelep yes --mctype qcd --maxevts -1 --type QCD_Pt-15to3000 --grid yes --maxfiles 5 --startfile 35
-python ./tardir/selection.py --txtfiles tardir/inputfiles/QCD_Pt-15to3000.txt --makeplots no --mcordata mc --fakelep yes --mctype qcd --maxevts -1 --type QCD_Pt-15to3000 --grid yes --maxfiles 5 --startfile 40

@@ -44,12 +44,12 @@ parser.add_option('--fakelep', metavar='F', type='string', action='store',
                   help='If run on selected events with fake lepton.')
 
 parser.add_option('--lepisocut', metavar='F', type='float', action='store',
-                  default = 0.15,
+                  default = 0.2,
                   dest='lepisocut',
                   help='Lower bound for fake electron isolation.')
 
 parser.add_option('--nbcut', metavar='F', type='int', action='store',
-                  default = 1,
+                  default = 2,
                   dest='nbcut',
                   help='Number of b-tagged jets cut')
 
@@ -140,13 +140,14 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     fout_name = sample_name+'_reco_'+str(evt_start)+'_'+str(evt_end)+'.root'
     fout = ROOT.TFile(fout_name,'recreate')
     # Make output ttree
-    tmptree.SetBranchStatus('jets*',0)
+    #tmptree.SetBranchStatus('jets*',0)
     tmptree.SetBranchStatus('lep*',0)
     tmptree.SetBranchStatus('lep_charge',1)
     if isFakeLep == 'yes':
         tmptree.SetBranchStatus('lep_iso',1)
     tmptree.SetBranchStatus('met*',0)
-    tmptree.SetBranchStatus('pileup*',0)
+    # tmptree.SetBranchStatus('pileup*',0)
+    tmptree.SetBranchStatus('weight_*',0)
     newtree = tmptree.CloneTree(0)
     tmptree.SetBranchStatus('*',1)
 
@@ -177,8 +178,9 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     chi2_mass = ROOT.vector('float')()
     chi2_scale = ROOT.vector('float')()
     chi2_csv = ROOT.vector('float')()
-    vecs+=[total_chi2,chi2_mass,chi2_scale,chi2_csv]
-    br_names+=['total_chi2','chi2_mass','chi2_scale','chi2_csv']
+    chi2_mass_terms = ROOT.vector('float')()
+    vecs+=[total_chi2,chi2_mass,chi2_scale,chi2_csv,chi2_mass_terms]
+    br_names+=['total_chi2','chi2_mass','chi2_scale','chi2_csv','chi2_mass_terms']
 
     # Corrections
     if sample_type != 'data':
@@ -262,7 +264,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         # leptons  
         if isFakeLep == 'yes':
             lep_isos = tmptree.lep_iso
-            if not lep_isos.size() >= options.nlepcut : continue
+            if not lep_isos.size() == options.nlepcut : continue
             toskip = 0
             for ilep in lep_isos:
                 if ilep < options.lepisocut : toskip = 1
@@ -371,7 +373,10 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
             total_chi2.push_back(all_chis2[0])
             chi2_mass.push_back(all_chis2[1])
             chi2_scale.push_back(all_chis2[2])
-            chi2_csv.push_back(all_chis2[3])            
+            chi2_csv.push_back(all_chis2[3])    
+        # chi2 mass constraint terms: thad,tlep,whad,wlep
+        for i in [4,5,6,7]:
+            chi2_mass_terms.push_back(all_chis1[i])
 
         #Fill the newtree
         newtree.Fill()

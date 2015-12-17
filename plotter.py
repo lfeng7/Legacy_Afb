@@ -25,6 +25,7 @@ parser.add_option('--Min', metavar='F', type='float', action='store',
                   help='')
 parser.add_option('--Max', metavar='F', type='float', action='store',
                   dest='Max',
+                  default=0,
                   help='')
 parser.add_option('--name', metavar='F', type='string', action='store',
               default = "blank",
@@ -121,13 +122,22 @@ if title == '': title=cut
 
 chain = ROOT.TChain(treename)
 chain.Add(file)
-newhist1 = ROOT.TH1F(name, name, bin, x, y)  
-chain.Draw(var+">>"+name,""+ cut, "goff")
+# Making histograms
+if x!=y:
+  newhist1 = ROOT.TH1F(name, name, bin, x, y)
+  chain.Draw(var+">>"+name,""+ cut, "goff")
+else:
+  chain.Draw(var+">>"+name,""+ cut, "goff")
+  newhist1 = gDirectory.Get(name)  
 hists = [newhist1]
 all_cuts = [cut]
 if cut2!=cut and cut2!='':
-    newhist2 = ROOT.TH1F(name+'2', name+'2', bin, x, y)  
-    chain.Draw(var+">>"+name+'2',""+ cut2, "goff")
+    if x!=y:
+      newhist2 = ROOT.TH1F(name+'2', name+'2', bin, x, y)  
+      chain.Draw(var+">>"+name+'2',""+ cut2, "goff")
+    else:
+      chain.Draw(var+">>"+name+'2',""+ cut2, "goff")  
+      newhist2 = gDirectory.Get(name+'2')          
     hists.append(newhist2)
     all_cuts.append(cut2)
 
@@ -136,7 +146,8 @@ ihist = 0
 ymax = 0
 for newhist in hists:
     if len(hists)>1:
-        newhist.SetStats(0)
+        # newhist.SetStats(0)
+        pass
     newhist.SetLineColor(icolor[ihist])
     newhist.SetLineWidth(1)
     newhist.SetLineStyle(1) 
@@ -166,6 +177,10 @@ for newhist in hists:
 # set ymax for hists
 for newhist in hists:
     newhist.SetMaximum(1.2*ymax)
+    if ymax > 1 :
+      newhist.SetMinimum(1)
+    else:
+      newhist.SetMinimum(0.001)
 
 c = TCanvas()
 c.cd()
@@ -174,12 +189,37 @@ if log:
     c.SetLogy()
 
 newhist1.Draw()
-if len(hists)>1: hists[1].Draw('same')
+# find stat box of hist1
+# lof = newhist1.GetListOfFunctions()
+# statbox1 = newhist1.FindObject("stats")
+gPad.Update()
+statbox1 = newhist1.FindObject("stats")
+statbox1.SetTextColor(icolor[0])
+statbox1.SetX1NDC(0.8)
+statbox1.SetY1NDC(0.83)
+statbox1.SetX2NDC(1)
+statbox1.SetY2NDC(1)
+# Draw second hists if there's a second cut
+if len(hists)>1: 
+  hist2 = hists[1]
+  hist2.Draw('sames')
+  # set stat box
+  gPad.Update()
+  statbox2 = hist2.FindObject("stats")  
+  statbox2.SetTextColor(icolor[1])
+  statbox2.SetX1NDC(0.8)
+  statbox2.SetY1NDC(0.67)
+  statbox2.SetX2NDC(1)
+  statbox2.SetY2NDC(0.83)
+  statbox2.Draw('sames')
+
+statbox1.Draw('sames')
+
 
 labels=[label,label2]
 
 if label != "" or len(all_cuts)>1:
-    leg = ROOT.TLegend(0.65, 0.75, 0.89, 0.89)
+    leg = ROOT.TLegend(0.8,0.52,1,0.65)
     leg.SetFillColor(0)
     leg.SetLineColor(0)
     #leg.SetTextSize(0.02)

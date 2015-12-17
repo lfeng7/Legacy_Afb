@@ -1,0 +1,9 @@
+Running dir for template fit
+To run fits, go into a subdir, such as test_run,then do:
+(1)Edit MC_input_with_bkg.txt and data_input.txt
+(2) source get_hist.sh (interactive) or source grid_sub_MC.csh and source cleanup_MC.sh (submit condor job)
+(3) source run_combine_fit.sh or source grid_sub_combined.csh and source cleanup_grid.sh (condor)
+Step 2 will make *_histos.root in histo_files/ for all MC angles_templates_*.root ,aka 3D MC templates for fitting to data in step 3
+Step 3 will first make *_histos.root for all data angles_templates.root files for template fit. Then merge all MC *_histos.root into aggregated_distributions.root as The template root file for actual fit. Then smoothing will be done, generating templates.root Finally do template fit to data
+To use different cut on kinfit chi2:
+(*) Edit angles.C and angles_data.C, change lnL cut preset values
