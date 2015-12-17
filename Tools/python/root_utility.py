@@ -4,6 +4,10 @@ import math
 ROOT.gROOT.SetBatch(True)
 ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
 
+
+canvas_title = 'CMS Private Work, 19.7 fb^{-1} at #sqrt{s} = 8 TeV'
+
+
 def normalized_compare_plots(histlist):
     """Make a compared plots with different color and renormalized"""
     if not len(histlist) > 0 : 
@@ -304,9 +308,27 @@ def comparison_plot_v1(mc_,data_,legend,event_type='MC',upload = False,logy=Fals
     mc_.GetYaxis().SetTitle("events") 
     mc_.GetXaxis().SetLabelOffset(999)
     mc_.GetYaxis().SetTitleOffset(1.2)
+    mc_.SetTitle(canvas_title)
+
+    # Draw data stat box
+    ROOT.gStyle.SetOptStat("e");
+    data_.SetStats(1)
+    data_.Draw('SAMEs PE1X0'); 
+    x_histo_pad.Update()
+    statbox1 = data_.FindObject("stats")
+    statbox1.SetLineColor(0)
+    statbox1.Draw('sames')
+
+    legend.SetShadowColor(0)
+    legend.SetLineColor(0)
     legend.Draw()
+
     x_resid_pad.cd(); 
     h_res.Draw('PE1X0 '); xline.Draw()
+
+    obj_title = c1.FindObject("title")
+    obj_title.SetShadowColor(0)
+    obj_title.SetLineColor(0)
     c1.Update()    
 
     # Saving

@@ -8,6 +8,7 @@ from optparse import OptionParser
 import os
 import glob
 
+# pavetex.SetShadowColor(0)
 # Job steering
 
 # Input inputFiles to use. This is in "glob" format, so you can use wildcards.
@@ -81,6 +82,8 @@ parser.add_option('--yields', metavar='F', type='string', action='store',
 
 argv = []
 
+canvas_title = 'CMS Private Work, 19.7 fb^{-1} at #sqrt{s} = 8 TeV'
+
 def main():
     global xaxis_name , fout
 
@@ -134,7 +137,7 @@ def main():
     # Loop over all MC files to make MC stack and legend
     mc_stack = ROOT.THStack(hname+'_stack',var+' comparison')
     sample_types = []
-    leg = ROOT.TLegend(0.8467049,0.5426087,0.9971347,0.8904348)
+    leg = ROOT.TLegend(0.7550143,0.4991304,0.9054441,0.8469565)
     leg.SetName('legend')
     hlist_mc = []
     for i,isample in enumerate(mc_samples):
@@ -335,7 +338,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'h',log
 
     # Some cosmetics for data
     data_.GetYaxis().SetTitle('Events')
-    data_.GetYaxis().SetTitleOffset(1.0)
+    data_.GetYaxis().SetTitleOffset(1.2)
     data_.SetMarkerStyle(20)
     data_.SetMarkerSize(0.5)
     data_.SetLineStyle(0)
@@ -362,6 +365,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'h',log
     mc_.GetYaxis().SetTitle("events")
     mc_.GetYaxis().SetTitleOffset(1.0)
     mc_.GetXaxis().SetLabelOffset(999)   
+    mc_.SetTitle(canvas_title)
     data_.Draw('SAME PE1X0'); 
     # Draw data stat box
     ROOT.gStyle.SetOptStat("e");
@@ -369,12 +373,19 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'h',log
     data_.Draw('SAMEs PE1X0'); 
     x_histo_pad.Update()
     statbox1 = data_.FindObject("stats")
+    statbox1.SetLineColor(0)
     statbox1.Draw('sames')
 
+    legend.SetShadowColor(0)
+    legend.SetLineColor(0)
     legend.Draw()
     x_resid_pad.cd(); 
     h_res.Draw('PE1X0 '); xline.Draw()
     h_res.GetXaxis().SetTitle(xaxis_name)
+
+    obj_title = c1.FindObject("title")
+    obj_title.SetShadowColor(0)
+    obj_title.SetLineColor(0)
     c1.Update()    
     # Saving
     c1.SaveAs(name)
