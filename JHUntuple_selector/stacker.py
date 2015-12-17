@@ -189,19 +189,19 @@ def MakeHistograms():
         savetoroot([],'selected_hists',tmptype_name,event_type+'_control_plots')
 
         # Physics objects
-        h_lep_pt = ROOT.TH1D('lep_pt',event_type+' selected lepton pT;pT(GeV);events',nbins,0.,200.)
-        h_lep_eta = ROOT.TH1D('lep_eta',event_type+' selected lepton eta;eta;events',nbins,-2.7,2.7)
-        h_lep_charge = ROOT.TH1D('lep_charge',event_type+' charge of the selected lepton ;charge;events',20,-2,2)
-        h_m3 = ROOT.TH1D('m3',event_type+' M3;M3(GeV);events',40,0.,1000.)
-        h_Njets = ROOT.TH1D('Njets',event_type+' Num selected jets;Njets;events',5,3,8)
-        h_jets_pt = ROOT.TH1D('jets_pt',event_type+' selected jets pT;pT(GeV);events',nbins,30.,400.)
-        h_jets_eta = ROOT.TH1D('jets_eta',event_type+' selected jets eta;eta;events',nbins,-2.7,2.7)
-        h_MET = ROOT.TH1D('MET',event_type+' MET;MET(GeV);events',nbins,0.,200.)
-        h_Nbjets = ROOT.TH1D('Nbjets',event_type+' Num tagged bjets;Nbjets;events',4,0,4)
+        h_lep_pt = ROOT.TH1D('lep_pt',event_type+' selected lepton pT;lep p_{T}(GeV);Events',nbins,0.,200.)
+        h_lep_eta = ROOT.TH1D('lep_eta',event_type+' selected lepton eta;lep #eta;Events',nbins,-2.7,2.7)
+        h_lep_charge = ROOT.TH1D('lep_charge',event_type+' charge of the selected lepton ;lep charge;Events',20,-2,2)
+        h_m3 = ROOT.TH1D('m3',event_type+' M3;M3(GeV);Events',40,0.,1000.)
+        h_Njets = ROOT.TH1D('Njets',event_type+' Num selected jets;N_{jets};Events',5,3,8)
+        h_jets_pt = ROOT.TH1D('jets_pt',event_type+' selected jets pT;jets p_{T}(GeV);Events',nbins,30.,400.)
+        h_jets_eta = ROOT.TH1D('jets_eta',event_type+' selected jets eta;jets #eta;Events',nbins,-2.7,2.7)
+        h_MET = ROOT.TH1D('MET',event_type+' MET;MET(GeV);Events',nbins,0.,200.)
+        h_Nbjets = ROOT.TH1D('Nbjets',event_type+' Num tagged bjets;Number of b-jets;Events',4,0,4)
         h_npv = ROOT.TH1D('npv',htitle+';Number of Primary Vertices;Events',35,0,35)
-        h_5jets_pt = ROOT.TH1D('5jets_pt',event_type+' selected 4 or 5 leading jets pT;pT(GeV);events',nbins,30.,400.)
-        h_lep_iso = ROOT.TH1D('lep_iso',htitle+';RelIso;events',nbins,0,1.0)
-        h_Nleps = ROOT.TH1D('Nleps',event_type+' Num selected leptons;Num leps;events',4,0,4)
+        h_5jets_pt = ROOT.TH1D('5jets_pt',event_type+' selected 4 or 5 leading jets pT;5 jets p_{T}(GeV);Events',nbins,30.,400.)
+        h_lep_iso = ROOT.TH1D('lep_iso',htitle+';Lepton Relative Isolation;Events',nbins,0,1.0)
+        h_Nleps = ROOT.TH1D('Nleps',event_type+' Number of leptons;N_{leps};Events',4,0,4)
 
         # Make a list of histograms for write
         tmplist = [h_cutflow,h_cutflow_norm,h_lep_pt,h_lep_eta,h_lep_charge, h_m3,h_Njets,h_jets_pt,h_jets_eta,h_MET,h_Nbjets,h_npv]
