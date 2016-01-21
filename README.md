@@ -12,3 +12,7 @@ Finished 11-21-15
 Add reco dir, with codes that do top pair reconstructions. The input is selected ttrees, and output is angles ttree.
 Add some ttree plotter code for quick plotting.
 
+v 4.0
+Finished 12-17-15
+Now template fit code is added!!! Also lots of great plotting codes!
+
