@@ -227,7 +227,6 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
     #For each combo, the extra jet goes in comboExtraJet
     #Remove any combos that have neither supposed b tagged as such, or any combo where the CSV value excludes one of the bs from being a b
     nbtags = len([ icsv for icsv in jetCandCSVs if icsv>0.679])
-    n_combos = len(combos)
     i = 0
     while True :
         twountagged = comboCSVs[i][0] < 0.679 and comboCSVs[i][1] < 0.679
@@ -245,6 +244,8 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
     if not len(combos) > 0 :
         print 'no valid combos'
         return 'none'
+    n_combos = len(combos)
+
     #Variables for the kinematic fits
     bestParValues1 = []
     bestParValues2 = []
@@ -297,8 +298,8 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
             for j in range(1,6) :
                 minuit.mnparm(j,parNames[j],1.0,1.0,0.2,1.8,ierflag)
             #Fix the scale 
-            for j in range(0,6) :
-#                minuit.FixParameter(j)
+            for j in range(1,6) :
+                minuit.FixParameter(j)
                 pass
             #minimize
             minf = 1000000000.
