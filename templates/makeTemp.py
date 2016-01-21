@@ -249,6 +249,7 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
     br_defs += [('correction_weight',correction_weight,'correction_weight/F')]
 
     # study beta
+<<<<<<< HEAD
     beta_v0 = array('f',[0.])
     beta_v1 = array('f',[0.])
     beta_v2 = array('f',[0.])
@@ -282,21 +283,25 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
     br_defs += [('cs_lab',cs_lab,'cs_lab/F')]    
    
 
+=======
+    beta_v0 = array('f',[-1.])
+    br_defs += [('beta_v0',beta_v0,'beta_v0/F')]
+    charge_ratio = array('i',[0])
+    br_defs += [('charge_ratio',charge_ratio,'charge_ratio/I')]
+>>>>>>> mydev
 
-      
     # Add branches to the tree
     for ibr in br_defs:
         newtree.Branch(ibr[0],ibr[1],ibr[2])
-    # Some added branches
-    all_vecs = []
-    charge_ratio = ROOT.vector('int')()
-    newtree.Branch('charge_ratio',charge_ratio)
-    all_vecs += [charge_ratio]
 
     # Add cutflow diagrams
     h_cutflow = ROOT.TH1D('cutflow_extra',' cutflow extra;cuts;events',5,0.,5.)
     # h_cutflow.SetBit(ROOT.TH1.kCanRebin)
     h_cutflow.SetDirectory(fout)
+    # Charge ratio hist
+    h_charge_ratio = ROOT.TH1D('charge_ratio',' charge_ratio;;events',5,0.,5.)
+    # h_charge_ratio.SetBit(ROOT.TH1.kCanRebin)
+    h_charge_ratio.SetDirectory(fout)
 
     # Find out if the sample is TTbar MC
     ttbar_names = ['TT','signal']
@@ -341,9 +346,6 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         if options.ttbar_type=='bkg' and tmptree.gen_type[0] == 'e_jets' : continue
         if options.ttbar_type=='qq' and not (tmptree.gen_type[0]=='e_jets' and tmptree.init_type[0]=='qqbar'):continue
         if options.ttbar_type=='gg' and not (tmptree.gen_type[0]=='e_jets' and tmptree.init_type[0]!='qqbar'):continue
-
-        # Fill branches
-        for ivec in all_vecs: ivec.clear()
 
         ttbar_mass[0] = tmptree.mtt[0]
         # reco_p4 is a list of tlep_p4,thad_p4,wlep_p4,whad_p4
@@ -391,7 +393,11 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         if tmptree.FindBranch('gen_type'): 
             if tmptree.gen_type[0] == 'e_jets' and tmptree.init_type[0] == 'qqbar':
                 weight_is_valid = 1
+<<<<<<< HEAD
 
+=======
+        beta_v0[0] = -1            
+>>>>>>> mydev
         if weight_is_valid == 1 :
             # print 'getting special ws!'
             # Make 4vecs of gen tlep_p4,thad_p4,wlep_p4,whad_p4
@@ -401,17 +407,19 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
             gen_mass = tmptree.gen_mass
             gen_side = tmptree.gen_side
             gen_pdgid = tmptree.gen_pdgid       
-            top_MC,Atop_MC = ROOT.TLorentzVector(),ROOT.TLorentzVector()
+            top_MC,Atop_MC = ROOT.TLorentzVector(),ROOT.TLorentzVector()            
             for i in range(gen_pdgid.size()):
                 if gen_pdgid[i] == 6 :
                     top_MC.SetPtEtaPhiM(gen_pt[i],gen_eta[i],gen_phi[i],gen_mass[i])
                 if gen_pdgid[i] == -6 :
                     Atop_MC.SetPtEtaPhiM(gen_pt[i],gen_eta[i],gen_phi[i],gen_mass[i])
+
             # Get weights
             tmp_w = GetAnglesWeights(top_MC,Atop_MC,tmptree.cos_theta_mc[0])
             w_a[0],w_a_opp[0],w_s_xi[0],w_s_xi_opp[0] = tmp_w[0],tmp_w[1],tmp_w[2],tmp_w[3]
             w_a_xi[0],w_a_xi_opp[0],w_s_delta[0],w_s_delta_opp[0] = tmp_w[4],tmp_w[5],tmp_w[6],tmp_w[7]
             w_a_delta[0],w_a_delta_opp[0] = tmp_w[8],tmp_w[9]
+<<<<<<< HEAD
             # beta v0, the original version in Nick's code
             # beta_v0[0]=tmp_w[10]
             # Alternative beta definitions
@@ -482,11 +490,16 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
                 beta_mc[i] = cs_results[4][i]
                 beta1[i] = cs_results[5][i]
                 beta2[i] = cs_results[6][i]
+=======
+            # beta study
+            beta_v0[0]=tmp_w[10]
+>>>>>>> mydev
 
         # gen branches only exist for ttbar MC, which makes PERFECT sense
         motherPIDs[0],motherPIDs[1] = -100,-100
         if tmptree.FindBranch('gen_pdgid'):
             motherPIDs[0],motherPIDs[1] = tmptree.gen_pdgid[0],tmptree.gen_pdgid[1]
+
         # a bunch of MC correction weights. Applies only for MC, literaly
         # So far, only weight_top_pT,w_btag,w_eleID,w_trigger,PU are there.
         top_pT_reweight[0],btag_eff_reweight[0],btag_eff_reweight_hi[0],btag_eff_reweight_low[0] = 1,1,1,1
@@ -513,10 +526,18 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
             correction_weight[0]*= lepIso_reweight[0]*tracking_reweight[0]
 
         # Added branch
-        if n_valid_jets[0] == 4 and Q_l[0]==  1 : charge_ratio.push_back(1)
-        if n_valid_jets[0] == 4 and Q_l[0]== -1 : charge_ratio.push_back(2)
-        if n_valid_jets[0] == 5 and Q_l[0]==  1 : charge_ratio.push_back(3)
-        if n_valid_jets[0] == 5 and Q_l[0]== -1 : charge_ratio.push_back(4)
+        if n_valid_jets[0] == 4 and Q_l[0]==  1 : 
+            charge_ratio[0]=1
+            h_charge_ratio.Fill('4jets,l+',1);h_charge_ratio.Fill('4jets,l-',0);h_charge_ratio.Fill('5jets,l+',0);h_charge_ratio.Fill('5jets,l-',0)
+        if n_valid_jets[0] == 4 and Q_l[0]== -1 : 
+            charge_ratio[0]=2
+            h_charge_ratio.Fill('4jets,l+',0);h_charge_ratio.Fill('4jets,l-',1);h_charge_ratio.Fill('5jets,l+',0);h_charge_ratio.Fill('5jets,l-',0)
+        if n_valid_jets[0] == 5 and Q_l[0]==  1 : 
+            charge_ratio[0]=3
+            h_charge_ratio.Fill('4jets,l+',0);h_charge_ratio.Fill('4jets,l-',0);h_charge_ratio.Fill('5jets,l+',1);h_charge_ratio.Fill('5jets,l-',0)
+        if n_valid_jets[0] == 5 and Q_l[0]== -1 : 
+            charge_ratio[0]=4
+            h_charge_ratio.Fill('4jets,l+',0);h_charge_ratio.Fill('4jets,l-',0);h_charge_ratio.Fill('5jets,l+',0);h_charge_ratio.Fill('5jets,l-',1)
 
         # Fill events that pass additional cuts
         newtree.Fill()

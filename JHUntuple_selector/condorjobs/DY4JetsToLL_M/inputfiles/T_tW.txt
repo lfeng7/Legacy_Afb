@@ -1,1 +1,0 @@
-/eos/uscms/store/user/lfeng7/ntuples/jhu_diffmo/T_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/crab_T_tW_v1/150930_165445/0000/*.root

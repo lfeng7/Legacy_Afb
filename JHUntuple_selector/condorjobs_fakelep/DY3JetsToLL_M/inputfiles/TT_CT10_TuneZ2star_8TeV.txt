@@ -1,1 +1,0 @@
-/eos/uscms/store/user/eminizer/TT_CT10_TuneZ2star_8TeV-powheg-tauola/TTBar_Powheg_v1/151103_230906/0000/*.root

@@ -21,7 +21,7 @@ bool genAsymmetricHisto = false; //Set to true if you want
 								//the asymmetric histogram
 								//generated from given w_a
 //limits on distributions of parameters
-double min_ttbar_mass = 300.0;
+double min_ttbar_mass = 350.0;
 double max_ttbar_mass = 1750.0;
 double min_Feynman_x = 0.0;
 double max_Feynman_x = 0.6;

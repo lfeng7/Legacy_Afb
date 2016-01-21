@@ -9,21 +9,21 @@ from optparse import OptionParser
 parser = OptionParser()
 
 parser.add_option('--cut', metavar='F', type='string', action='store',
-		  default="",
+          default="",
                   dest='cut',
                   help='')
 parser.add_option('--var', metavar='F', type='string', action='store',
                   dest='var',
                   help='')
 parser.add_option('--Min', metavar='F', type='float', action='store',
-		  default=0,
+          default=0,
                   dest='Min',
                   help='')
 parser.add_option('--Max', metavar='F', type='float', action='store',
                   dest='Max',
                   help='')
 parser.add_option('--name', metavar='F', type='string', action='store',
-	    	  default = "blank",
+              default = "blank",
                   dest='name',
                   help='')
 parser.add_option('--log', action='store_true', default=False,
@@ -44,31 +44,31 @@ parser.add_option('--file2', metavar='F', type='string', action='store',
                   default='',
                   dest='file2',
                   help='')
-parser.add_option('--save', action='store_true', default=False,
+parser.add_option('--save', action='store_true', default=True,
                   dest='save',
                   help='save plot')
 parser.add_option('--title', metavar='F', type='string', action='store',
-	    	  default = "",
+              default = "",
                   dest='title',
                   help='')
 parser.add_option('--xaxis', metavar='F', type='string', action='store',
-	    	  default = "",
+              default = "",
                   dest='xaxis',
                   help='')
 parser.add_option('--yaxis', metavar='F', type='string', action='store',
-	    	  default = "",
+              default = "",
                   dest='yaxis',
                   help='')
 parser.add_option('--label1', metavar='F', type='string', action='store',
-	    	  default = "",
+              default = "",
                   dest='label1',
                   help='')
 parser.add_option('--label2', metavar='F', type='string', action='store',
-	    	  default = "",
+              default = "",
                   dest='label2',
                   help='')
 parser.add_option('--config', action='store_true',
-	    	  default = False,
+              default = False,
                   dest='config',
                   help='')
 
@@ -123,31 +123,31 @@ if title == '': title=cut
 
 chain = ROOT.TChain(treename)
 chain.Add(file1)
-newhist1 = ROOT.TH1F(name, name, bin, x, y)	
+newhist1 = ROOT.TH1F(name, name, bin, x, y) 
 chain.Draw(var+">>"+name,""+ cut, "goff")
 
 chain = ROOT.TChain(treename)
 chain.Add(file2)
-newhist2 = ROOT.TH1F(name+"_two", name+"_two", bin, x, y)	
+newhist2 = ROOT.TH1F(name+"_two", name+"_two", bin, x, y)   
 chain.Draw(var+">>"+name+"_two",""+ cut, "goff")
 
 newhist1.SetStats(0)
 newhist1.SetLineColor(ROOT.kRed)
 newhist1.SetLineWidth(1)
-newhist1.SetLineStyle(1)	
+newhist1.SetLineStyle(1)    
 newhist1.SetFillColor(0)
 
 if xaxis == "":
-	newhist1.GetXaxis().SetTitle(var)
+    newhist1.GetXaxis().SetTitle(var)
 else:
-	newhist1.GetXaxis().SetTitle(xaxis)
+    newhist1.GetXaxis().SetTitle(xaxis)
 if yaxis == "":
-	if not scale:
-		newhist1.GetYaxis().SetTitle("Events")
-	else:
-		newhist1.GetYaxis().SetTitle("scaled to Integral = 1")
+    if not scale:
+        newhist1.GetYaxis().SetTitle("Events")
+    else:
+        newhist1.GetYaxis().SetTitle("scaled to Integral = 1")
 else:
-	newhist1.GetYaxis().SetTitle(yaxis)
+    newhist1.GetYaxis().SetTitle(yaxis)
 newhist1.GetYaxis().SetTitleSize(0.04)
 newhist1.GetYaxis().SetTitleOffset(1.05)
 newhist1.GetXaxis().SetTitleOffset(0.9)
@@ -158,10 +158,11 @@ c.cd()
 newhist1.SetTitle(title)
 
 if log:
-	c.SetLogy()
+    c.SetLogy()
 if scale:
-	newhist1.Scale(1/newhist1.Integral())
-	newhist2.Scale(1/newhist2.Integral())
+    newhist1.Scale(1/newhist1.Integral())
+    newhist2.Scale(1/newhist2.Integral())
+    newhist1.SetMinimum(0)
 
 newhist2.SetLineColor(ROOT.kBlue)
 
@@ -169,26 +170,26 @@ newhist1.SetMaximum(max(newhist1.GetMaximum(),newhist2.GetMaximum())*1.1)
 newhist1.Draw()
 newhist2.Draw("same")
 if label1 != "":
-	leg = ROOT.TLegend(0.65, 0.75, 0.89, 0.89)
-	leg.SetFillColor(0)
-	leg.SetLineColor(0)
-	#leg.SetTextSize(0.02)
-	leg.AddEntry(newhist1, label1, "l")
-	leg.AddEntry(newhist2, label2, "l")
-	leg.Draw("same")
+    leg = ROOT.TLegend(0.65, 0.75, 0.89, 0.89)
+    leg.SetFillColor(0)
+    leg.SetLineColor(0)
+    #leg.SetTextSize(0.02)
+    leg.AddEntry(newhist1, label1, "l")
+    leg.AddEntry(newhist2, label2, "l")
+    leg.Draw("same")
 print "entries file1: " + str(newhist1.GetEntries())
 print "entries file2: " + str(newhist2.GetEntries())
 
 plotdir = 'plots/'
 if save == True:
-	c.SaveAs(plotdir+name + ".png")
+    c.SaveAs(plotdir+name + ".png")
 if not save:
-	print "Enter save/saveas, or other to close:"
-	save = raw_input()
-	if save == "save":
-		c.SaveAs(name + ".png")
-	if save == "saveas":
-		print "enter file name:"
-		savename = raw_input()
-		c.SaveAs(savename + ".png")
+    print "Enter save/saveas, or other to close:"
+    save = raw_input()
+    if save == "save":
+        c.SaveAs(name + ".png")
+    if save == "saveas":
+        print "enter file name:"
+        savename = raw_input()
+        c.SaveAs(savename + ".png")
 

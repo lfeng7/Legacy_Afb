@@ -154,8 +154,7 @@ def main():
         for ifile in files:
             if options.inputFiles == '':
                 # find the index of the input file
-                index_ = ifile.split('jhutester_numEvent10000_')
-                index_ = index_[1].split('.root')
+                index_ = ifile.split('numEvent')[1].split('.root')[0].split('_')[1]
                 f_index = int( index_[0])
             print 'processing file  '+ifile
             #print 'current file index is',f_index
