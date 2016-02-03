@@ -6,7 +6,13 @@ from ROOT import *
 import sys
 from optparse import OptionParser
 
+ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
+
 parser = OptionParser()
+
+parser.add_option('--plot', action='store_true', default=False,
+                  dest='plot',
+                  help='plot interactively')
 
 parser.add_option('--cut', metavar='F', type='string', action='store',
           default="",
@@ -99,9 +105,12 @@ else:
     yaxis = options.yaxis
     save = options.save
     label = options.label
+    plot = options.plot
 
 # some preset stuff
 colors = [2,4,6,8,9]
+# Set root interactive or not
+if not plot: ROOT.gROOT.SetBatch(True)
 
 # Getting all file names
 all_files = glob.glob(file1)
@@ -150,8 +159,8 @@ for i,ifile in enumerate(files):
     else:
         newhist1.GetYaxis().SetTitle(yaxis)
     newhist1.GetYaxis().SetTitleSize(0.04)
-    newhist1.GetYaxis().SetTitleOffset(1.05)
-    newhist1.GetXaxis().SetTitleOffset(0.9)
+    newhist1.GetYaxis().SetTitleOffset(1.6)
+    newhist1.GetXaxis().SetTitleOffset(1.2)
     newhist1.GetXaxis().SetTitleSize(0.04)
     if scale:
         newhist1.Scale(1/newhist1.Integral())
@@ -165,9 +174,10 @@ c = TCanvas()
 c.cd()
 if log:
     c.SetLogy()
-leg = ROOT.TLegend(0.65, 0.75, 0.89, 0.89)
+leg = ROOT.TLegend(0.6057047,0.6685824,0.8288591,0.8275862)
 leg.SetFillColor(0)
 leg.SetLineColor(0) 
+leg.SetTextSize(0.03448276)
 # Read labels
 labels = []
 labels = label.split(' ')
@@ -187,6 +197,7 @@ leg.Draw("same")
 plotdir = 'plots/'
 if save == True:
     c.SaveAs(plotdir+name + ".png")
+    c.SaveAs(plotdir+name + ".root")
 if not save:
     print "Enter save/saveas, or other to close:"
     save = raw_input()
@@ -196,4 +207,4 @@ if not save:
         print "enter file name:"
         savename = raw_input()
         c.SaveAs(savename + ".png")
-
+    
