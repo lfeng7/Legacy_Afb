@@ -1,6 +1,4 @@
 # Take in the angles ttree from reco, and make input ttree for original template making and fitting codes
-# This is the debug version
-# 12-12-15
 
 # from Legacy_Afb.Tools.ttbar_utility import *
 # from Legacy_Afb.Tools.angles_tools import *
@@ -249,46 +247,10 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
     br_defs += [('correction_weight',correction_weight,'correction_weight/F')]
 
     # study beta
-<<<<<<< HEAD
-    beta_v0 = array('f',[0.])
-    beta_v1 = array('f',[0.])
-    beta_v2 = array('f',[0.])
-    mtt_mc = array('f',[0.])
-    mt_mc = array('f',[0.])
-    m_tbar_mc = array('f',[0.])
-
-    br_defs += [('beta_v0',beta_v0,'beta_v0/F')]
-    br_defs += [('beta_v1',beta_v1,'beta_v1/F')]
-    br_defs += [('beta_v2',beta_v2,'beta_v2/F')]
-    br_defs += [('mtt_mc',mtt_mc,'mtt_mc/F')]
-    br_defs += [('mt_mc',mt_mc,'mt_mc/F')]
-    br_defs += [('m_tbar_mc',m_tbar_mc,'m_tbar_mc/F')]
-
-    # study cos_theta
-    positive_z = array('i',[0])
-    cs_bisector = array('f',[0.])
-    beta_mc = array('f',3*[0.])
-    beta1 = array('f',3*[0.])
-    beta2 = array('f',3*[0.])
-    delta_mag = array('f',[0.])
-    cos_theta_mc_v1 = array('f',[-10.])
-    cs_lab = array('f',[-10.])
-    br_defs += [('cos_theta_mc_v1',cos_theta_mc_v1,'cos_theta_mc_v1/F')]    
-    br_defs += [('positive_z',positive_z,'positive_z/I')]
-    br_defs += [('cs_bisector',cs_bisector,'cs_bisector/F')]
-    br_defs += [('beta_mc',beta_mc,'beta_mc[3]/F')]
-    br_defs += [('beta1',beta1,'beta1[3]/F')]
-    br_defs += [('beta2',beta2,'beta2[3]/F')]
-    br_defs += [('delta_mag',delta_mag,'delta_mag/F')]
-    br_defs += [('cs_lab',cs_lab,'cs_lab/F')]    
-   
-
-=======
     beta_v0 = array('f',[-1.])
     br_defs += [('beta_v0',beta_v0,'beta_v0/F')]
     charge_ratio = array('i',[0])
     br_defs += [('charge_ratio',charge_ratio,'charge_ratio/I')]
->>>>>>> mydev
 
     # Add branches to the tree
     for ibr in br_defs:
@@ -329,7 +291,7 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
     n_evt = 0
     for iev in range(evt_start,tmptree.GetEntries()):
         # Progress report
-        if iev%1000 == 0 : print 'processing event',iev 
+        if iev%5000 == 0 : print 'processing event',iev 
         # Break at the given event number
         if iev == evt_end : print 'Finish processing. Quit at event',evt_end; break ;
         
@@ -393,11 +355,7 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         if tmptree.FindBranch('gen_type'): 
             if tmptree.gen_type[0] == 'e_jets' and tmptree.init_type[0] == 'qqbar':
                 weight_is_valid = 1
-<<<<<<< HEAD
-
-=======
         beta_v0[0] = -1            
->>>>>>> mydev
         if weight_is_valid == 1 :
             # print 'getting special ws!'
             # Make 4vecs of gen tlep_p4,thad_p4,wlep_p4,whad_p4
@@ -419,81 +377,8 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
             w_a[0],w_a_opp[0],w_s_xi[0],w_s_xi_opp[0] = tmp_w[0],tmp_w[1],tmp_w[2],tmp_w[3]
             w_a_xi[0],w_a_xi_opp[0],w_s_delta[0],w_s_delta_opp[0] = tmp_w[4],tmp_w[5],tmp_w[6],tmp_w[7]
             w_a_delta[0],w_a_delta_opp[0] = tmp_w[8],tmp_w[9]
-<<<<<<< HEAD
-            # beta v0, the original version in Nick's code
-            # beta_v0[0]=tmp_w[10]
-            # Alternative beta definitions
-
-        # Some study of cos_theta_mc for all TTbar MC samples
-        # init
-        beta_v0[0]=-1
-        beta_v1[0]=-1
-        beta_v2[0]=-1
-        mtt_mc[0] = -1
-        mt_mc[0],m_tbar_mc[0] = -1,-1        
-        positive_z[0],cs_bisector[0],delta_mag[0] = -10,-10,-1000
-        cs_lab[0],cos_theta_mc_v1[0] = -10,-10
-        for i in range(3):
-            beta_mc[i],beta1[i],beta2[i] = 0,0,0
-
-        if tmptree.FindBranch('gen_type'): 
-            # Make 4vecs of gen tlep_p4,thad_p4,wlep_p4,whad_p4
-            gen_pt = tmptree.gen_pt
-            gen_eta = tmptree.gen_eta
-            gen_phi = tmptree.gen_phi
-            gen_mass = tmptree.gen_mass
-            gen_side = tmptree.gen_side
-            gen_pdgid = tmptree.gen_pdgid       
-            top_MC,Atop_MC = ROOT.TLorentzVector(),ROOT.TLorentzVector()
-            init1,init2 = ROOT.TLorentzVector(),ROOT.TLorentzVector()            
-            for i in range(gen_pdgid.size()):
-                if gen_pdgid[i] == 6 :
-                    top_MC.SetPtEtaPhiM(gen_pt[i],gen_eta[i],gen_phi[i],gen_mass[i])
-                if gen_pdgid[i] == -6 :
-                    Atop_MC.SetPtEtaPhiM(gen_pt[i],gen_eta[i],gen_phi[i],gen_mass[i]) 
-            init1.SetPtEtaPhiM(gen_pt[0],gen_eta[0],gen_phi[0],gen_mass[0])
-            init2.SetPtEtaPhiM(gen_pt[1],gen_eta[1],gen_phi[1],gen_mass[1])
-            # Get MC angles
-            # def get_true_angles_v1(reco_t,reco_tbar,q_pz,qbar_pz,q_id,qbar_id):
-            cos_theta_mc_v1[0] = get_true_angles_v1(top_MC,Atop_MC,init1.Pz(),init2.Pz(),gen_pdgid[0],gen_pdgid[1])[0]
-            cs_lab[0] = get_true_angles_v1(top_MC,Atop_MC,init1.Pz(),init2.Pz(),gen_pdgid[0],gen_pdgid[1])[1]
-
-            # Study beta
-            mtt_mc[0]= (top_MC+Atop_MC).M()
-            mt_mc[0] = top_MC.M() 
-            m_tbar_mc[0] = Atop_MC.M()
-
-            beta_v0[0] = Get_beta_v0(mt_mc[0],m_tbar_mc[0],mtt_mc[0])
-            # beta study v1. Use simple definition assuming mt1=mt2  
-            beta_v1[0] = Get_beta_v1(mt_mc[0],m_tbar_mc[0],mtt_mc[0])      
-            # beta study v2. Use beta = sqrt(1-2*(m1*m2+m2*m2)/Mtt*Mtt+(m1*m1-m2*m2)^2/Mtt^4)
-            beta_v2[0] = Get_beta_v2(mt_mc[0],m_tbar_mc[0],mtt_mc[0])            
-            # Study reco cos_theta_cs first
-            ttbar_cm = tlep_p4+thad_p4
-            if ttbar_cm.Pz()>0 : 
-                positive_z[0] = 1
-            else : 
-                positive_z[0] = -1
-
-            if lep_charge >0 :
-                t_p4 = tlep_p4.Clone()
-                tbar_p4 = thad_p4.Clone()
-            elif lep_charge <0 :
-                t_p4 = thad_p4.Clone()
-                tbar_p4 = tlep_p4.Clone() 
-
-            cs_results = get_angles_v1(t_p4,tbar_p4)
-            # return [x_f,ttbar_mass_data,cos_theta_cs_data,cs_bisector,beta_mc,beta1,beta2,delta_mag]            
-            cs_bisector[0] = cs_results[3]
-            delta_mag[0] = cs_results[7]
-            for i in range(3):
-                beta_mc[i] = cs_results[4][i]
-                beta1[i] = cs_results[5][i]
-                beta2[i] = cs_results[6][i]
-=======
             # beta study
             beta_v0[0]=tmp_w[10]
->>>>>>> mydev
 
         # gen branches only exist for ttbar MC, which makes PERFECT sense
         motherPIDs[0],motherPIDs[1] = -100,-100
@@ -548,24 +433,5 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
     tfile.Close()
 
     return 'Make templates finished!'
-# m1 = m_t, m2 = m_tbar
-def Get_beta_v2(m1,m2,mtt):
-    return math.sqrt(1-2*(m1*m1+m2*m2)/pow(mtt,2)+pow((m1*m1-m2*m2),2)/pow(mtt,4))
-
-def Get_beta_v1(m1,m2,mtt):
-    if 1-pow(2*m1/mtt,2) < 0 : 
-        return 0
-    else: 
-        return math.sqrt(1-pow(2*m1/mtt,2))
-
-def Get_beta_v0(m1,m2,mtt):
-    M2_1_mc   = m1*m2
-    M2_2_mc   = m2*m2
-    ttbar_mass_mc = mtt
-    num_mc    = 1. - 2.*(M2_1_mc+M2_2_mc)/(ttbar_mass_mc*ttbar_mass_mc) + (M2_1_mc-M2_2_mc)*(M2_1_mc-M2_2_mc)/(ttbar_mass_mc*ttbar_mass_mc*ttbar_mass_mc*ttbar_mass_mc);
-    denom_1_mc   = (1. + (M2_1_mc-M2_2_mc)/(ttbar_mass_mc*ttbar_mass_mc))*(1. + (M2_1_mc-M2_2_mc)/(ttbar_mass_mc*ttbar_mass_mc));
-    denom_2_mc   = (1. + (M2_2_mc-M2_1_mc)/(ttbar_mass_mc*ttbar_mass_mc))*(1. + (M2_2_mc-M2_1_mc)/(ttbar_mass_mc*ttbar_mass_mc));
-    beta_mc   = sqrt(sqrt((num_mc*num_mc)/(denom_1_mc*denom_1_mc) * (num_mc*num_mc)/(denom_2_mc*denom_2_mc)));    
-    return beta_mc
 
 main()
