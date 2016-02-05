@@ -9,6 +9,10 @@ from optparse import OptionParser
 
 parser = OptionParser()
 
+parser.add_option('--plot', action='store_true', default=False,
+                  dest='plot',
+                  help='plot interactively')
+
 parser.add_option('--cut', metavar='F', type='string', action='store',
                   dest='cut',
                   help='')
@@ -72,6 +76,12 @@ parser.add_option('--yaxis', metavar='F', type='string', action='store',
                   help='')
 
 (options, args) = parser.parse_args()
+
+
+# Some global root style 
+ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
+if not plot: ROOT.gROOT.SetBatch(True)
+
 
 scale = options.scale
 cut = options.cut
