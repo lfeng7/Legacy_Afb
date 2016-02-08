@@ -78,11 +78,7 @@ parser.add_option('--yaxis', metavar='F', type='string', action='store',
 (options, args) = parser.parse_args()
 
 
-# Some global root style 
-ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
-if not plot: ROOT.gROOT.SetBatch(True)
-
-
+plot = options.plot
 scale = options.scale
 cut = options.cut
 var1 = options.var1
@@ -96,6 +92,11 @@ bin = options.bin1
 bin2 = options.bin2
 file = options.file
 name = options.name
+
+# Some global root style 
+ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
+if not plot: ROOT.gROOT.SetBatch(True)
+
 
 #f = ROOT.TFile( options.name + ".root", "recreate" )
 #f.cd()
@@ -151,5 +152,5 @@ if not os.path.exists(rootdir):
     print 'Creating new dir '+rootdir
 
 c.SaveAs(plotdir+name + ".png")
-c.SaveAs(plotdir+'/root/'+name + ".root")
+#c.SaveAs(rootdir+name + ".root")
 

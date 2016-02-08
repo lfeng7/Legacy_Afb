@@ -17,6 +17,10 @@ import glob
 
 parser = OptionParser()
 
+parser.add_option('--plot', action='store_true', default=False,
+                  dest='plot',
+                  help='plot interactively')
+
 parser.add_option('--var', metavar='F', type='string', action='store',
                   default = "",
                   dest='var',
@@ -86,7 +90,7 @@ canvas_title = 'CMS Private Work, 19.7 fb^{-1} at #sqrt{s} = 8 TeV'
 
 def main():
     global xaxis_name , fout
-
+    plot = options.plot
     cut = options.cut
     var = options.var
     xmin = options.Min
@@ -100,6 +104,10 @@ def main():
     rundir = options.dir
     weight = options.weight
     makeyields = options.yields
+
+    # Some global root style 
+    ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
+    if not plot: ROOT.gROOT.SetBatch(True)
 
     if xaxis_name == '': xaxis_name = var
 
@@ -227,7 +235,7 @@ def main():
     # Make data/MC comparison plot
     leg.AddEntry(h_data,'data')
     if var != 'charge_ratio':
-        c_plot = comparison_plot_v1(mc_stack,h_data,leg,hname+'_'+var)
+        c_plot = comparison_plot_v1(mc_stack,h_data,leg,hname)
     else :
         fout = ROOT.TFile('plots/'+hname+'_'+var+'_plots.root','recreate')        
         c_plot = ROOT.TCanvas()
@@ -239,7 +247,7 @@ def main():
         h_data.Draw('same PE1X0')
         leg.Draw() 
         c_plot.Update()
-        c_plot.SaveAs('plots/'+hname+'_'+var+'_compare.png') 
+        c_plot.SaveAs('plots/'+hname+'_compare.png') 
 
     c_plot.SetName('cplot')
     # Write out
