@@ -7,6 +7,7 @@ import ROOT
 from optparse import OptionParser
 import os
 import glob
+from plot_tools import *
 
 # pavetex.SetShadowColor(0)
 # Job steering
@@ -82,14 +83,21 @@ parser.add_option('--yields', metavar='F', type='string', action='store',
                   dest='yields',
                   help='If you want to make a yields table')
 
+parser.add_option('--overflow', metavar='F', type='string', action='store',
+              default = "no",
+                  dest='overflow',
+                  help='If you want to plot overflow bin')
+
+
 (options, args) = parser.parse_args()
 
 argv = []
 
-canvas_title = 'CMS Private Work, 19.7 fb^{-1} at #sqrt{s} = 8 TeV'
+#canvas_title = 'CMS Private Work, 19.7 fb^{-1} at #sqrt{s} = 8 TeV'
+
 
 def main():
-    global xaxis_name , fout
+    global xaxis_name , fout , canvas_title
     plot = options.plot
     cut = options.cut
     var = options.var
@@ -104,6 +112,12 @@ def main():
     rundir = options.dir
     weight = options.weight
     makeyields = options.yields
+    plot_overflow = options.overflow
+
+    if htitle != '':
+        canvas_title = htitle
+    else :
+        canvas_title = hname
 
     # Some global root style 
     ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
@@ -139,6 +153,10 @@ def main():
     if xmin != xmax:
         h_data = ROOT.TH1F(hname_data, hname_data, bin, xmin, xmax)        
     ttree_data.Draw(var+">>"+hname_data,""+ cut, "goff")
+    # if we want overflow bin
+    if plot_overflow == 'yes':
+        h_data = overflow(h_data) 
+
     h_data.SetDirectory(0)
     fdata.Close()
 
@@ -169,6 +187,10 @@ def main():
             ttree_mc.Draw(var+">>"+hname_mc,weight, "goff")
         else :
             ttree_mc.Draw(var+">>"+hname_mc,'('+cut+')*('+weight+')', "goff")
+        # decide if we want a last bin for overflow
+        if plot_overflow == 'yes':
+            h_mc = overflow(h_mc) 
+
         h_mc.SetDirectory(0)    
         cross_section_NLO = isample[3]
         nevts_gen = isample[2]
