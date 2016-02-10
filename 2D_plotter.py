@@ -137,9 +137,6 @@ else:
 if log:
   c.SetLogz()
 
-if options.save:
-  c.SaveAs(name + ".png")
-
 print str(newhist.GetEntries())
 
 plotdir = 'plots/'
