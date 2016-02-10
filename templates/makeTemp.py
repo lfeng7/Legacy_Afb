@@ -1,7 +1,7 @@
 # Take in the angles ttree from reco, and make input ttree for original template making and fitting codes
 
- from Legacy_Afb.Tools.ttbar_utility import *
- from Legacy_Afb.Tools.angles_tools import *
+from Legacy_Afb.Tools.ttbar_utility import *
+from Legacy_Afb.Tools.angles_tools import *
 import glob
 from optparse import OptionParser
 import ROOT
@@ -143,7 +143,10 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         fout_name = sample_name+'_template_'+options.ttbar_type+'_'+str(evt_start)+'.root'
     fout = ROOT.TFile(fout_name,'recreate')
     # Make output ttree
-    newtree = ROOT.TTree(newtree_name,newtree_name)
+    # newtree = ROOT.TTree(newtree_name,newtree_name)
+    tmptree.SetBranchStatus('*',0)
+    tmptree.SetBranchStatus('reco_mass',1)
+    newtree = tmptree.CloneTree(newtree_name)
 
     # Add new branches to the output tree
     br_defs = []
