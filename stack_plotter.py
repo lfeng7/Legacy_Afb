@@ -84,7 +84,7 @@ parser.add_option('--yields', metavar='F', type='string', action='store',
                   help='If you want to make a yields table')
 
 parser.add_option('--overflow', metavar='F', type='string', action='store',
-              default = "no",
+              default = "yes",
                   dest='overflow',
                   help='If you want to plot overflow bin')
 
