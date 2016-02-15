@@ -474,12 +474,10 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         leadingJet_mass[0] = tmptree.jets_mass[max_jet_index]
 
         # Match reco t's and w's with gen objects using deltaR for TT semilep events only
-
+        do_Matching = 0
         if is_TT_MC:
-            if tmptree.gen_type == 'e_jets':
+            if tmptree.gen_type[0] == 'e_jets':
                 do_Matching = 1
-        else:
-            do_Matching = 0
 
         # initialization
         for i in range(len(isMatched)):
@@ -501,23 +499,22 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
             gen_side = tmptree.gen_side
             gen_pdgid = tmptree.gen_pdgid
             gen_index = [0,0,0,0]
-            if tmptree.gen_type[0] == 'e_jets':
-                for i in range(len(gen_side)):
-                    if gen_side[i] == 'lep' and abs(gen_pdgid[i])==6 : gen_index[0]=i 
-                    if gen_side[i] == 'had' and abs(gen_pdgid[i])==6 : gen_index[1]=i 
-                    if gen_side[i] == 'lep' and abs(gen_pdgid[i])==24 : gen_index[2]=i 
-                    if gen_side[i] == 'had' and abs(gen_pdgid[i])==24 : gen_index[3]=i 
-                gen_p4 = []
-                for j in range(4):
-                    ip4 = ROOT.TLorentzVector()
-                    i = gen_index[j]
-                    ip4.SetPtEtaPhiM(gen_pt[i],gen_eta[i],gen_phi[i],gen_mass[i])
-                    gen_p4.append(ip4)  
-                # Do matching
-                for i in range(4):
-                    delR_ = reco_p4[i].DeltaR(gen_p4[i])
-                    if delR_< deltaR_matching: isMatched[i] = 1
-                    else : isMatched[i] = 0                          
+            for i in range(len(gen_side)):
+                if gen_side[i] == 'lep' and abs(gen_pdgid[i])==6 : gen_index[0]=i 
+                if gen_side[i] == 'had' and abs(gen_pdgid[i])==6 : gen_index[1]=i 
+                if gen_side[i] == 'lep' and abs(gen_pdgid[i])==24 : gen_index[2]=i 
+                if gen_side[i] == 'had' and abs(gen_pdgid[i])==24 : gen_index[3]=i 
+            gen_p4 = []
+            for j in range(4):
+                ip4 = ROOT.TLorentzVector()
+                i = gen_index[j]
+                ip4.SetPtEtaPhiM(gen_pt[i],gen_eta[i],gen_phi[i],gen_mass[i])
+                gen_p4.append(ip4)  
+            # Do matching
+            for i in range(4):
+                delR_ = reco_p4[i].DeltaR(gen_p4[i])
+                if delR_< deltaR_matching: isMatched[i] = 1
+                else : isMatched[i] = 0                          
 
         # Do matching for all signal events
 
