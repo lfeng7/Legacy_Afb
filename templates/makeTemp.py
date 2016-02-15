@@ -474,11 +474,18 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         leadingJet_mass[0] = tmptree.jets_mass[max_jet_index]
 
         # Match reco t's and w's with gen objects using deltaR for TT semilep events only
+
+        if is_TT_MC:
+            if tmptree.gen_type == 'e_jets':
+                do_Matching = 1
+        else:
+            do_Matching = 0
+            
         # initialization
         isMatched = 4*[-1]
-        if tmptree.FindBranch('gen_pt'):
+
+        if do_Matching:
             # Make 4-vec for gen t's and w's
-            if not tmptree.gen_type == 'e_jets': continue
             # Make 4vec for reco t and W's
             reco_p4 = []
             for i in range(4):
