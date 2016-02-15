@@ -480,9 +480,10 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
                 do_Matching = 1
         else:
             do_Matching = 0
-            
+
         # initialization
-        isMatched = 4*[-1]
+        for i in range(len(isMatched)):
+            isMatched[i] = -1
 
         if do_Matching:
             # Make 4-vec for gen t's and w's
