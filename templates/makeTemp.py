@@ -257,11 +257,14 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
 
     # extra stuff not used by template fitter
     br_defs += [('correction_weight',correction_weight,'correction_weight/F')]
-    br_defs += [('reco_pt',reco_pt,'reco_pt[6]/F')]
-    br_defs += [('reco_eta',reco_eta,'reco_eta[6]/F')]
-    br_defs += [('reco_phi',reco_phi,'reco_phi[6]/F')]
-    br_defs += [('reco_mass',reco_mass,'reco_mass[6]/F')]
-    br_defs += [('isMatched',isMatched,'isMatched[6]/I')]
+    br_defs += [('reco_pt',reco_pt,'reco_pt[4]/F')]
+    br_defs += [('reco_eta',reco_eta,'reco_eta[4]/F')]
+    br_defs += [('reco_phi',reco_phi,'reco_phi[4]/F')]
+    br_defs += [('reco_mass',reco_mass,'reco_mass[4]/F')]
+    br_defs += [('isMatched',isMatched,'isMatched[4]/I')]
+    br_defs += [('leadingJet_pt',leadingJet_pt,'leadingJet_pt/F')]
+    br_defs += [('leadingJet_mass',leadingJet_mass,'leadingJet_mass/F')]
+
 
     # study beta
     beta_v0 = array('f',[-1.])
@@ -303,6 +306,15 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         tmp_h0.SetDirectory(0)
         tmp_h1.SetDirectory(0)
 
+    # Check if it is a TTbar MC sample, an MC sample , or a data sample
+    if tmptree.FindBranch('gen_pt'):
+        is_TT_MC = 1
+    else:
+        is_TT_MC = 0
+    if tmptree.FindBranch('w_PU') :
+        is_MC = 1
+    else:
+        is_MC = 0
 
     # Loop over entries
     n_evt = 0
@@ -369,7 +381,7 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         w_a[0],w_a_opp[0],w_s_xi[0],w_s_xi_opp[0],w_a_xi[0],w_a_xi_opp[0] = 1,1,1,1,1,1
         w_s_delta[0],w_s_delta_opp[0],w_a_delta[0],w_a_delta_opp[0] = 1,1,1,1
         # decide if want to use temp reweight
-        if tmptree.FindBranch('gen_type'): 
+        if is_TT_MC: 
             if tmptree.gen_type[0] == 'e_jets' and tmptree.init_type[0] == 'qqbar':
                 weight_is_valid = 1
         beta_v0[0] = -1            
@@ -399,7 +411,7 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
 
         # gen branches only exist for ttbar MC, which makes PERFECT sense
         motherPIDs[0],motherPIDs[1] = -100,-100
-        if tmptree.FindBranch('gen_pdgid'):
+        if is_TT_MC:
             motherPIDs[0],motherPIDs[1] = tmptree.gen_pdgid[0],tmptree.gen_pdgid[1]
 
         # a bunch of MC correction weights. Applies only for MC, literaly
@@ -408,7 +420,7 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         lepID_reweight[0],lepID_reweight_hi[0],lepID_reweight_low[0],trigger_reweight[0] = 1,1,1,1
         trigger_reweight_hi[0],trigger_reweight_low[0] = 1,1
         pileup_real[0] = -10
-        if tmptree.FindBranch('w_PU'):
+        if is_MC:
             pileup_reweight[0] = tmptree.w_PU[0]
             if tmptree.FindBranch('weight_top_pT'):
                 top_pT_reweight[0]  = tmptree.weight_top_pT[0]/toppt_scale
@@ -441,7 +453,10 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
             charge_ratio[0]=4
             h_charge_ratio.Fill('4jets,l+',0);h_charge_ratio.Fill('4jets,l-',0);h_charge_ratio.Fill('5jets,l+',0);h_charge_ratio.Fill('5jets,l-',1)
 
-        # reconstruction study
+        ################################################################
+        #               reconstruction study                           #
+        ################################################################
+
         # Find and store reco p-4, leading jets pt and mass, for all MC and data samples
         for i in range(4):
             reco_pt[i]   = tmptree.reco_pt[i]
@@ -457,9 +472,9 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         # Keep leading jet pt and mass
         leadingJet_pt[0] = tmptree.jets_pt[max_jet_index]
         leadingJet_mass[0] = tmptree.jets_mass[max_jet_index]
+
         # Match reco t's and w's with gen objects using deltaR for TT semilep events only
         # initialization
-
         isMatched = 4*[-1]
         if tmptree.FindBranch('gen_pt'):
             # Make 4-vec for gen t's and w's
@@ -494,8 +509,7 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
                 for i in range(4):
                     delR_ = reco_p4[i].DeltaR(gen_p4[i])
                     if delR_< deltaR_matching: isMatched[i] = 1
-                    else : isMatched[i] = 0
-                            
+                    else : isMatched[i] = 0                          
 
         # Do matching for all signal events
 
