@@ -251,7 +251,7 @@ if not os.path.exists(plotdir):
 
 
 if save == True:
-    c.SaveAs(plotdir+name + ".png")
+    c.SaveAs(plotdir+var+'_'+name + ".png")
 if not save:
     print "Enter save/saveas, or other to close:"
     save = raw_input()
