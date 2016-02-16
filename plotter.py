@@ -31,7 +31,7 @@ parser.add_option('--name', metavar='F', type='string', action='store',
               default = "blank",
                   dest='name',
                   help='')
-parser.add_option('--log', action='store_true', default=False,
+parser.add_option('--log', metavar='F', type='string', action='store', default = 'no'
                   dest='log',
                   help='log sacle on y')
 parser.add_option('--scale', action='store_true', default=False,
@@ -194,7 +194,7 @@ for newhist in hists:
 c = TCanvas()
 c.cd()
 
-if log:
+if log in ['yes','log','true']:
     c.SetLogy()
 
 newhist1.Draw()
