@@ -31,7 +31,7 @@ parser.add_option('--name', metavar='F', type='string', action='store',
               default = "blank",
                   dest='name',
                   help='')
-parser.add_option('--log', metavar='F', type='string', action='store', default = 'no'
+parser.add_option('--log', metavar='F', type='string', action='store', default = 'no',
                   dest='log',
                   help='log sacle on y')
 parser.add_option('--scale', action='store_true', default=False,
@@ -251,7 +251,7 @@ if not os.path.exists(plotdir):
 
 
 if save == True:
-    c.SaveAs(plotdir+var+'_'+name + ".png")
+    c.SaveAs(plotdir+name + ".png")
 if not save:
     print "Enter save/saveas, or other to close:"
     save = raw_input()
