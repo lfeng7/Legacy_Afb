@@ -286,24 +286,26 @@ def main():
     # fout.Close()
 
 def GetSampleColor(itype):
-    if itype=='gg' : return 38
-    if itype=='qq' or itype=='signal' : return 46
-    if itype=='bck' : return 41
-    if itype=='WJets': return ROOT.kGreen-3
-    if itype=='tt_bkg': return ROOT.kMagenta
-    if itype=='qcd': return ROOT.kYellow
+    if itype=='gg'                          : return 38
+    if itype in ['qq','signal']             : return 46
+    if itype in ['bck','bkg']               : return 41
+    if itype in ['singleTop','T+x']         : return 41
+    if itype=='WJets'                       : return ROOT.kGreen-3
+    if itype=='tt_bkg'                      : return ROOT.kMagenta
+    if itype=='qcd'                         : return ROOT.kYellow
+    if itype in ['zjets','DY']              : return ROOT.kBlue
     return 0
 
 def GetSampleName(itype):
-    if itype=='gg' : return 'gg/qg->t#bar{t}'
-    if itype=='qq' : return 'q#bar{q}->t#bar{t}'
-    if itype=='tt' or itype=='signal': return 't#bar{t}'
-    if itype=='bck' : return 'other bkg'
-    if itype=='WJets': return 'W+jets'
-    if itype=='tt_bkg': return 'dilep/had t#bar{t}'
-    if itype=='qcd': return 'QCD MJ'
-    if itype=='singletop': return 'single top'
-    if itype=='zjets': return 'z+jets'
+    if itype=='gg'                  : return 'gg/qg->t#bar{t}'
+    if itype=='qq'                  : return 'q#bar{q}->t#bar{t}'
+    if itype in ['tt','signal']     : return 't#bar{t}'
+    if itype in ['bck','bkg']       : return 'other bkg'
+    if itype=='WJets'               : return 'W+jets'
+    if itype=='tt_bkg'              : return 'dilep/had t#bar{t}'
+    if itype=='qcd'                 : return 'QCD MJ'
+    if itype in ['singletop','T+x'] : return 'single top'
+    if itype in ['zjets','DY']      : return 'z+jets'
     return 0
 
 # This is specifically for comparing the stacked MC plots with data adding residule plots too
