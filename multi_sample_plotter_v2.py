@@ -94,7 +94,7 @@ log = options.log
 bin = options.bin
 rundir = options.dir
 name = options.name
-title = options.title+' '+name
+title = options.title
 xaxis = options.xaxis
 yaxis = options.yaxis
 save = options.save
@@ -177,7 +177,10 @@ for i,itype in enumerate(all_types):
             ifile = ROOT.TFile(isample['file_path'])
             ttree = ifile.Get(treename)
             hist = ROOT.TH1F(name+isample['file_name'], name+isample['file_name'], bin, x, y) 
-            ttree.Draw(var+">>"+name+isample['file_name'],""+ cut, "goff")
+            if cut == '':
+                ttree.Draw(var+">>"+name+isample['file_name'],weight, "goff")
+            else:
+                ttree.Draw(var+">>"+name+isample['file_name'],'('+cut+')*('+weight+')', "goff")
             newhist1.Add(newhist1,hist,1,isample['weight'])
             n_samples += 1
     newhist1 = overflow(newhist1)
