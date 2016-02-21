@@ -36,7 +36,7 @@ parser.add_option('--name', metavar='F', type='string', action='store',
               default = "blank",
                   dest='name',
                   help='')
-parser.add_option('--log', action='store_true', default=False,
+parser.add_option('--log', metavar='F', type='string', action='store', default='no',
                   dest='log',
                   help='log sacle on y')
 parser.add_option('--scale', action='store_true', default=False,
@@ -211,7 +211,8 @@ for i,itype in enumerate(all_types):
     newhist1.GetXaxis().SetTitleSize(0.04)
     if scale:
         newhist1.Scale(1/newhist1.Integral())
-        newhist1.SetMinimum(0)
+        if log in ['log','yes','True']:
+            newhist1.SetMinimum(1e-3)
     ymax = max(ymax,newhist1.GetMaximum())
     newhist1.SetTitle(title)
     hists.append(newhist1)
@@ -219,7 +220,7 @@ for i,itype in enumerate(all_types):
 # actual plotting
 c = TCanvas()
 c.cd()
-if log:
+if log in ['log','yes','True']:
     c.SetLogy()
 leg = ROOT.TLegend(0.6057047,0.6685824,0.8288591,0.8275862)
 leg.SetFillColor(0)
@@ -250,6 +251,6 @@ if not os.path.exists(plotdir):
     os.mkdir(plotdir)
     print 'Creating new dir '+plotdir
 c.SaveAs(plotdir+name + ".png")
-c.SaveAs(plotdir+name + ".root")
+#c.SaveAs(plotdir+name + ".root")
 
     
