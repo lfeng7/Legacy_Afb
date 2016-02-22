@@ -23,7 +23,7 @@ allfiles1= glob.glob(dir1+'/*.root')
 allfiles2= glob.glob(dir2+'/*.root')
 
 # find pairs of file 1 and 2
-pairs = [(f1,f2) for f1 in allfiles1 for f2 in allfiles2 if f1.split('reco')[0] == f2.split('reco')[0] ]
+pairs = [(f1,f2) for f1 in allfiles1 for f2 in allfiles2 if f1.split('/')[-1].split('reco')[0] == f2.split('/')[-1].split('reco')[0] ]
 # write sh command
 fout = open('run_addBranch.sh','w')
 towrite = '' 
