@@ -272,6 +272,13 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
     charge_ratio = array('i',[0])
     br_defs += [('charge_ratio',charge_ratio,'charge_ratio/I')]
 
+    # add alternative chi2 if exist in tree
+    has_chi2_new = 0
+    if tmptree.FindBranch('final_chi2_new'):
+        has_chi2_new = 1
+        final_chi2_new = array('f',[0.])
+        br_defs += ['chi2_new',chi2_new,'chi2_new/F']
+
     # Add branches to the tree
     for ibr in br_defs:
         newtree.Branch(ibr[0],ibr[1],ibr[2])
@@ -369,6 +376,10 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         if tmptree.FindBranch('mtt_mc'):
             if tmptree.mtt_mc.size()>0 : ttbar_mass_mc[0] = tmptree.mtt_mc[0] 
         lnL[0] = tmptree.final_chi2[0]
+
+        if has_chi2_new :
+            chi2_new[0] = tmptree.final_chi2_new
+
         n_valid_jets[0] = tmptree.N_jets[0]
         n_bTags[0] = tmptree.N_btag[0]
         fitParValues[0] = tmptree.final_nv_pz[0]
