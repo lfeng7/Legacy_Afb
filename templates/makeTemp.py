@@ -276,8 +276,8 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
     has_chi2_new = 0
     if tmptree.FindBranch('final_chi2_new'):
         has_chi2_new = 1
-        final_chi2_new = array('f',[0.])
-        br_defs += ['chi2_new',chi2_new,'chi2_new/F']
+        chi2_new = array('f',[0.])
+        br_defs += [('chi2_new',chi2_new,'chi2_new/F')]
 
     # Add branches to the tree
     for ibr in br_defs:
