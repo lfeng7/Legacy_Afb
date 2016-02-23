@@ -1,0 +1,7 @@
+#! /bin/bash
+for (( i=$2;i<$3;i++ )) ;
+do
+    echo --------------------------------------------------------
+    printf "cut $1 < $i \n\n"
+    python efficiency_calculator.py --dir template_files/pscale_removed_v2 --cut "$1<$i"
+done
