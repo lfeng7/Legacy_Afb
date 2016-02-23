@@ -181,7 +181,7 @@ for i,itype in enumerate(all_types):
                 ttree.Draw(var+">>"+name+isample['file_name'],weight, "goff")
             else:
                 ttree.Draw(var+">>"+name+isample['file_name'],'('+cut+')*('+weight+')', "goff")
-            newhist1.Add(newhist1,hist,1,isample['weight'])
+            newhist1.Add(hist,isample['weight'])
             n_samples += 1
     newhist1 = overflow(newhist1)
     newhist1.SetDirectory(0)            
@@ -240,8 +240,8 @@ for i,ihist in enumerate(hists):
         leg.AddEntry(ihist,labels[i], "l")
     else:
         leg.AddEntry(ihist,all_types[i], "l")
-    print "Entries of type",all_types[i],':',ihist.GetEntries()
-    total_evts += ihist.GetEntries()
+    print "Entries of type",all_types[i],':',ihist.Integral()
+    total_evts += ihist.Integral()
 print '\ntotal number of events:',total_evts
 
 leg.Draw("same")
