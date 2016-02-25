@@ -22,6 +22,10 @@ parser.add_option('--dir', metavar='F', type='string', action='store',
                   default='',
                   dest='dir',
                   help='')
+parser.add_option('--output', metavar='F', type='string', action='store',
+                  default='cut_results.txt',
+                  dest='output',
+                  help='output txt for cut results')
 parser.add_option('--verbose', metavar='F', type='string', action='store',
                   default = 'no',
                   dest='verbose',
@@ -33,9 +37,13 @@ parser.add_option('--verbose', metavar='F', type='string', action='store',
 cut = options.cut
 rundir = options.dir
 verbose = options.verbose
+output = options.output
 
 # parse .txt to get the correct normalization 
 data_lumi = 19700
+
+# Open output txt file. If not exist, will create a new one
+file_output = open(output,'a')
 
 # Get input MC and data files according to txt file
 txt_MC = open(rundir+'/MC_input_with_bkg.txt')
@@ -79,6 +87,8 @@ for isample in mc_samples:
 
 # Loop over types to get nevts before and after cuts
 cut_table = []
+to_write = '\n----------------------------------------\n\n'
+to_write += 'cut %s\n\n'%cut
 for i,itype in enumerate(all_types):
     # Loop over samples, find samples of current type, and make a temp hist
     n_samples = 0
@@ -94,7 +104,7 @@ for i,itype in enumerate(all_types):
     iefficiency = nevts_cut*1.0/nevts_no_cut
     ientry = {'type':itype,'nevts_no_cut':nevts_no_cut,'nevts_cut':nevts_cut,'efficiency':iefficiency}
     cut_table.append(ientry) 
-    print '%(type)s %(nevts_no_cut)i %(nevts_cut)i %(efficiency).3f'%ientry
+    to_write += '%(type)s %(nevts_no_cut)i %(nevts_cut)i %(efficiency).3f\n'%ientry
  
 
 # calculate total signal and bkg efficiency of cuts, and signal/bkg before and after cuts
@@ -106,16 +116,20 @@ for itype in cut_table:
     else:
         n_total_bkg += itype['nevts_no_cut']
         n_total_bkg_cut += itype['nevts_cut']
-print '\nsig/bkg before cut: %.2f'%(n_total_signal*1.0/n_total_bkg)
-print 'sig/bkg after  cut: %.2f'%(n_total_signal_cut*1.0/n_total_bkg_cut)
-print 'sig efficiency: %.2f'%(n_total_signal_cut*1.0/n_total_signal)
-print 'bkg efficiency: %.2f'%(n_total_bkg_cut*1.0/n_total_bkg)
+to_write += '\nsig/bkg before cut: %.2f\n'%(n_total_signal*1.0/n_total_bkg)
+to_write += 'sig/bkg after  cut: %.2f\n'%(n_total_signal_cut*1.0/n_total_bkg_cut)
+to_write += 'sig efficiency: %.2f\n'%(n_total_signal_cut*1.0/n_total_signal)
+to_write += 'bkg efficiency: %.2f\n'%(n_total_bkg_cut*1.0/n_total_bkg)
 # Calcultate total number of events before and after cut
 total_nevts = n_total_signal+n_total_bkg
 total_nevts_cut = n_total_signal_cut+n_total_bkg_cut
-print '\ntotal nevts before cut: %i'%total_nevts
-print 'total nevts after  cut: %i'%total_nevts_cut
-print 'fraction of total events left: %.2f'%(total_nevts_cut*1.0/total_nevts)
+to_write += '\ntotal nevts before cut: %i\n'%total_nevts
+to_write += 'total nevts after  cut: %i\n'%total_nevts_cut
+to_write += 'fraction of total events left: %.2f\n'%(total_nevts_cut*1.0/total_nevts)
+print to_write
+
+file_output.write(to_write)
+file_output.close()
 
 
 
