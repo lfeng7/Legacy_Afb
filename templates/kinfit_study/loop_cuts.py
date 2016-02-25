@@ -1,4 +1,4 @@
-#! /bin/python
+#! /usr/bin/python 
 import sys
 import os
 
@@ -24,9 +24,9 @@ else :
 
 cut_value = cut_low
 while cut_value < cut_high :
-    cmd = 'python efficiency_calculator.py --dir template_files/pscale_removed_v2 --cut %s'%(cut_value) 
+    cmd = 'python efficiency_calculator.py --dir template_files/pscale_removed_v2 --cut \'%s < %.2f\' '%(cut_name,cut_value) 
     if output_file != '':
     	cmd += ' --output %s'%output_file
-    # os.sys(cmd)
+    os.system(cmd)
     print cmd
     cut_value += cut_step

@@ -117,7 +117,10 @@ for itype in cut_table:
         n_total_bkg += itype['nevts_no_cut']
         n_total_bkg_cut += itype['nevts_cut']
 to_write += '\nsig/bkg before cut: %.2f\n'%(n_total_signal*1.0/n_total_bkg)
-to_write += 'sig/bkg after  cut: %.2f\n'%(n_total_signal_cut*1.0/n_total_bkg_cut)
+if n_total_bkg_cut == 0 :
+    to_write += 'sig/bkg after  cut: infinite\n'
+else:
+    to_write += 'sig/bkg after  cut: %.2f\n'%(n_total_signal_cut*1.0/n_total_bkg_cut)
 to_write += 'sig efficiency: %.2f\n'%(n_total_signal_cut*1.0/n_total_signal)
 to_write += 'bkg efficiency: %.2f\n'%(n_total_bkg_cut*1.0/n_total_bkg)
 # Calcultate total number of events before and after cut

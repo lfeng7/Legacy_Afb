@@ -1,0 +1,361 @@
+
+----------------------------------------
+
+cut chi2_new < -10.00
+
+zjets 292 0 0.002
+signal 41087 612 0.015
+tt_bkg 6692 35 0.005
+singletop 3020 14 0.005
+WJets 904 0 0.000
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 11.94
+sig efficiency: 0.01
+bkg efficiency: 0.00
+
+total nevts before cut: 51997
+total nevts after  cut: 663
+fraction of total events left: 0.01
+
+----------------------------------------
+
+cut chi2_new < -5.00
+
+zjets 292 3 0.010
+signal 41087 2628 0.064
+tt_bkg 6692 187 0.028
+singletop 3020 57 0.019
+WJets 904 4 0.004
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 10.45
+sig efficiency: 0.06
+bkg efficiency: 0.02
+
+total nevts before cut: 51997
+total nevts after  cut: 2879
+fraction of total events left: 0.06
+
+----------------------------------------
+
+cut chi2_new < 0.00
+
+zjets 292 8 0.028
+signal 41087 6007 0.146
+tt_bkg 6692 443 0.066
+singletop 3020 150 0.050
+WJets 904 12 0.013
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 9.79
+sig efficiency: 0.15
+bkg efficiency: 0.06
+
+total nevts before cut: 51997
+total nevts after  cut: 6621
+fraction of total events left: 0.13
+
+----------------------------------------
+
+cut chi2_new < 5.00
+
+zjets 292 22 0.076
+signal 41087 10474 0.255
+tt_bkg 6692 844 0.126
+singletop 3020 315 0.105
+WJets 904 29 0.032
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 8.64
+sig efficiency: 0.25
+bkg efficiency: 0.11
+
+total nevts before cut: 51997
+total nevts after  cut: 11686
+fraction of total events left: 0.22
+
+----------------------------------------
+
+cut chi2_new < 10.00
+
+zjets 292 41 0.141
+signal 41087 15514 0.378
+tt_bkg 6692 1369 0.205
+singletop 3020 547 0.181
+WJets 904 62 0.069
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 7.68
+sig efficiency: 0.38
+bkg efficiency: 0.19
+
+total nevts before cut: 51997
+total nevts after  cut: 17535
+fraction of total events left: 0.34
+
+----------------------------------------
+
+cut chi2_new < 40.00
+
+zjets 292 198 0.679
+signal 41087 35819 0.872
+tt_bkg 6692 4614 0.689
+singletop 3020 2282 0.756
+WJets 904 511 0.566
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 4.71
+sig efficiency: 0.87
+bkg efficiency: 0.70
+
+total nevts before cut: 51997
+total nevts after  cut: 43426
+fraction of total events left: 0.84
+
+----------------------------------------
+
+cut chi2_new < 43.00
+
+zjets 292 218 0.746
+signal 41087 37350 0.909
+tt_bkg 6692 4980 0.744
+singletop 3020 2457 0.814
+WJets 904 568 0.628
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 4.54
+sig efficiency: 0.91
+bkg efficiency: 0.75
+
+total nevts before cut: 51997
+total nevts after  cut: 45575
+fraction of total events left: 0.88
+
+----------------------------------------
+
+cut chi2_new < 46.00
+
+zjets 292 232 0.795
+signal 41087 38485 0.937
+tt_bkg 6692 5274 0.788
+singletop 3020 2600 0.861
+WJets 904 621 0.687
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 4.41
+sig efficiency: 0.94
+bkg efficiency: 0.80
+
+total nevts before cut: 51997
+total nevts after  cut: 47215
+fraction of total events left: 0.91
+
+----------------------------------------
+
+cut chi2_new < 49.00
+
+zjets 292 244 0.837
+signal 41087 39254 0.955
+tt_bkg 6692 5516 0.824
+singletop 3020 2696 0.893
+WJets 904 671 0.743
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 4.30
+sig efficiency: 0.96
+bkg efficiency: 0.84
+
+total nevts before cut: 51997
+total nevts after  cut: 48384
+fraction of total events left: 0.93
+
+----------------------------------------
+
+cut chi2_new < 52.00
+
+zjets 292 253 0.869
+signal 41087 39782 0.968
+tt_bkg 6692 5715 0.854
+singletop 3020 2782 0.921
+WJets 904 709 0.784
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 4.20
+sig efficiency: 0.97
+bkg efficiency: 0.87
+
+total nevts before cut: 51997
+total nevts after  cut: 49244
+fraction of total events left: 0.95
+
+----------------------------------------
+
+cut chi2_new < 55.00
+
+zjets 292 262 0.899
+signal 41087 40161 0.977
+tt_bkg 6692 5886 0.880
+singletop 3020 2832 0.938
+WJets 904 746 0.825
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 4.13
+sig efficiency: 0.98
+bkg efficiency: 0.89
+
+total nevts before cut: 51997
+total nevts after  cut: 49889
+fraction of total events left: 0.96
+
+----------------------------------------
+
+cut chi2_new < 60.00
+
+zjets 292 272 0.932
+signal 41087 40561 0.987
+tt_bkg 6692 6099 0.911
+singletop 3020 2906 0.962
+WJets 904 806 0.891
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 4.02
+sig efficiency: 0.99
+bkg efficiency: 0.92
+
+total nevts before cut: 51997
+total nevts after  cut: 50644
+fraction of total events left: 0.97
+
+----------------------------------------
+
+cut chi2_new < 65.00
+
+zjets 292 281 0.965
+signal 41087 40782 0.993
+tt_bkg 6692 6246 0.933
+singletop 3020 2948 0.976
+WJets 904 848 0.938
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 3.95
+sig efficiency: 0.99
+bkg efficiency: 0.95
+
+total nevts before cut: 51997
+total nevts after  cut: 51107
+fraction of total events left: 0.98
+
+----------------------------------------
+
+cut chi2_new < 70.00
+
+zjets 292 285 0.978
+signal 41087 40892 0.995
+tt_bkg 6692 6340 0.947
+singletop 3020 2977 0.986
+WJets 904 873 0.965
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 3.90
+sig efficiency: 1.00
+bkg efficiency: 0.96
+
+total nevts before cut: 51997
+total nevts after  cut: 51369
+fraction of total events left: 0.99
+
+----------------------------------------
+
+cut chi2_new < 75.00
+
+zjets 292 287 0.985
+signal 41087 40956 0.997
+tt_bkg 6692 6419 0.959
+singletop 3020 2990 0.990
+WJets 904 887 0.982
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 3.87
+sig efficiency: 1.00
+bkg efficiency: 0.97
+
+total nevts before cut: 51997
+total nevts after  cut: 51543
+fraction of total events left: 0.99
+
+----------------------------------------
+
+cut chi2_new < 80.00
+
+zjets 292 289 0.991
+signal 41087 41007 0.998
+tt_bkg 6692 6520 0.974
+singletop 3020 3003 0.994
+WJets 904 895 0.990
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 3.83
+sig efficiency: 1.00
+bkg efficiency: 0.98
+
+total nevts before cut: 51997
+total nevts after  cut: 51715
+fraction of total events left: 0.99
+
+----------------------------------------
+
+cut chi2_new < 85.00
+
+zjets 292 291 0.996
+signal 41087 41051 0.999
+tt_bkg 6692 6617 0.989
+singletop 3020 3013 0.998
+WJets 904 901 0.996
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 3.79
+sig efficiency: 1.00
+bkg efficiency: 0.99
+
+total nevts before cut: 51997
+total nevts after  cut: 51874
+fraction of total events left: 1.00
+
+----------------------------------------
+
+cut chi2_new < 85.00
+
+zjets 292 291 0.996
+signal 41087 41051 0.999
+tt_bkg 6692 6617 0.989
+singletop 3020 3013 0.998
+WJets 904 901 0.996
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 3.79
+sig efficiency: 1.00
+bkg efficiency: 0.99
+
+total nevts before cut: 51997
+total nevts after  cut: 51874
+fraction of total events left: 1.00
+
+----------------------------------------
+
+cut chi2_new < 90.00
+
+zjets 292 291 0.999
+signal 41087 41075 1.000
+tt_bkg 6692 6670 0.997
+singletop 3020 3017 0.999
+WJets 904 903 0.999
+
+sig/bkg before cut: 3.77
+sig/bkg after  cut: 3.77
+sig efficiency: 1.00
+bkg efficiency: 1.00
+
+total nevts before cut: 51997
+total nevts after  cut: 51959
+fraction of total events left: 1.00
