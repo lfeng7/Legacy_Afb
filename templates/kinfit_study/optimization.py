@@ -163,7 +163,7 @@ for item in x_y:
 		roc_plots.append({'plot':graph,'title':y_title.split('_efficiency')[0]})
 	else :
 		c = ROOT.TCanvas()
-		graph.Draw("Ap")
+		graph.Draw("Apl")
 		c.SaveAs(plotdir+x_title+'_'+y_title+'.png')
 
 # plot ROCs
