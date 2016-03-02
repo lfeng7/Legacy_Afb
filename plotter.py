@@ -31,7 +31,7 @@ parser.add_option('--name', metavar='F', type='string', action='store',
               default = "blank",
                   dest='name',
                   help='')
-parser.add_option('--log', action='store_true', default=False,
+parser.add_option('--log', metavar='F', type='string', action='store', default = 'no',
                   dest='log',
                   help='log sacle on y')
 parser.add_option('--scale', action='store_true', default=False,
@@ -72,6 +72,9 @@ parser.add_option('--config', action='store_true',
               default = False,
                   dest='config',
                   help='')
+parser.add_option('--plot', action='store_true', default=False,
+                  dest='plot',
+                  help='plot interactively')
 
 (options, args) = parser.parse_args()
 
@@ -108,6 +111,12 @@ else:
   label = options.label
   cut2 = options.cut2
   label2 = options.label2
+  plot = options.plot
+
+
+# Set root interactive or not
+ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
+if not plot: ROOT.gROOT.SetBatch(True)
 
 # Find the name of the ttree
 tf = ROOT.TFile(file)
@@ -185,7 +194,7 @@ for newhist in hists:
 c = TCanvas()
 c.cd()
 
-if log:
+if log in ['yes','log','true']:
     c.SetLogy()
 
 newhist1.Draw()
@@ -235,6 +244,12 @@ if label != "" or len(all_cuts)>1:
 print "entries: " + str(newhist.GetEntries())
 
 plotdir = 'plots/'
+
+if not os.path.exists(plotdir):
+    os.mkdir(plotdir)
+    print 'Creating new dir '+plotdir
+
+
 if save == True:
     c.SaveAs(plotdir+name + ".png")
 if not save:

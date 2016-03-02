@@ -9,7 +9,12 @@ from optparse import OptionParser
 
 parser = OptionParser()
 
-parser.add_option('--cut', metavar='F', type='string', action='store',
+
+parser.add_option('--plot', action='store_true', default=False,
+                  dest='plot',
+                  help='plot interactively')
+
+parser.add_option('--cut', metavar='F', type='string', action='store',default='',
                   dest='cut',
                   help='')
 
@@ -17,7 +22,7 @@ parser.add_option('--varx', metavar='F', type='string', action='store',
                   dest='var1',
                   help='')
 
-parser.add_option('--varx', metavar='F', type='string', action='store',
+parser.add_option('--vary', metavar='F', type='string', action='store',
                   dest='var2',
                   help='')
 
@@ -38,7 +43,7 @@ parser.add_option('--Maxy', metavar='F', type='float', action='store',
                   help='')
 
 parser.add_option('--name', metavar='F', type='string', action='store',
-	    	  default = "blahblahblah",
+	    	      default = "blahblahblah",
                   dest='name',
                   help='')
 
@@ -74,6 +79,8 @@ parser.add_option('--file2', metavar='F', type='string', action='store',
 
 (options, args) = parser.parse_args()
 
+
+plot = options.plot
 scale = options.scale
 cut = options.cut
 var1 = options.var1
@@ -92,7 +99,19 @@ name = options.name
 #f = ROOT.TFile( options.name + ".root", "recreate" )
 #f.cd()
 
-chain = ROOT.TChain("tree")
+
+# Some global root style 
+ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
+if not plot: ROOT.gROOT.SetBatch(True)
+
+# Find the name of the ttree
+tf = ROOT.TFile(fi1)
+keys = tf.GetListOfKeys()
+for ikey in keys:
+    if ikey.GetClassName() == 'TTree' : treename = ikey.GetName()
+print 'Getting ttree',treename
+
+chain = ROOT.TChain(treename)
 chain.Add(fi1)
 newhist = ROOT.TH2F(name, name, bin, x, y, bin2, x2, y2)	
 chain.Draw(var2+":"+var1+">>"+name,""+ cut, "lego2")
@@ -104,7 +123,7 @@ newhist.SetLineStyle(2)
 newhist.SetStats(0)
 #f.Write()
 
-chain2 = ROOT.TChain("tree")
+chain2 = ROOT.TChain(treename)
 chain2.Add(fi2)
 newhist2 = ROOT.TH2F(name+"2", name, bin, x, y, bin2, x2, y2)	
 chain2.Draw(var2+":"+var1+">>"+name+"2",""+ cut, "lego2")
@@ -123,10 +142,19 @@ newhist.GetYaxis().SetTitle(var2)
 
 newhist.Draw()
 newhist2.Draw("same")
-c.SaveAs(name + ".png")
 
 print str(newhist.GetEntries())
 print str(newhist2.GetEntries())
 
-raw_input()
+plotdir = 'plots/'
+rootdir = 'plots/root/'
+if not os.path.exists(plotdir):
+    os.mkdir(plotdir)
+    print 'Creating new dir '+plotdir
+if not os.path.exists(rootdir):
+    os.mkdir(rootdir)
+    print 'Creating new dir '+rootdir
+
+c.SaveAs(plotdir+name + ".png")
+
 

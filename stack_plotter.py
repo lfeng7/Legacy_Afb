@@ -7,6 +7,7 @@ import ROOT
 from optparse import OptionParser
 import os
 import glob
+from plot_tools import *
 
 # pavetex.SetShadowColor(0)
 # Job steering
@@ -16,6 +17,10 @@ import glob
 # of "*" to make sure you don't confuse the shell. 
 
 parser = OptionParser()
+
+parser.add_option('--plot', action='store_true', default=False,
+                  dest='plot',
+                  help='plot interactively')
 
 parser.add_option('--var', metavar='F', type='string', action='store',
                   default = "",
@@ -78,15 +83,22 @@ parser.add_option('--yields', metavar='F', type='string', action='store',
                   dest='yields',
                   help='If you want to make a yields table')
 
+parser.add_option('--overflow', metavar='F', type='string', action='store',
+              default = "yes",
+                  dest='overflow',
+                  help='If you want to plot overflow bin')
+
+
 (options, args) = parser.parse_args()
 
 argv = []
 
-canvas_title = 'CMS Private Work, 19.7 fb^{-1} at #sqrt{s} = 8 TeV'
+#canvas_title = 'CMS Private Work, 19.7 fb^{-1} at #sqrt{s} = 8 TeV'
+
 
 def main():
-    global xaxis_name , fout
-
+    global xaxis_name , fout , canvas_title
+    plot = options.plot
     cut = options.cut
     var = options.var
     xmin = options.Min
@@ -100,6 +112,16 @@ def main():
     rundir = options.dir
     weight = options.weight
     makeyields = options.yields
+    plot_overflow = options.overflow
+
+    if htitle != '':
+        canvas_title = htitle
+    else :
+        canvas_title = hname
+
+    # Some global root style 
+    ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
+    if not plot: ROOT.gROOT.SetBatch(True)
 
     if xaxis_name == '': xaxis_name = var
 
@@ -131,6 +153,10 @@ def main():
     if xmin != xmax:
         h_data = ROOT.TH1F(hname_data, hname_data, bin, xmin, xmax)        
     ttree_data.Draw(var+">>"+hname_data,""+ cut, "goff")
+    # if we want overflow bin
+    if plot_overflow == 'yes':
+        h_data = overflow(h_data) 
+
     h_data.SetDirectory(0)
     fdata.Close()
 
@@ -161,6 +187,10 @@ def main():
             ttree_mc.Draw(var+">>"+hname_mc,weight, "goff")
         else :
             ttree_mc.Draw(var+">>"+hname_mc,'('+cut+')*('+weight+')', "goff")
+        # decide if we want a last bin for overflow
+        if plot_overflow == 'yes':
+            h_mc = overflow(h_mc) 
+
         h_mc.SetDirectory(0)    
         cross_section_NLO = isample[3]
         nevts_gen = isample[2]
@@ -227,7 +257,7 @@ def main():
     # Make data/MC comparison plot
     leg.AddEntry(h_data,'data')
     if var != 'charge_ratio':
-        c_plot = comparison_plot_v1(mc_stack,h_data,leg,hname+'_'+var)
+        c_plot = comparison_plot_v1(mc_stack,h_data,leg,hname)
     else :
         fout = ROOT.TFile('plots/'+hname+'_'+var+'_plots.root','recreate')        
         c_plot = ROOT.TCanvas()
@@ -239,7 +269,7 @@ def main():
         h_data.Draw('same PE1X0')
         leg.Draw() 
         c_plot.Update()
-        c_plot.SaveAs('plots/'+hname+'_'+var+'_compare.png') 
+        c_plot.SaveAs('plots/'+hname+'_compare.png') 
 
     c_plot.SetName('cplot')
     # Write out
@@ -256,24 +286,26 @@ def main():
     # fout.Close()
 
 def GetSampleColor(itype):
-    if itype=='gg' : return 38
-    if itype=='qq' or itype=='signal' : return 46
-    if itype=='bck' : return 41
-    if itype=='WJets': return ROOT.kGreen-3
-    if itype=='tt_bkg': return ROOT.kMagenta
-    if itype=='qcd': return ROOT.kYellow
+    if itype=='gg'                          : return 38
+    if itype in ['qq','signal']             : return 46
+    if itype in ['bck','bkg']               : return 41
+    if itype in ['singleTop','T+x']         : return 41
+    if itype=='WJets'                       : return ROOT.kGreen-3
+    if itype=='tt_bkg'                      : return ROOT.kMagenta
+    if itype=='qcd'                         : return ROOT.kYellow
+    if itype in ['zjets','DY']              : return ROOT.kBlue
     return 0
 
 def GetSampleName(itype):
-    if itype=='gg' : return 'gg/qg->t#bar{t}'
-    if itype=='qq' : return 'q#bar{q}->t#bar{t}'
-    if itype=='tt' or itype=='signal': return 't#bar{t}'
-    if itype=='bck' : return 'other bkg'
-    if itype=='WJets': return 'W+jets'
-    if itype=='tt_bkg': return 'dilep/had t#bar{t}'
-    if itype=='qcd': return 'QCD MJ'
-    if itype=='singletop': return 'single top'
-    if itype=='zjets': return 'z+jets'
+    if itype=='gg'                  : return 'gg/qg->t#bar{t}'
+    if itype=='qq'                  : return 'q#bar{q}->t#bar{t}'
+    if itype in ['tt','signal']     : return 't#bar{t}'
+    if itype in ['bck','bkg']       : return 'other bkg'
+    if itype=='WJets'               : return 'W+jets'
+    if itype=='tt_bkg'              : return 'dilep/had t#bar{t}'
+    if itype=='qcd'                 : return 'QCD MJ'
+    if itype in ['singletop','T+x'] : return 'single top'
+    if itype in ['zjets','DY']      : return 'z+jets'
     return 0
 
 # This is specifically for comparing the stacked MC plots with data adding residule plots too

@@ -41,6 +41,9 @@ def write_out (inputs,outfile):
         for line in inputs:
             f.write(line + '\n')
 
+def loadroot(file_):
+    f_ = ROOT.TFile(file_)
+    return(f_)
 
 # Print pdgIds of all daughter particles
 def check_daus( gen ):

@@ -9,6 +9,10 @@ from optparse import OptionParser
 
 parser = OptionParser()
 
+parser.add_option('--plot', action='store_true', default=False,
+                  dest='plot',
+                  help='plot interactively')
+
 parser.add_option('--cut', metavar='F', type='string', action='store',
                   dest='cut',
                   help='')
@@ -73,6 +77,8 @@ parser.add_option('--yaxis', metavar='F', type='string', action='store',
 
 (options, args) = parser.parse_args()
 
+
+plot = options.plot
 scale = options.scale
 cut = options.cut
 var1 = options.var1
@@ -87,12 +93,25 @@ bin2 = options.bin2
 file = options.file
 name = options.name
 
+# Some global root style 
+ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
+if not plot: ROOT.gROOT.SetBatch(True)
+
+
 #f = ROOT.TFile( options.name + ".root", "recreate" )
 #f.cd()
 c = TCanvas()
 c.cd()
 
-chain = ROOT.TChain("tree")
+# Find the name of the ttree
+tf = ROOT.TFile(file)
+keys = tf.GetListOfKeys()
+for ikey in keys:
+    if ikey.GetClassName() == 'TTree' : treename = ikey.GetName()
+print 'Getting ttree',treename
+tf.Close()
+
+chain = ROOT.TChain(treename)
 chain.Add(file)
 newhist = ROOT.TH2F(name, name, bin, x, y, bin2, x2, y2)	
 chain.Draw(var2+":"+var1+">>"+name,""+ cut, "Colz")
@@ -118,17 +137,17 @@ else:
 if log:
   c.SetLogz()
 
-if options.save:
-  c.SaveAs(name + ".png")
-
 print str(newhist.GetEntries())
 
-if not options.save:
-  print "Enter save/saveas, or other to close:"
-  save = raw_input()
-  if save == "save":
-    c.SaveAs(name + ".png")
-  if save == "saveas":
-    print "enter file name:"
-    savename = raw_input()
-    c.SaveAs(savename + ".png")
+plotdir = 'plots/'
+rootdir = 'plots/root/'
+if not os.path.exists(plotdir):
+    os.mkdir(plotdir)
+    print 'Creating new dir '+plotdir
+if not os.path.exists(rootdir):
+    os.mkdir(rootdir)
+    print 'Creating new dir '+rootdir
+
+c.SaveAs(plotdir+name + ".png")
+#c.SaveAs(rootdir+name + ".root")
+

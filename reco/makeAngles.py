@@ -187,8 +187,8 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
         if not tmptree.trigger[0] and options.applytrigger == 'yes' : continue
         h_cutflow.Fill('trigger',1)
         # Skip events that kinfit did not converge ( error flag == 4 )
-        if not tmptree.final_errflags[0]==0 : continue
-        h_cutflow.Fill('kinfit error',1)
+        # if not tmptree.final_errflags[0]==0 : continue
+        # h_cutflow.Fill('kinfit error',1)
 
         # Book the branches from input ttree
         # reco_p4 is a list of tlep_p4,thad_p4,wlep_p4,whad_p4

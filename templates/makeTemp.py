@@ -1,12 +1,12 @@
 # Take in the angles ttree from reco, and make input ttree for original template making and fitting codes
 
-# from Legacy_Afb.Tools.ttbar_utility import *
-# from Legacy_Afb.Tools.angles_tools import *
+from Legacy_Afb.Tools.ttbar_utility import *
+from Legacy_Afb.Tools.angles_tools import *
 import glob
 from optparse import OptionParser
 import ROOT
 from array import array
-from angles_tools import *
+#from angles_tools import *
 import math
 ROOT.gROOT.SetBatch(True)
 
@@ -80,6 +80,7 @@ argv = []
 # Some preset constants
 data_lumi = 19748 
 csvm = 0.679 
+deltaR_matching = 0.4
 
 def main():
     # Get the file list with all input files.
@@ -195,7 +196,17 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
     pileup = array('f',[0.])
     pileup_real = array('f',[0.])
 
+    # extra stuff not used by template fitter
     correction_weight = array('f',[1.])
+    reco_pt   = array('f',4*[0.])
+    reco_eta  = array('f',4*[0.])
+    reco_phi  = array('f',4*[0.])
+    reco_mass = array('f',4*[0.])
+    leadingJet_pt = array('f',[0.])
+    leadingJet_mass = array('f',[0.])
+    isMatched = array('i',4*[-1])
+
+
     # names 
     br_defs += [('ttbar_mass',ttbar_mass,'ttbar_mass/F')]
     br_defs += [('Qt',Qt,'Qt/F')]
@@ -244,13 +255,29 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
     br_defs += [('pileup',pileup,'pileup/F')]
     br_defs += [('pileup_real',pileup_real,'pileup_real/F')]
 
+    # extra stuff not used by template fitter
     br_defs += [('correction_weight',correction_weight,'correction_weight/F')]
+    br_defs += [('reco_pt',reco_pt,'reco_pt[4]/F')]
+    br_defs += [('reco_eta',reco_eta,'reco_eta[4]/F')]
+    br_defs += [('reco_phi',reco_phi,'reco_phi[4]/F')]
+    br_defs += [('reco_mass',reco_mass,'reco_mass[4]/F')]
+    br_defs += [('isMatched',isMatched,'isMatched[4]/I')]
+    br_defs += [('leadingJet_pt',leadingJet_pt,'leadingJet_pt/F')]
+    br_defs += [('leadingJet_mass',leadingJet_mass,'leadingJet_mass/F')]
+
 
     # study beta
     beta_v0 = array('f',[-1.])
     br_defs += [('beta_v0',beta_v0,'beta_v0/F')]
     charge_ratio = array('i',[0])
     br_defs += [('charge_ratio',charge_ratio,'charge_ratio/I')]
+
+    # add alternative chi2 if exist in tree
+    has_chi2_new = 0
+    if tmptree.FindBranch('final_chi2_new'):
+        has_chi2_new = 1
+        chi2_new = array('f',[0.])
+        br_defs += [('chi2_new',chi2_new,'chi2_new/F')]
 
     # Add branches to the tree
     for ibr in br_defs:
@@ -286,6 +313,15 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         tmp_h0.SetDirectory(0)
         tmp_h1.SetDirectory(0)
 
+    # Check if it is a TTbar MC sample, an MC sample , or a data sample
+    if tmptree.FindBranch('gen_pt'):
+        is_TT_MC = 1
+    else:
+        is_TT_MC = 0
+    if tmptree.FindBranch('w_PU') :
+        is_MC = 1
+    else:
+        is_MC = 0
 
     # Loop over entries
     n_evt = 0
@@ -340,6 +376,10 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         if tmptree.FindBranch('mtt_mc'):
             if tmptree.mtt_mc.size()>0 : ttbar_mass_mc[0] = tmptree.mtt_mc[0] 
         lnL[0] = tmptree.final_chi2[0]
+
+        if has_chi2_new :
+            chi2_new[0] = tmptree.final_chi2_new
+
         n_valid_jets[0] = tmptree.N_jets[0]
         n_bTags[0] = tmptree.N_btag[0]
         fitParValues[0] = tmptree.final_nv_pz[0]
@@ -352,7 +392,7 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         w_a[0],w_a_opp[0],w_s_xi[0],w_s_xi_opp[0],w_a_xi[0],w_a_xi_opp[0] = 1,1,1,1,1,1
         w_s_delta[0],w_s_delta_opp[0],w_a_delta[0],w_a_delta_opp[0] = 1,1,1,1
         # decide if want to use temp reweight
-        if tmptree.FindBranch('gen_type'): 
+        if is_TT_MC: 
             if tmptree.gen_type[0] == 'e_jets' and tmptree.init_type[0] == 'qqbar':
                 weight_is_valid = 1
         beta_v0[0] = -1            
@@ -382,7 +422,7 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
 
         # gen branches only exist for ttbar MC, which makes PERFECT sense
         motherPIDs[0],motherPIDs[1] = -100,-100
-        if tmptree.FindBranch('gen_pdgid'):
+        if is_TT_MC:
             motherPIDs[0],motherPIDs[1] = tmptree.gen_pdgid[0],tmptree.gen_pdgid[1]
 
         # a bunch of MC correction weights. Applies only for MC, literaly
@@ -391,7 +431,7 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         lepID_reweight[0],lepID_reweight_hi[0],lepID_reweight_low[0],trigger_reweight[0] = 1,1,1,1
         trigger_reweight_hi[0],trigger_reweight_low[0] = 1,1
         pileup_real[0] = -10
-        if tmptree.FindBranch('w_PU'):
+        if is_MC:
             pileup_reweight[0] = tmptree.w_PU[0]
             if tmptree.FindBranch('weight_top_pT'):
                 top_pT_reweight[0]  = tmptree.weight_top_pT[0]/toppt_scale
@@ -423,6 +463,71 @@ def makeTemps(tfile,sample_name,evt_start=0,evt_to_run=1000):
         if n_valid_jets[0] == 5 and Q_l[0]== -1 : 
             charge_ratio[0]=4
             h_charge_ratio.Fill('4jets,l+',0);h_charge_ratio.Fill('4jets,l-',0);h_charge_ratio.Fill('5jets,l+',0);h_charge_ratio.Fill('5jets,l-',1)
+
+        ################################################################
+        #               reconstruction study                           #
+        ################################################################
+
+        # Find and store reco p-4, leading jets pt and mass, for all MC and data samples
+        for i in range(4):
+            reco_pt[i]   = tmptree.reco_pt[i]
+            reco_eta[i]  = tmptree.reco_eta[i]
+            reco_phi[i]  = tmptree.reco_phi[i]
+            reco_mass[i] = tmptree.reco_mass[i]
+
+        # sort jets by pt
+        max_jetpt,max_jet_index = 0,0
+        for index,item in enumerate(tmptree.jets_pt):
+            if item>max_jetpt:
+                max_jet_index = index
+        # Keep leading jet pt and mass
+        leadingJet_pt[0] = tmptree.jets_pt[max_jet_index]
+        leadingJet_mass[0] = tmptree.jets_mass[max_jet_index]
+
+        # Match reco t's and w's with gen objects using deltaR for TT semilep events only
+        do_Matching = 0
+        if is_TT_MC:
+            if tmptree.gen_type[0] == 'e_jets':
+                do_Matching = 1
+
+        # initialization
+        for i in range(len(isMatched)):
+            isMatched[i] = -1
+
+        if do_Matching:
+            # Make 4-vec for gen t's and w's
+            # Make 4vec for reco t and W's
+            reco_p4 = []
+            for i in range(4):
+                ip4 = ROOT.TLorentzVector()
+                ip4.SetPtEtaPhiM(reco_pt[i],reco_eta[i],reco_phi[i],reco_mass[i])
+                reco_p4.append(ip4)
+            # Make 4vecs of gen tlep_p4,thad_p4,wlep_p4,whad_p4
+            gen_pt = tmptree.gen_pt
+            gen_eta = tmptree.gen_eta
+            gen_phi = tmptree.gen_phi
+            gen_mass = tmptree.gen_phi
+            gen_side = tmptree.gen_side
+            gen_pdgid = tmptree.gen_pdgid
+            gen_index = [0,0,0,0]
+            for i in range(len(gen_side)):
+                if gen_side[i] == 'lep' and abs(gen_pdgid[i])==6 : gen_index[0]=i 
+                if gen_side[i] == 'had' and abs(gen_pdgid[i])==6 : gen_index[1]=i 
+                if gen_side[i] == 'lep' and abs(gen_pdgid[i])==24 : gen_index[2]=i 
+                if gen_side[i] == 'had' and abs(gen_pdgid[i])==24 : gen_index[3]=i 
+            gen_p4 = []
+            for j in range(4):
+                ip4 = ROOT.TLorentzVector()
+                i = gen_index[j]
+                ip4.SetPtEtaPhiM(gen_pt[i],gen_eta[i],gen_phi[i],gen_mass[i])
+                gen_p4.append(ip4)  
+            # Do matching
+            for i in range(4):
+                delR_ = reco_p4[i].DeltaR(gen_p4[i])
+                if delR_< deltaR_matching: isMatched[i] = 1
+                else : isMatched[i] = 0                          
+
+        # Do matching for all signal events
 
         # Fill events that pass additional cuts
         newtree.Fill()
