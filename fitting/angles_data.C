@@ -12,6 +12,7 @@
 /////////////////////////////////////////////////////////////////////////
 //     This file used during fitting to loop over all data events      //
 //     Loop function has been modified to return a log likelihood      //
+//	Modified on 3-2-16 to merge 4/5 jets templates together			   //
 /////////////////////////////////////////////////////////////////////////
 
 //Name of file holding complete chrage-separated distributions
@@ -118,7 +119,6 @@ double angles_data::Loop(double Rqqbar, double Rbck, double RWJets, double xi, d
 			double ev_gtt = 0.0;
 			double ev_gbk = 0.0;
 			if (Q_l > 0) {
-				if (n_valid_jets == 4) {
 					ev_fqqs = fqqs_plus_4jet->GetBinContent(fqqs_plus_4jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
 					ev_fqqs_xi = fqqs_xi_plus_4jet->GetBinContent(fqqs_xi_plus_4jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
 					ev_fqqs_delta = fqqs_delta_plus_4jet->GetBinContent(fqqs_delta_plus_4jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
@@ -130,19 +130,18 @@ double angles_data::Loop(double Rqqbar, double Rbck, double RWJets, double xi, d
 					ev_WJets = WJets_plus_4jet->GetBinContent(WJets_plus_4jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
 					ev_gtt = gtt_4jet->GetBinContent(gtt_4jet->FindFixBin(ln_L));
 					ev_gbk = gbk_4jet->GetBinContent(gbk_4jet->FindFixBin(ln_L));
-				}
-				else if (n_valid_jets == 5) {
-					ev_fqqs = fqqs_plus_5jet->GetBinContent(fqqs_plus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-					ev_fqqs_xi = fqqs_xi_plus_5jet->GetBinContent(fqqs_xi_plus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-					ev_fqqs_delta = fqqs_delta_plus_5jet->GetBinContent(fqqs_delta_plus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-					ev_fqqa = fqqa_plus_5jet->GetBinContent(fqqa_plus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-					ev_fqqa_xi = fqqa_xi_plus_5jet->GetBinContent(fqqa_xi_plus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-					ev_fqqa_delta = fqqa_delta_plus_5jet->GetBinContent(fqqa_delta_plus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-					ev_fgg  = fgg_plus_5jet->GetBinContent(fgg_plus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-					ev_fbck = fbck_plus_5jet->GetBinContent(fbck_plus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-					ev_WJets = WJets_plus_5jet->GetBinContent(WJets_plus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-					ev_gtt = gtt_5jet->GetBinContent(gtt_5jet->FindFixBin(ln_L));
-					ev_gbk = gbk_5jet->GetBinContent(gbk_5jet->FindFixBin(ln_L));
+
+					ev_fqqs += fqqs_plus_5jet->GetBinContent(fqqs_plus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+					ev_fqqs_xi += fqqs_xi_plus_5jet->GetBinContent(fqqs_xi_plus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+					ev_fqqs_delta += fqqs_delta_plus_5jet->GetBinContent(fqqs_delta_plus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+					ev_fqqa += fqqa_plus_5jet->GetBinContent(fqqa_plus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+					ev_fqqa_xi += fqqa_xi_plus_5jet->GetBinContent(fqqa_xi_plus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+					ev_fqqa_delta += fqqa_delta_plus_5jet->GetBinContent(fqqa_delta_plus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+					ev_fgg  += fgg_plus_5jet->GetBinContent(fgg_plus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+					ev_fbck += fbck_plus_5jet->GetBinContent(fbck_plus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+					ev_WJets += WJets_plus_5jet->GetBinContent(WJets_plus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+					ev_gtt += gtt_5jet->GetBinContent(gtt_5jet->FindFixBin(ln_L));
+					ev_gbk += gbk_5jet->GetBinContent(gbk_5jet->FindFixBin(ln_L));
 				}
 				else {
 					printf("JET NUMBER INFORMATION NOT AVAILABLE: EVENT SKIPPED!\n");
@@ -150,7 +149,6 @@ double angles_data::Loop(double Rqqbar, double Rbck, double RWJets, double xi, d
 				}
 			}
 			else if (Q_l < 0) {
-				if (n_valid_jets == 4) {
 					ev_fqqs = fqqs_minus_4jet->GetBinContent(fqqs_minus_4jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
 					ev_fqqs_xi = fqqs_xi_minus_4jet->GetBinContent(fqqs_xi_minus_4jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
 					ev_fqqs_delta = fqqs_delta_minus_4jet->GetBinContent(fqqs_delta_minus_4jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
@@ -162,19 +160,18 @@ double angles_data::Loop(double Rqqbar, double Rbck, double RWJets, double xi, d
 					ev_WJets = WJets_minus_4jet->GetBinContent(WJets_minus_4jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
 					ev_gtt = gtt_4jet->GetBinContent(gtt_4jet->FindFixBin(ln_L));
 					ev_gbk = gbk_4jet->GetBinContent(gbk_4jet->FindFixBin(ln_L));
-				}
-				else if (n_valid_jets == 5) {
-					ev_fqqs = fqqs_minus_5jet->GetBinContent(fqqs_minus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-					ev_fqqs_xi = fqqs_xi_minus_5jet->GetBinContent(fqqs_xi_minus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-					ev_fqqs_delta = fqqs_delta_minus_5jet->GetBinContent(fqqs_delta_minus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-					ev_fqqa = fqqa_minus_5jet->GetBinContent(fqqa_minus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-					ev_fqqa_xi = fqqa_xi_minus_5jet->GetBinContent(fqqa_xi_minus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-					ev_fqqa_delta = fqqa_delta_minus_5jet->GetBinContent(fqqa_delta_minus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-					ev_fgg  = fgg_minus_5jet->GetBinContent(fgg_minus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-					ev_fbck = fbck_minus_5jet->GetBinContent(fbck_minus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-					ev_WJets = WJets_minus_5jet->GetBinContent(WJets_minus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-					ev_gtt = gtt_5jet->GetBinContent(gtt_5jet->FindFixBin(ln_L));
-					ev_gbk = gbk_5jet->GetBinContent(gbk_5jet->FindFixBin(ln_L));
+
+					ev_fqqs += fqqs_minus_5jet->GetBinContent(fqqs_minus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+					ev_fqqs_xi += fqqs_xi_minus_5jet->GetBinContent(fqqs_xi_minus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+					ev_fqqs_delta += fqqs_delta_minus_5jet->GetBinContent(fqqs_delta_minus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+					ev_fqqa += fqqa_minus_5jet->GetBinContent(fqqa_minus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+					ev_fqqa_xi += fqqa_xi_minus_5jet->GetBinContent(fqqa_xi_minus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+					ev_fqqa_delta += fqqa_delta_minus_5jet->GetBinContent(fqqa_delta_minus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+					ev_fgg  += fgg_minus_5jet->GetBinContent(fgg_minus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+					ev_fbck += fbck_minus_5jet->GetBinContent(fbck_minus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+					ev_WJets += WJets_minus_5jet->GetBinContent(WJets_minus_5jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+					ev_gtt += gtt_5jet->GetBinContent(gtt_5jet->FindFixBin(ln_L));
+					ev_gbk += gbk_5jet->GetBinContent(gbk_5jet->FindFixBin(ln_L));
 				}
 				else {
 					printf("JET NUMBER INFORMATION NOT AVAILABLE: EVENT SKIPPED!\n");
@@ -536,6 +533,8 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 			//double ev_gbk_4jet = gbk_4jet->GetBinContent(gbk_4jet->FindFixBin(ln_L));
 			//double ev_gtt_5jet = gtt_5jet->GetBinContent(gtt_5jet->FindFixBin(ln_L));
 			//double ev_gbk_5jet = gbk_5jet->GetBinContent(gbk_5jet->FindFixBin(ln_L));
+
+			// This if is really to make sure the data and mc templates are in the same phase space, aka, compare apples to apples
 			if ((Q_l>0 && n_valid_jets==4 && (ev_fgg_plus_4jet!=0 || ev_fqqs_plus_4jet!=0 || ev_fbck_plus_4jet!=0 || ev_WJets_plus_4jet)) ||
 				(Q_l<0 && n_valid_jets==4 && (ev_fgg_minus_4jet!=0 || ev_fqqs_minus_4jet!=0 || ev_fbck_minus_4jet!=0 || ev_WJets_minus_4jet)) ||
 				(Q_l>0 && n_valid_jets==5 && (ev_fgg_plus_5jet!=0 || ev_fqqs_plus_5jet!=0 || ev_fbck_plus_5jet!=0 || ev_WJets_plus_5jet)) ||
