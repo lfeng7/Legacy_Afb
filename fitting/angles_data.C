@@ -143,11 +143,6 @@ double angles_data::Loop(double Rqqbar, double Rbck, double RWJets, double xi, d
 					ev_gtt += gtt_5jet->GetBinContent(gtt_5jet->FindFixBin(ln_L));
 					ev_gbk += gbk_5jet->GetBinContent(gbk_5jet->FindFixBin(ln_L));
 				}
-				else {
-					printf("JET NUMBER INFORMATION NOT AVAILABLE: EVENT SKIPPED!\n");
-					continue;
-				}
-			}
 			else if (Q_l < 0) {
 					ev_fqqs = fqqs_minus_4jet->GetBinContent(fqqs_minus_4jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
 					ev_fqqs_xi = fqqs_xi_minus_4jet->GetBinContent(fqqs_xi_minus_4jet->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
@@ -173,11 +168,6 @@ double angles_data::Loop(double Rqqbar, double Rbck, double RWJets, double xi, d
 					ev_gtt += gtt_5jet->GetBinContent(gtt_5jet->FindFixBin(ln_L));
 					ev_gbk += gbk_5jet->GetBinContent(gbk_5jet->FindFixBin(ln_L));
 				}
-				else {
-					printf("JET NUMBER INFORMATION NOT AVAILABLE: EVENT SKIPPED!\n");
-					continue;
-				}
-			}
 			else {
 				printf("LEPTON CHARGE INFORMATION NOT AVAILABLE: EVENT SKIPPED!\n");
 				continue;
