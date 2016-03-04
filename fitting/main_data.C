@@ -23,7 +23,7 @@ char mg_data_total_name[50] = {"all_data_angles.root"};
 
 //for fitting
 angles_data *ad;
-
+int verbose = 1;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1082,8 +1082,13 @@ double myfunc(double R_qqbar, double R_bck, double R_WJets, double xi, double de
 	
 	//get the log likelihood from the angles_data object's loop
 	logL = ad->Loop(R_qqbar,R_bck,R_WJets,xi,delta,A_fb,0);
+
+	if (verbose){
+		printf("fit values at iteration %i: -2ln(L),R_qqbar,R_bck,R_WJets,A_fb\n",iters);
+		printf("fit values at iteration %i: %.2f  ,  %.5f , %.5f,%.5f   ,%.5f\n",iters,logL,R_qqbar,R_bck,R_WJets,A_fb);
+	}
 	
-	if (iters%5==0) {
+	if (iters%5==0 && verbose!=1) {
 		printf("-2ln(L) at iteration %d = %.10f\n",iters,logL);
 		printf("----------------------------------------------------------\n");
 	}
