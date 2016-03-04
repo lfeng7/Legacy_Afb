@@ -92,7 +92,7 @@ double angles_data::Loop(double Rqqbar, double Rbck, double RWJets, double xi, d
 	int count_almost_fit = 0;
 	TH1D *event_likelihoods = (TH1D*)malloc(sizeof(TH1D*));
 	if (iterations == 0 || plot==1)
-		event_likelihoods = new TH1D("event_likelihoods","Event -2*Log(L); -2*ln(L)",50,0,50);
+		event_likelihoods = new TH1D("event_likelihoods","Event -2*Log(L); -2*ln(L)",100,0,50);
 	double min_ev_lnL = 1000000.;
 	double max_ev_lnL = 0.;
 	//MAIN LOOP
