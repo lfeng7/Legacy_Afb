@@ -217,11 +217,11 @@ def main():
             sample_types.append(sample_type)
         tmpf.Close()
     # Add hists into stack in certain order
-    alltypes = ['qcd','bck','WJets','tt_bkg','gg','qq','signal']
+    alltypes = ['qcd','bck','zjets','WJets','singletop','tt_bkg','gg','qq','signal']
     for itype in alltypes :
         isamples = [item for item in mc_samples if item[1]==itype]
-        if len(isamples)==0:
-            print 'No MC sample of the type',itype
+        if len(isamples)>0:
+            print 'Include MC sample type %s'%itype
         for i,item in enumerate(isamples):
             tmp_h = item[4]
             if i == len(isamples)-1 : tmp_h.SetLineColor(1)
@@ -289,7 +289,7 @@ def GetSampleColor(itype):
     if itype=='gg'                          : return 38
     if itype in ['qq','signal']             : return 46
     if itype in ['bck','bkg']               : return 41
-    if itype in ['singleTop','T+x']         : return 41
+    if itype in ['singletop','T+x']         : return 41
     if itype=='WJets'                       : return ROOT.kGreen-3
     if itype=='tt_bkg'                      : return ROOT.kMagenta
     if itype=='qcd'                         : return ROOT.kYellow
