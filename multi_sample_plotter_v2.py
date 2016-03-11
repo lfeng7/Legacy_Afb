@@ -1,3 +1,4 @@
+#! /usr/bin/python
 # take many root files and make comparison plots using different colors
 # if a MC.txt is provided, "stack" samples according to type
 
@@ -9,6 +10,16 @@ from ROOT import *
 import sys
 from optparse import OptionParser
 from plot_tools import *
+
+# print out usage info if no argument is given
+argv = sys.argv[1:]
+if len(argv) == 0:
+    print """
+Plot and compare among several types of samples. All normalized to data integrated luminosity. cross section and nevts_gen are encoded in MC_bkg.txt in the same dir of the root files
+Usage:
+python ../multi_sample_plotter_v2.py --var cos_theta_cs --Min -1 --Max 1 --name cs_sideband --bin 30 --dir template_files/sideband/ --title "cos_theta_cs sideband" --xaxis "cos#theta*" --yaxis "events" --weight correction_weight
+"""
+    sys.exit(1)
 
 ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
 
@@ -132,6 +143,13 @@ for ifile in all_files:
     for item in mc_samples:
         if item['file_name'] in ifile:
             item['file_path'] = ifile
+
+wrong_mc_entry = [ item for item in mc_samples if item.get('file_path',0)==0]
+if len(wrong_mc_entry)!=0:
+    print 'These MC samples cannot be found! Will quit'
+    for item in wrong_mc_entry:
+        print item['file_name']
+    sys.exit(1)
 
 if verbose in ['yes','verbose']:
     print 'Plotting from these files!'

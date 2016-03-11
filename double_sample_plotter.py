@@ -74,6 +74,10 @@ parser.add_option('--config', action='store_true',
 
 (options, args) = parser.parse_args()
 
+# some plotting setup
+ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
+ROOT.gROOT.SetBatch(True)
+
 if options.config:
   file1 = ""
   file2 = ""
