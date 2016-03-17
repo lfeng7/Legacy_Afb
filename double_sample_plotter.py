@@ -6,7 +6,21 @@ from ROOT import *
 import sys
 from optparse import OptionParser
 
+# print out usage info if no argument is given
+argv = sys.argv[1:]
+if len(argv) == 0:
+    print """
+Plot and compare among two types of samples. 
+Usage:
+python ../multi_sample_plotter_v2.py --var cos_theta_cs --Min -1 --Max 1 --name cs_sideband --bin 30 --dir template_files/sideband/ --title "cos_theta_cs sideband" --xaxis "cos#theta*" --yaxis "events" --weight correction_weight
+"""
+    sys.exit(1)
+
 parser = OptionParser()
+
+parser.add_option('--plot', action='store_true', default=False,
+                  dest='plot',
+                  help='plot interactively')
 
 parser.add_option('--cut', metavar='F', type='string', action='store',
           default="",
@@ -44,9 +58,9 @@ parser.add_option('--file2', metavar='F', type='string', action='store',
                   default='',
                   dest='file2',
                   help='')
-parser.add_option('--save', action='store_true', default=True,
+parser.add_option('--save', metavar='F', type='string', action='store',default='no',
                   dest='save',
-                  help='save plot')
+                  help='save to root file')
 parser.add_option('--title', metavar='F', type='string', action='store',
               default = "",
                   dest='title',
@@ -59,7 +73,7 @@ parser.add_option('--yaxis', metavar='F', type='string', action='store',
               default = "",
                   dest='yaxis',
                   help='')
-parser.add_option('--label1', metavar='F', type='string', action='store',
+parser.add_option('--label', metavar='F', type='string', action='store',
               default = "",
                   dest='label1',
                   help='')
@@ -75,8 +89,9 @@ parser.add_option('--config', action='store_true',
 (options, args) = parser.parse_args()
 
 # some plotting setup
+# Set root interactive or not
 ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
-ROOT.gROOT.SetBatch(True)
+if not plot: ROOT.gROOT.SetBatch(True)
 
 if options.config:
   file1 = ""
@@ -113,6 +128,7 @@ else:
   save = options.save
   label1 = options.label1
   label2 = options.label2
+  plot = options.plot
 
 # Find the name of the ttree
 tf = ROOT.TFile(file1)
@@ -153,7 +169,7 @@ if yaxis == "":
 else:
     newhist1.GetYaxis().SetTitle(yaxis)
 newhist1.GetYaxis().SetTitleSize(0.04)
-newhist1.GetYaxis().SetTitleOffset(1.05)
+# newhist1.GetYaxis().SetTitleOffset(1.05)
 newhist1.GetXaxis().SetTitleOffset(0.9)
 newhist1.GetXaxis().SetTitleSize(0.04)
 
@@ -171,8 +187,8 @@ if scale:
 newhist2.SetLineColor(ROOT.kBlue)
 
 newhist1.SetMaximum(max(newhist1.GetMaximum(),newhist2.GetMaximum())*1.1)
-newhist1.Draw()
-newhist2.Draw("same")
+newhist1.Draw('hist')
+newhist2.Draw("same hist")
 if label1 != "":
     leg = ROOT.TLegend(0.65, 0.75, 0.89, 0.89)
     leg.SetFillColor(0)
@@ -180,20 +196,23 @@ if label1 != "":
     #leg.SetTextSize(0.02)
     leg.AddEntry(newhist1, label1, "l")
     leg.AddEntry(newhist2, label2, "l")
-    leg.Draw("same")
+    leg.Draw("same hist")
 print "entries file1: " + str(newhist1.GetEntries())
 print "entries file2: " + str(newhist2.GetEntries())
 
+
 plotdir = 'plots/'
-if save == True:
-    c.SaveAs(plotdir+name + ".png")
-if not save:
-    print "Enter save/saveas, or other to close:"
-    save = raw_input()
-    if save == "save":
-        c.SaveAs(name + ".png")
-    if save == "saveas":
-        print "enter file name:"
-        savename = raw_input()
-        c.SaveAs(savename + ".png")
+if not os.path.exists(plotdir):
+    os.mkdir(plotdir)
+    print 'Creating new dir '+plotdir
+
+c.SaveAs(plotdir+name + ".png")
+
+if save.lower() in ['true','yes']:
+    rootdir = plotdir+'root/'
+    if not os.path.exists(rootdir):
+        os.mkdir(rootdir)
+        print 'Creating new dir '+rootdir  
+    c.SaveAs(rootdir+name+ ".root")
+
 

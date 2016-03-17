@@ -14,6 +14,7 @@ parser.add_option('--plot', action='store_true', default=False,
                   help='plot interactively')
 
 parser.add_option('--cut', metavar='F', type='string', action='store',
+                  default = '',
                   dest='cut',
                   help='')
 parser.add_option('--varx', metavar='F', type='string', action='store',
@@ -46,8 +47,7 @@ parser.add_option('--scale', metavar='F', action='store_true',
                   default=False,
                   dest='scale',
                   help='')
-parser.add_option('--save', metavar='F', action='store_true',
-                  default=False,
+parser.add_option('--save', metavar='F', type='string', action='store',default='no',
                   dest='save',
                   help='')
 parser.add_option('--binx', metavar='F', type='int', action='store',
@@ -92,6 +92,7 @@ bin = options.bin1
 bin2 = options.bin2
 file = options.file
 name = options.name
+save = options.save
 
 # Some global root style 
 ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
@@ -140,14 +141,16 @@ if log:
 print str(newhist.GetEntries())
 
 plotdir = 'plots/'
-rootdir = 'plots/root/'
 if not os.path.exists(plotdir):
     os.mkdir(plotdir)
     print 'Creating new dir '+plotdir
-if not os.path.exists(rootdir):
-    os.mkdir(rootdir)
-    print 'Creating new dir '+rootdir
 
 c.SaveAs(plotdir+name + ".png")
-#c.SaveAs(rootdir+name + ".root")
+
+if save.lower() in ['true','yes']:
+    rootdir = plotdir+'root/'
+    if not os.path.exists(rootdir):
+        os.mkdir(rootdir)
+        print 'Creating new dir '+rootdir  
+    c.SaveAs(rootdir+name+ ".root")
 

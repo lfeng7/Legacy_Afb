@@ -310,8 +310,6 @@ def GetSampleName(itype):
 
 # This is specifically for comparing the stacked MC plots with data adding residule plots too
 import math
-ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
-
 def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'h',logy=False):
     global fout,var
     prefix = 'plots'

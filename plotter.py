@@ -1,3 +1,5 @@
+#! /usr/bin/python
+
 import os
 import glob
 import math
@@ -45,7 +47,7 @@ parser.add_option('--file', metavar='F', type='string', action='store',
                   default='',
                   dest='file',
                   help='')
-parser.add_option('--save', action='store_true', default=True,
+parser.add_option('--save', metavar='F', type='string', action='store',default='no',
                   dest='save',
                   help='save plot')
 parser.add_option('--title', metavar='F', type='string', action='store',
@@ -174,7 +176,7 @@ for newhist in hists:
     else:
         newhist.GetYaxis().SetTitle(yaxis)
     newhist.GetYaxis().SetTitleSize(0.04)
-    newhist.GetYaxis().SetTitleOffset(1.05)
+    newhist.GetYaxis().SetTitleOffset(1.5)
     newhist.GetXaxis().SetTitleOffset(0.9)
     newhist.GetXaxis().SetTitleSize(0.04)
     newhist.SetTitle(title)
@@ -197,7 +199,7 @@ c.cd()
 if log in ['yes','log','true']:
     c.SetLogy()
 
-newhist1.Draw()
+newhist1.Draw('hist')
 # find stat box of hist1
 # lof = newhist1.GetListOfFunctions()
 # statbox1 = newhist1.FindObject("stats")
@@ -211,7 +213,7 @@ statbox1.SetY2NDC(1)
 # Draw second hists if there's a second cut
 if len(hists)>1: 
   hist2 = hists[1]
-  hist2.Draw('sames')
+  hist2.Draw('sames hist')
   # set stat box
   gPad.Update()
   statbox2 = hist2.FindObject("stats")  
@@ -244,21 +246,16 @@ if label != "" or len(all_cuts)>1:
 print "entries: " + str(newhist.GetEntries())
 
 plotdir = 'plots/'
-
 if not os.path.exists(plotdir):
     os.mkdir(plotdir)
     print 'Creating new dir '+plotdir
 
+c.SaveAs(plotdir+name + ".png")
 
-if save == True:
-    c.SaveAs(plotdir+name + ".png")
-if not save:
-    print "Enter save/saveas, or other to close:"
-    save = raw_input()
-    if save == "save":
-        c.SaveAs(name + ".png")
-    if save == "saveas":
-        print "enter file name:"
-        savename = raw_input()
-        c.SaveAs(savename + ".png")
+if save.lower() in ['true','yes']:
+    rootdir = plotdir+'root/'
+    if not os.path.exists(rootdir):
+        os.mkdir(rootdir)
+        print 'Creating new dir '+rootdir  
+    c.SaveAs(rootdir+name+ ".root")
 

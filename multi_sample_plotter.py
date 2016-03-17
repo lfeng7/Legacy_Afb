@@ -6,8 +6,6 @@ from ROOT import *
 import sys
 from optparse import OptionParser
 
-ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
-
 parser = OptionParser()
 
 parser.add_option('--plot', action='store_true', default=False,
@@ -42,11 +40,11 @@ parser.add_option('--bin', metavar='F', type='int', action='store',
                   default=100,
                   dest='bin',
                   help='')
-parser.add_option('--file1', metavar='F', type='string', action='store',
+parser.add_option('--files', metavar='F', type='string', action='store',
                   default='',
                   dest='file1',
                   help='')
-parser.add_option('--save', action='store_true', default=True,
+parser.add_option('--save', metavar='F', type='string', action='store',default='no',
                   dest='save',
                   help='save plot')
 parser.add_option('--title', metavar='F', type='string', action='store',
@@ -107,13 +105,19 @@ else:
     label = options.label
     plot = options.plot
 
+# Set root interactive or not
+ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
+if not plot: ROOT.gROOT.SetBatch(True)
+
 # some preset stuff
 colors = [2,4,6,8,9]
 # Set root interactive or not
 if not plot: ROOT.gROOT.SetBatch(True)
 
 # Getting all file names
-all_files = glob.glob(file1)
+all_files = file1.split()
+if len(all_files)==1:
+  all_files = glob.glob(file1)
 files = []
 print 'Plotting from these files!'
 for ifile in all_files:
@@ -121,8 +125,8 @@ for ifile in all_files:
     print ifile
 # Find the name of the ttree
 if len(files)>len(colors):
-    print 'Too many input files for now!'
-    sys.exit(0)
+    print 'Too many input files for now! Only %i colors available'%len(colors)
+    sys.exit(1)
 
 tf = files[0]
 keys = tf.GetListOfKeys()
@@ -183,8 +187,8 @@ labels = []
 labels = label.split(' ')
 for i,ihist in enumerate(hists):
     ihist.SetMaximum(ymax*1.1)
-    if i==0 : ihist.Draw()
-    else : ihist.Draw("same")
+    if i==0 : ihist.Draw('hist')
+    else : ihist.Draw("same hist")
     #leg.SetTextSize(0.02)
     if len(labels) == len(hists):
         leg.AddEntry(ihist, labels[i], "l")
@@ -194,17 +198,19 @@ for i,ihist in enumerate(hists):
 
 leg.Draw("same")
 
+
 plotdir = 'plots/'
-if save == True:
-    c.SaveAs(plotdir+name + ".png")
-    c.SaveAs(plotdir+name + ".root")
-if not save:
-    print "Enter save/saveas, or other to close:"
-    save = raw_input()
-    if save == "save":
-        c.SaveAs(name + ".png")
-    if save == "saveas":
-        print "enter file name:"
-        savename = raw_input()
-        c.SaveAs(savename + ".png")
+if not os.path.exists(plotdir):
+    os.mkdir(plotdir)
+    print 'Creating new dir '+plotdir
+
+c.SaveAs(plotdir+name + ".png")
+
+if save.lower() in ['true','yes']:
+    rootdir = plotdir+'root/'
+    if not os.path.exists(rootdir):
+        os.mkdir(rootdir)
+        print 'Creating new dir '+rootdir  
+    c.SaveAs(rootdir+name+ ".root")
+
     

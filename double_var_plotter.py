@@ -9,6 +9,10 @@ from optparse import OptionParser
 
 parser = OptionParser()
 
+parser.add_option('--plot', action='store_true', default=False,
+                  dest='plot',
+                  help='plot interactively')
+
 parser.add_option('--cut', metavar='F', type='string', action='store',
                   dest='cut',
 		  default = '',
@@ -40,10 +44,9 @@ parser.add_option('--log', metavar='F', type='string', action='store',
                   dest='log',
                   help='')
 
-parser.add_option('--scale', metavar='F', type='float', action='store',
-                  default='1.0',
+parser.add_option('--scale', action='store_true', default=False,
                   dest='scale',
-                  help='')
+                  help='scale to integral = 1')
 
 parser.add_option('--bin', metavar='F', type='int', action='store',
                   default=100,
@@ -53,6 +56,35 @@ parser.add_option('--bin', metavar='F', type='int', action='store',
 parser.add_option('--file', metavar='F', type='string', action='store',
                   default='no',
                   dest='fi',
+                  help='')
+
+parser.add_option('--save', metavar='F', type='string', action='store',default='no',
+                  dest='save',
+                  help='save to root file')
+
+parser.add_option('--title', metavar='F', type='string', action='store',
+              default = "",
+                  dest='title',
+                  help='')
+
+parser.add_option('--label', metavar='F', type='string', action='store',
+              default = "",
+                  dest='label1',
+                  help='')
+
+parser.add_option('--label2', metavar='F', type='string', action='store',
+              default = "",
+                  dest='label2',
+                  help='')
+
+parser.add_option('--xaxis', metavar='F', type='string', action='store',
+              default = "",
+                  dest='xaxis',
+                  help='')
+
+parser.add_option('--yaxis', metavar='F', type='string', action='store',
+              default = "",
+                  dest='yaxis',
                   help='')
 
 (options, args) = parser.parse_args()
@@ -67,7 +99,17 @@ log = options.log
 bin = options.bin
 fi = options.fi
 file_name = options.name
+save = options.save
+title = options.title
+label1 = options.label1
+label2 = options.label2
+xaxis = options.xaxis
+yaxis = options.yaxis
+plot = options.plot
 
+# Set root interactive or not
+ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
+if not plot: ROOT.gROOT.SetBatch(True)
 
 # Find the name of the ttree
 tf = ROOT.TFile(fi)
@@ -86,7 +128,6 @@ chain.Add(fi)
 name = var1
 newhist = ROOT.TH1F(name, name, bin, x, y)	
 chain.Draw(var1+">>"+name,""+ cut, "goff")
-#newhist.Scale(1/newhist.Integral())
 newhist.SetLineColor(ROOT.kBlue)
 newhist.SetFillColor(0)
 newhist.SetLineWidth(2)
@@ -97,34 +138,47 @@ newhist.SetLineWidth(2)
 name2 = var2
 newhist2 = ROOT.TH1F(name2, name2, bin, x, y)	
 chain.Draw(var2+">>"+name2,""+ cut, "goff")
-#newhist2.Scale(1/newhist2.Integral())
+
 newhist2.SetLineColor(ROOT.kRed)
 newhist2.SetFillColor(0)
 newhist2.SetLineWidth(2)
 # newhist2.SetLineStyle(2)	
 # newhist2.SetStats(0)
+if scale:
+      newhist.Scale(1/newhist.Integral())
+      newhist2.Scale(1/newhist2.Integral())
+
+
+if xaxis == "":
+    newhist.GetXaxis().SetTitle(var)
+else:
+    newhist.GetXaxis().SetTitle(xaxis)
+if yaxis == "":
+    if not scale:
+        newhist.GetYaxis().SetTitle("Events")
+    else:
+        newhist.GetYaxis().SetTitle("scaled to Integral = 1")
+else:
+    newhist.GetYaxis().SetTitle(yaxis)
+newhist.GetYaxis().SetTitleSize(0.04)
+# newhist1.GetYaxis().SetTitleOffset(1.05)
+newhist.GetXaxis().SetTitleOffset(0.9)
+newhist.GetXaxis().SetTitleSize(0.04)
 
 
 c = TCanvas()
 c.cd()
-newhist.SetTitle(name)
-newhist.GetXaxis().SetTitle(var1 + "  w/  " + cut)
-if cut == "":
-	newhist.GetXaxis().SetTitle(var1)
-newhist.GetYaxis().SetTitle("events")
+newhist.SetTitle(title)
+
 
 if log == "yes":
 	c.SetLogy()
 
 newhist.SetMaximum(max(newhist.GetMaximum(), newhist2.GetMaximum()) * 1.05)
 
-leg = ROOT.TLegend(0.8,0.52,1,0.65)
-leg.SetFillColor(0)
-leg.SetLineColor(0)
-leg.AddEntry(newhist,var1)
-leg.AddEntry(newhist2,var2)
 
-newhist.Draw()
+
+newhist.Draw('hist')
 gPad.Update()
 statbox1 = newhist.FindObject("stats")
 statbox1.SetTextColor(ROOT.kBlue)
@@ -133,7 +187,7 @@ statbox1.SetY1NDC(0.83)
 statbox1.SetX2NDC(1)
 statbox1.SetY2NDC(1)
 
-newhist2.Draw("sames")
+newhist2.Draw("sames hist")
 gPad.Update()
 statbox2 = newhist2.FindObject("stats")  
 statbox2.SetTextColor(ROOT.kRed)
@@ -146,15 +200,30 @@ statbox2.Draw('sames')
 statbox1.Draw('sames')
 # leg.Draw("same")
 
-c.SaveAs(file_name + ".png")
+if label1 != "":
+    leg = ROOT.TLegend(0.8, 0.450, 0.99, 0.66)
+    leg.SetFillColor(0)
+    leg.SetLineColor(0)
+    #leg.SetTextSize(0.02)
+    leg.AddEntry(newhist, label1, "l")
+    leg.AddEntry(newhist2, label2, "l")
+    leg.Draw("same")
+
 
 print str(newhist.GetEntries())
 
-# print "Enter save/saveas, or other to close:"
-# save = raw_input()
-# if save == "save":
-#   c.SaveAs(name + ".png")
-# if save == "saveas":
-#   print "enter file name:"
-#   savename = raw_input()
-#   c.SaveAs(savename + ".png")
+
+plotdir = 'plots/'
+if not os.path.exists(plotdir):
+    os.mkdir(plotdir)
+    print 'Creating new dir '+plotdir
+
+c.SaveAs(plotdir+file_name + ".png")
+
+if save.lower() in ['true','yes']:
+    rootdir = plotdir+'root/'
+    if not os.path.exists(rootdir):
+        os.mkdir(rootdir)
+        print 'Creating new dir '+rootdir  
+    c.SaveAs(rootdir+file_name+ ".root")
+
