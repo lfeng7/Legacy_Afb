@@ -11,6 +11,7 @@ argv = sys.argv[1:]
 if len(argv)< 1 or ('help' in argv):
 	print """
 	Making various kind of plots. 
+	Have to modify the hard coded dir_plotting_code to the path where all plotting codes locate
 	Example usage:
 	(a) Make simple 1D plot
 	./masterplot.py file TT_CT10_TuneZ2star_8TeV_reco_angles_0.root, var mtt, bin 50, min 350, max 1500, plotname Mtt_a , xaxis "M_{tt}(GeV)", cut "final_chi2<25" , title "example (a)", saveroot yes
@@ -31,6 +32,7 @@ if len(argv)< 1 or ('help' in argv):
 	./masterplot.py dir . , var1 mtt , bin 50, min 350 , max 1500, xaxis "M_{tt}(GeV)", title "example (f)" ,plotname Mtt_f, scale yes
 
 	(g) Make a stack plot of a var from different type of events, e.g., signal, bkg ..  using a txt file with cross section and Nevts_gen, and a dir with input files to plot
+	./masterplot.py dir signal , var1 mtt , bin 50, min 350 , max 1500, xaxis "M_{tt}(GeV)", title "example (g)" ,plotname Mtt_g, stack yes
 	"""
 	sys.exit(1)
 
