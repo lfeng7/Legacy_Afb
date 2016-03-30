@@ -217,7 +217,7 @@ class template:
                 self.newtree_name = 'angles_data'
             else:
                 self.newtree_name = 'angles'
-        print 'set_newTreeName: %s'self.newtree_name
+        print 'set_newTreeName: %s'%self.newtree_name
 
 
     def store_MC_entry(self,entry):
