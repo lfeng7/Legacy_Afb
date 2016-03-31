@@ -194,6 +194,7 @@ for newhist in hists:
       newhist.SetMinimum(0.001)
 
 c = TCanvas()
+c.SetRightMargin(0.21)
 c.cd()
 
 if log in ['yes','log','true']:
@@ -230,7 +231,7 @@ statbox1.Draw('sames')
 labels=[label,label2]
 
 if label != "" or len(all_cuts)>1:
-    leg = ROOT.TLegend(0.8,0.52,1,0.65)
+    leg = ROOT.TLegend(0.8,0.45,1,0.65)
     leg.SetFillColor(0)
     leg.SetLineColor(0)
     #leg.SetTextSize(0.02)
