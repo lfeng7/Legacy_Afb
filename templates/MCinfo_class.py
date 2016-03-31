@@ -38,7 +38,19 @@ class MC_info:
     
     def get_entry(self,sample_name):
         # use a key to find the entry stored in import_txt
-        return [ self.chart[key] for key in self.chart if key in sample_name][0] # for loop in chart will loop over keys in dic
+        entry = [ self.chart[key] for key in self.chart if key in sample_name] # for loop in chart will loop over keys in dic
+        if len(entry)==1:
+            return entry[0]
+        elif len(entry)==0:
+            print 'Find no entry for sample %s!'%sample_name
+            return None
+        else:
+            print 'Find %i entry for sample %s!'%(len(entry),sample_name)
+            matched_keys = [key for key in self.chart if key in sample_name]
+            print 'keys: %s'%' '.join(matched_keys)
+            correct_key = max(matched_keys)
+            print 'Will return entry of key %s'%correct_key
+            return self.chart[correct_key]
 
     def print_chart(self):
         # print a nicely formatted chart 

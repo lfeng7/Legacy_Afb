@@ -9,6 +9,8 @@ import ROOT
 from array import array
 #from angles_tools import *
 import math
+from Legacy_Afb.Tools.ttbar_utility import *
+from Legacy_Afb.Tools.angles_tools import *
 
 
 # import class that handles MC_info txt file
@@ -19,6 +21,9 @@ class template:
     class to make nicely formatted template files , given a input root angles root file
 
     """
+    csvm = 0.679 
+    deltaR_matching = 0.4
+
     def __init__(self):
         # attributes 
         self.template_type = 'MC'   # data or MC
@@ -70,7 +75,7 @@ class template:
         # if input is data file, and not QCD sideband, should store ttree as 'angles_data'
         # the ttree naming convention is to be compatible with fitting code
 
-        if self.isSideband in ['yes','true']:
+        if self.isSideband: 
             self.newtree_name = 'angles'
         else:
             if self.template_type == 'data':
@@ -98,13 +103,17 @@ class template:
         elif self.new_MCinfo is not None :
             # set infos for this MC
             entry = self.new_MCinfo.get_entry(self.sample_name)
-            self.store_MC_entry(entry)
-            # calculate the normalization weight using xsec and IntegratedLumi
-            self.norm_w = self.totalLumi*self.xsec/self.nevts_gen
-            # if it is a MC in sideband region, it is a contamination of data-driven QCD templates,
-            # In this case, we set the event weight to be negative
-            if self.isSideband:
-                self.norm_w = -1.0*self.norm_w
+            if entry is None:
+                print 'No entry found!'
+                self.norm_w = 1.0
+            else:
+                self.store_MC_entry(entry)
+                # calculate the normalization weight using xsec and IntegratedLumi
+                self.norm_w = self.totalLumi*self.xsec/self.nevts_gen
+                # if it is a MC in sideband region, it is a contamination of data-driven QCD templates,
+                # In this case, we set the event weight to be negative
+                if self.isSideband:
+                    self.norm_w = -1.0*self.norm_w
         else:
             self.norm_w = 1.0
         print 'normalization weight is %.3f'%self.norm_w    
@@ -534,7 +543,7 @@ class template:
                 # Do matching
                 for i in range(4):
                     delR_ = reco_p4[i].DeltaR(gen_p4[i])
-                    if delR_< deltaR_matching: isMatched[i] = 1
+                    if delR_< self.deltaR_matching: isMatched[i] = 1
                     else : isMatched[i] = 0                          
 
             # Do matching for all signal events
