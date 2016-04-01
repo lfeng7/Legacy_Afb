@@ -831,7 +831,7 @@ void buildTemplates() {
 		if (i<12 || strstr(names[i],"gg")) {  
 		// Don't apply smoothing on gg templates. strstr will return gg_minus or gg_plus if gg is found in names[i]
 
-			printf("%s\n", );
+			//printf("%s\n", );
 			json << "			}\n";
 		}
 		else {
