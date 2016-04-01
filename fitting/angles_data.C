@@ -292,7 +292,7 @@ void angles_data::LoadHistogramsCombined() {
 	fgg_plus->Scale(gg_rescale);
 	fgg_minus->Scale(gg_rescale);
 
-	double bck_rescale = 1.0/(fbck_plus->Integral()+fbck_minus->Integral();
+	double bck_rescale = 1.0/(fbck_plus->Integral()+fbck_minus->Integral());
 	fbck_plus->Scale(bck_rescale);
 	fbck_minus->Scale(bck_rescale);
 
