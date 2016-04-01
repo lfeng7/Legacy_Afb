@@ -81,9 +81,7 @@ void analyzeData(); // check, unchanged
 void mergeAndPlotData(); // check unchanged
 void buildTemplates(); // check
 void fitCombined(char* runName); // check
-void fitSeparated(char* runName); // turned off
 void minuitfunccombined(int& nDim, double* gout, double& result, double* par, int flg); // check
-void minuitfuncseparated(int& nDim, double* gout, double& result, double* par, int flg); // check, unchanged, won't use
 void move_stuff(char* runname);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -150,10 +148,7 @@ int main_data(int analyze, int onGrid, int comb_or_sep, char* r, char* mc_input_
 			printf("DOING COMBINED ANALYSIS\n");
 			fitCombined(runname);
 		}
-		else if (comb_or_sep==1) {
-			printf("DOING SEPARATED ANALYSIS\n");
-			fitSeparated(runname);
-		}
+
 		printf("Done\n");
 		//move stuff around so the home directory isn't so crowded with files and plots
 		//DON'T DO THIS IF RUNNING ON CONDOR!!!
@@ -197,10 +192,7 @@ if (onGrid == 1) {
 			printf("DOING COMBINED ANALYSIS\n");
 			fitCombined(runname);
 		}
-		else if (comb_or_sep==1) {
-			printf("DOING SEPARATED ANALYSIS\n");
-			fitSeparated(runname);
-		}
+
 		printf("Done\n");
 		//move stuff around so the home directory isn't so crowded with files and plots
 		//DON'T DO THIS IF RUNNING ON CONDOR!!!
@@ -989,10 +981,7 @@ void fitCombined(char* runName) {
 	// free(ad2);
 }
 
-//fits the data with the expected distribution and changes the values of the global parameters Rqqbar and Afb
-void fitSeparated(char* runName) {
-	cout << "fitSeparated is dummy!" << endl;
-}
+
 
 //The actual Likelihood fitting function: returns -2ln(L) for a given set of parameters
 //COMBINED CASE
@@ -1019,25 +1008,7 @@ double myfunc(double R_qqbar, double R_bck, double R_WJets, double xi, double de
 	return logL;
 }
 
-//SEPARATED CASE
-double myfunc(double R_qqbar_4jet, double R_bck_4jet, double R_W4Jets, double R_qqbar_5jet, double R_bck_5jet, double R_W5Jets,
-				double xi_4jet, double xi_5jet, double delta_4jet, double delta_5jet, double A_fb_4jet, double A_fb_5jet){
-	iters = iters+1;
-	
-	//holds -2ln(L) value to be incremented
-	double logL = 0;
-	
-	//get the log likelihood from the angles_data object's loop
-	logL = ad->Loop(R_qqbar_4jet,R_bck_4jet,R_W4Jets,R_qqbar_5jet,R_bck_5jet,R_W5Jets,xi_4jet,xi_5jet,delta_4jet,delta_5jet,A_fb_4jet,A_fb_5jet);
-	
-	if (iters%5==0) {
-		printf("-2ln(L) at iteration %d = %.10f\n",iters,logL);
-		printf("----------------------------------------------------------\n");
-	}
-	
-	//return the -2ln(L) value for this iteration of parameters
-	return logL;
-}
+
 
 //runs a few shell commands to organize the output of the run.
 void move_stuff(char* runname) {
@@ -1091,13 +1062,4 @@ void minuitfunccombined(int& nDim, double* gout, double& result, double* par, in
 	result= myfunc(par[0],par[1],par[2],par[3],par[4],par[5],par[6]);
 }
 
-//function for separated case
-void minuitfuncseparated(int& nDim, double* gout, double& result, double* par, int flg){
-	//kill some bloody compiler warnings
-	nDim=nDim;
-	gout=gout;
-	par=par;
-	flg=flg;
-	//calls our function to get the chi^2 for current set of parameters
-	result= myfunc(par[0],par[1],par[2],par[3],par[4],par[5],par[6],par[7],par[8],par[9],par[10],par[11]);
-}
+
