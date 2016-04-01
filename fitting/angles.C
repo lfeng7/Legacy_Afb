@@ -157,6 +157,17 @@ void angles::Loop(int is_for_dist, int neventsgenerated, double crosssection)
     		apply_PDF = 1;
     	}
 	}
+
+	// Set up address for normalization_weight if this branch is in the input ttree. Only newer version of *_template.root has this branch
+	int has_norm_w = 0;
+	float normalization_weight = 1.0;
+	if(tree->GetListOfBranches()->FindObject("normalization_weight")) // This will check if the branch "Pdf_weights" exists for this template root
+		{
+			tree->SetBranchAddress("normalization_weight",&normalization_weight);
+    		has_norm_w = 1;
+    		printf("Input ttree has normalization_weight!\n" );
+    	}
+
 	//Set up histogram names and titles	
 	char** names = (char**)malloc(25*sizeof(char*));
 	char** titles = (char**)malloc(25*sizeof(char*));
@@ -227,6 +238,10 @@ void angles::Loop(int is_for_dist, int neventsgenerated, double crosssection)
 	outputTree->Branch("wadelta",&wadelta);
 	outputTree->Branch("wsxi",&wsxi);
 	outputTree->Branch("wsdelta",&wsdelta);
+	// Add a branch to store normalization weight, specifically for QCD templates, which has negative weights for contamination events
+	float this_normalization_weight;	
+	outputTree->Branch("normalization_weight",&this_normalization_weight);
+
 
 	//Set up loop
 	Long64_t   nentries=tree->GetEntriesFast();
@@ -448,6 +463,7 @@ void angles::Loop(int is_for_dist, int neventsgenerated, double crosssection)
 		wadelta = w_a_delta;
 		wsxi = w_s_xi;
 		wsdelta = w_s_delta;
+		this_normalization_weight = normalization_weight;
 		outputTree->Fill();
 		if (addTwice) {
 			costheta = -1.0*cs;
@@ -462,6 +478,8 @@ void angles::Loop(int is_for_dist, int neventsgenerated, double crosssection)
 			wadelta = w_a_delta_opp;
 			wsxi = w_s_xi_opp;
 			wsdelta = w_s_delta_opp;
+			// Add norm_w for qcd sideband
+			this_normalization_weight = normalization_weight;
 			outputTree->Fill();
 		}
 	}

@@ -76,14 +76,14 @@ int on_the_grid = 0 ;
 
 //Function declarations
 void handle_input(int which, char* filename);
-void mergeHistoFiles();
-void analyzeData();
-void mergeAndPlotData();
-void buildTemplates();
-void fitCombined(char* runName);
-void fitSeparated(char* runName);
-void minuitfunccombined(int& nDim, double* gout, double& result, double* par, int flg);
-void minuitfuncseparated(int& nDim, double* gout, double& result, double* par, int flg);
+void mergeHistoFiles(); // check
+void analyzeData(); // check, unchanged
+void mergeAndPlotData(); // check unchanged
+void buildTemplates(); // check
+void fitCombined(char* runName); // check
+void fitSeparated(char* runName); // turned off
+void minuitfunccombined(int& nDim, double* gout, double& result, double* par, int flg); // check
+void minuitfuncseparated(int& nDim, double* gout, double& result, double* par, int flg); // check, unchanged, won't use
 void move_stuff(char* runname);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -349,6 +349,15 @@ void mergeHistoFiles() {
 	final_tree->Branch("wadelta",&wadelta);
 	final_tree->Branch("wsxi",&wsxi);
 	final_tree->Branch("wsdelta",&wsdelta);
+	// Set up address for normalization_weight if this branch is in the input ttree. Only newer version of *_template.root has this branch
+	int has_norm_w = 0;
+	float normalization_weight = 1.0;
+	if(final_tree->GetListOfBranches()->FindObject("normalization_weight")) // This will check if the branch "Pdf_weights" exists for this template root
+		{
+			tree->SetBranchAddress("normalization_weight",&normalization_weight);
+    		has_norm_w = 1;
+    		printf("Input ttree has normalization_weight!\n" );
+    	}	
 	//get the first histogram to set bins and axis limits
 	char file[250];
 	strcpy(file,prepend);
@@ -505,6 +514,10 @@ void mergeHistoFiles() {
 		thistree->SetBranchAddress("wadelta",&this_wadelta);
 		thistree->SetBranchAddress("wsxi",&this_wsxi);
 		thistree->SetBranchAddress("wsdelta",&this_wsdelta);
+		// Add a norm_w for qcd sideband
+		float this_normalization_weight;
+		outputTree->Branch("normalization_weight",&this_normalization_weight);
+
 		Long64_t   nentries=thistree->GetEntriesFast();
 		for (Long64_t jentry=0; jentry<nentries;jentry++) {
 			thistree->GetEntry(jentry);
@@ -520,6 +533,9 @@ void mergeHistoFiles() {
 			wadelta = this_wadelta;
 			wsxi = this_wsxi;
 			wsdelta = this_wsdelta;
+			// Add norm_w for qcd sideband
+			this_normalization_weight = normalization_weight;
+
 			out_file->cd();
 			final_tree->Fill();
 		}
@@ -736,53 +752,42 @@ void buildTemplates() {
 	json << "	//template definitions\n";
 	json << "	\"templates\":[\n";
 	//lists of template names, weighting factors, selections, and entriesperbin
-	char** names = (char**)malloc(36*sizeof(char*));
-	char** weights = (char**)malloc(36*sizeof(char*));
-	char** selections = (char**)malloc(36*sizeof(char*));
-	int entriesperbin[36];
-	for (int i=0; i<36; i++) {
+	char** names = (char**)malloc(20*sizeof(char*));
+	char** weights = (char**)malloc(20*sizeof(char*));
+	char** selections = (char**)malloc(20*sizeof(char*));
+	int entriesperbin[20];
+	for (int i=0; i<20; i++) {
 		names[i] = (char*)malloc(50*sizeof(char));
 		weights[i] = (char*)malloc(100*sizeof(char));
 		selections[i] = (char*)malloc(300*sizeof(char));
 		strcpy(names[i],"f_");
 		strcpy(weights[i],"weight");
 	}
-	strcat(names[0],"qqs_plus_4jet");			strcpy(selections[0],"dist_type == 1 && nJets==4 && Ql>0");		//no extra weighting factor
-	strcat(names[1],"qqs_xi_plus_4jet");		strcpy(selections[1],"dist_type == 1 && nJets==4 && Ql>0");		strcat(weights[1],"*wsxi");
-	strcat(names[2],"qqs_delta_plus_4jet");		strcpy(selections[2],"dist_type == 1 && nJets==4 && Ql>0");		strcat(weights[2],"*wsdelta");
-	strcat(names[3],"qqa_plus_4jet");			strcpy(selections[3],"dist_type == 1 && nJets==4 && Ql>0");		strcat(weights[3],"*wa");
-	strcat(names[4],"qqa_xi_plus_4jet");		strcpy(selections[4],"dist_type == 1 && nJets==4 && Ql>0");		strcat(weights[4],"*waxi");
-	strcat(names[5],"qqa_delta_plus_4jet");		strcpy(selections[5],"dist_type == 1 && nJets==4 && Ql>0");		strcat(weights[5],"*wadelta");
-	strcat(names[6],"qqs_minus_4jet");			strcpy(selections[6],"dist_type == 1 && nJets==4 && Ql<0");		//no extra weighting factor
-	strcat(names[7],"qqs_xi_minus_4jet");		strcpy(selections[7],"dist_type == 1 && nJets==4 && Ql<0");		strcat(weights[7],"*wsxi");
-	strcat(names[8],"qqs_delta_minus_4jet");	strcpy(selections[8],"dist_type == 1 && nJets==4 && Ql<0");		strcat(weights[8],"*wsdelta");
-	strcat(names[9],"qqa_minus_4jet");			strcpy(selections[9],"dist_type == 1 && nJets==4 && Ql<0");		strcat(weights[9],"*wa");
-	strcat(names[10],"qqa_xi_minus_4jet");		strcpy(selections[10],"dist_type == 1 && nJets==4 && Ql<0");	strcat(weights[10],"*waxi");
-	strcat(names[11],"qqa_delta_minus_4jet");	strcpy(selections[11],"dist_type == 1 && nJets==4 && Ql<0");	strcat(weights[11],"*wadelta");
-	strcat(names[12],"qqs_plus_5jet");			strcpy(selections[12],"dist_type == 1 && nJets==5 && Ql>0");	//no extra weighting factor
-	strcat(names[13],"qqs_xi_plus_5jet");		strcpy(selections[13],"dist_type == 1 && nJets==5 && Ql>0");	strcat(weights[13],"*wsxi");
-	strcat(names[14],"qqs_delta_plus_5jet");	strcpy(selections[14],"dist_type == 1 && nJets==5 && Ql>0");	strcat(weights[14],"*wsdelta");
-	strcat(names[15],"qqa_plus_5jet");			strcpy(selections[15],"dist_type == 1 && nJets==5 && Ql>0");	strcat(weights[15],"*wa");
-	strcat(names[16],"qqa_xi_plus_5jet");		strcpy(selections[16],"dist_type == 1 && nJets==5 && Ql>0");	strcat(weights[16],"*waxi");
-	strcat(names[17],"qqa_delta_plus_5jet");	strcpy(selections[17],"dist_type == 1 && nJets==5 && Ql>0");	strcat(weights[17],"*wadelta");
-	strcat(names[18],"qqs_minus_5jet");			strcpy(selections[18],"dist_type == 1 && nJets==5 && Ql<0");	//no extra weighting factor
-	strcat(names[19],"qqs_xi_minus_5jet");		strcpy(selections[19],"dist_type == 1 && nJets==5 && Ql<0");	strcat(weights[19],"*wsxi");
-	strcat(names[20],"qqs_delta_minus_5jet");	strcpy(selections[20],"dist_type == 1 && nJets==5 && Ql<0");	strcat(weights[20],"*wsdelta");
-	strcat(names[21],"qqa_minus_5jet");			strcpy(selections[21],"dist_type == 1 && nJets==5 && Ql<0");	strcat(weights[21],"*wa");
-	strcat(names[22],"qqa_xi_minus_5jet");		strcpy(selections[22],"dist_type == 1 && nJets==5 && Ql<0");	strcat(weights[22],"*waxi");
-	strcat(names[23],"qqa_delta_minus_5jet");	strcpy(selections[23],"dist_type == 1 && nJets==5 && Ql<0");	strcat(weights[23],"*wadelta");
-	strcat(names[24],"gg_plus_4jet");			strcpy(selections[24],"dist_type == 2 && nJets==4 && Ql>0");	//no extra weighting factor
-	strcat(names[25],"bck_plus_4jet");			strcpy(selections[25],"dist_type == 3 && nJets==4 && Ql>0");	//no extra weighting factor
-	strcat(names[26],"WJets_plus_4jet");		strcpy(selections[26],"dist_type == 4 && nJets==4 && Ql>0");	//no extra weighting factor
-	strcat(names[27],"gg_minus_4jet");			strcpy(selections[27],"dist_type == 2 && nJets==4 && Ql<0");	//no extra weighting factor
-	strcat(names[28],"bck_minus_4jet");			strcpy(selections[28],"dist_type == 3 && nJets==4 && Ql<0");	//no extra weighting factor
-	strcat(names[29],"WJets_minus_4jet");		strcpy(selections[29],"dist_type == 4 && nJets==4 && Ql<0");	//no extra weighting factor
-	strcat(names[30],"gg_plus_5jet");			strcpy(selections[30],"dist_type == 2 && nJets==5 && Ql>0");	//no extra weighting factor
-	strcat(names[31],"bck_plus_5jet");			strcpy(selections[31],"dist_type == 3 && nJets==5 && Ql>0");	//no extra weighting factor
-	strcat(names[32],"WJets_plus_5jet");		strcpy(selections[32],"dist_type == 4 && nJets==5 && Ql>0");	//no extra weighting factor
-	strcat(names[33],"gg_minus_5jet");			strcpy(selections[33],"dist_type == 2 && nJets==5 && Ql<0");	//no extra weighting factor
-	strcat(names[34],"bck_minus_5jet");			strcpy(selections[34],"dist_type == 3 && nJets==5 && Ql<0");	//no extra weighting factor
-	strcat(names[35],"WJets_minus_5jet");		strcpy(selections[35],"dist_type == 4 && nJets==5 && Ql<0");	//no extra weighting factor
+	strcat(names[0],"qqs_plus");			strcpy(selections[0],"dist_type == 1 && Ql>0");		//no extra weighting factor
+	strcat(names[1],"qqs_xi_plus");			strcpy(selections[1],"dist_type == 1 && Ql>0");		strcat(weights[1],"*wsxi");
+	strcat(names[2],"qqs_delta_plus");		strcpy(selections[2],"dist_type == 1 && Ql>0");		strcat(weights[2],"*wsdelta");
+	strcat(names[3],"qqa_plus");			strcpy(selections[3],"dist_type == 1 && Ql>0");		strcat(weights[3],"*wa");
+	strcat(names[4],"qqa_xi_plus");			strcpy(selections[4],"dist_type == 1 && Ql>0");		strcat(weights[4],"*waxi");
+	strcat(names[5],"qqa_delta_plus");		strcpy(selections[5],"dist_type == 1 && Ql>0");		strcat(weights[5],"*wadelta");
+	strcat(names[6],"qqs_minus");			strcpy(selections[6],"dist_type == 1 && Ql<0");		//no extra weighting factor
+	strcat(names[7],"qqs_xi_minus");		strcpy(selections[7],"dist_type == 1 && Ql<0");		strcat(weights[7],"*wsxi");
+	strcat(names[8],"qqs_delta_minus");		strcpy(selections[8],"dist_type == 1 && Ql<0");		strcat(weights[8],"*wsdelta");
+	strcat(names[9],"qqa_minus");			strcpy(selections[9],"dist_type == 1 && Ql<0");		strcat(weights[9],"*wa");
+	strcat(names[10],"qqa_xi_minus");		strcpy(selections[10],"dist_type == 1 && Ql<0");	strcat(weights[10],"*waxi");
+	strcat(names[11],"qqa_delta_minus");	strcpy(selections[11],"dist_type == 1 && Ql<0");	strcat(weights[11],"*wadelta");
+
+	strcat(names[12],"gg_plus");			strcpy(selections[12],"dist_type == 2 && Ql>0");	//no extra weighting factor
+	strcat(names[13],"bck_plus");			strcpy(selections[13],"dist_type == 3 && Ql>0");	//no extra weighting factor
+	strcat(names[14],"WJets_plus");			strcpy(selections[14],"dist_type == 4 && Ql>0");	//no extra weighting factor
+	strcat(names[15],"gg_minus");			strcpy(selections[15],"dist_type == 2 && Ql<0");	//no extra weighting factor
+	strcat(names[16],"bck_minus");			strcpy(selections[16],"dist_type == 3 && Ql<0");	//no extra weighting factor
+	strcat(names[17],"WJets_minus");		strcpy(selections[17],"dist_type == 4 && Ql<0");	//no extra weighting factor
+
+	// QCD bkg templates need to fill with weight normalization_weight with correct sample normalization and pos/neg sign for contamination removal
+	// total weight should be then weight*normalization_weight
+	strcat(names[18],"ntmj_plus");		strcpy(selections[18],"dist_type == -1 && Ql>0");	strcat(weights[18],"*normalization_weight");
+	strcat(names[19],"ntmj_minus");		strcpy(selections[19],"dist_type == -1 && Ql<0");	strcat(weights[19],"*normalization_weight");
+
 	//filling the entriesperbin is a bit annoying since we need to know the number of effective entries in the existing unsmoothed distributions
 	TFile *f = new TFile("aggregated_distributions.root");
 	// for (int i=0; i<6; i++)
@@ -793,9 +798,9 @@ void buildTemplates() {
 		// entriesperbin[i] = (int)(((TH3F*)f->Get(names[12]))->GetEffectiveEntries()*0.0001)+1;
 	// for (int i=18; i<24; i++)
 		// entriesperbin[i] = (int)(((TH3F*)f->Get(names[18]))->GetEffectiveEntries()*0.0001)+1;
-	for (int i=0; i<24; i++)
+	for (int i=0; i<12; i++)
 		entriesperbin[i] = 1;
-	for (int i=24; i<36; i++)
+	for (int i=12; i<20; i++)
 		// entriesperbin[i] = (int)(((TH3F*)f->Get(names[i]))->GetEffectiveEntries()*0.000025)+1;
 		entriesperbin[i] = 2;
 	int nBinsXLocal = ((TH3F*)f->Get(names[0]))->GetNbinsX();
@@ -805,10 +810,11 @@ void buildTemplates() {
 	double costhetahigh = ((TH3F*)f->Get(names[0]))->GetXaxis()->GetXmax();
 	f->Close();
 	//build the "templates" section of the JSON file
-	for (int i=0; i<36; i++) {
-		if (i==3 || i==4 || i==5 || i==9 || i==10 || i==11 || i==15 || i==16 || i==17 || i==21 || i==22 || i==23)
+	for (int i=0; i<20; i++) {
+		if (i==3 || i==4 || i==5 || i==9 || i==10 || i==11 )
 			continue;
 		//build just the histograms with exclusively positive weights
+		// skip templates that is of qqa_*, where negative weights is possible
 		json << "		//" << names[i] << "\n";
 		json << "		{\n";
 		json << "			\"name\":\"" << names[i] << "\",\n";
@@ -822,10 +828,10 @@ void buildTemplates() {
 		json << "			\"binning\":{\n";
 		json << "				\"type\":\"fixed\",\n";
 		json << "				\"bins\":[" << nBinsXLocal << "," << costhetalow << "," << costhetahigh << "," << nBinsYLocal << "," << xFLow << "," << xFHigh << "," << nBinsZLocal << "," << massLow << "," << massHigh << "]\n";
-		if (i<24 || i%3==0) {
-		// if (i<24) {	
-		// if (false) {
-		// if (true) {
+		if (i<12 || strstr(names[i],"gg")) {  
+		// Don't apply smoothing on gg templates. strstr will return gg_minus or gg_plus if gg is found in names[i]
+
+			printf("%s\n", );
 			json << "			}\n";
 		}
 		else {
@@ -838,10 +844,12 @@ void buildTemplates() {
 		}
 		json << "		},\n";
 	}
-	for (int i=0; i<24; i++) {
-		if (i!=3 && i!=4 && i!=5 && i!=9 && i!=10 && i!=11 && i!=15 && i!=16 && i!=17 && i!=21 && i!=22 && i!=23)
+	for (int i=0; i<12; i++) {
+		if (i!=3 && i!=4 && i!=5 && i!=9 && i!=10 && i!=11)
 			continue;
 		// build the histograms with negative weights: actually a linear combination of two templates because damn
+		// Carefully handle templates of type qqa_* 
+
 		// positive weights
 		json << "		//" << names[i] << "_positive_weights\n";
 		json << "		{\n";
@@ -890,7 +898,7 @@ void buildTemplates() {
 		json << "		],\n";
 		json << "		\"conserveSumOfWeights\":true\n";
 		json << "		}";
-		if (i<23)
+		if (i<12)
 			json << ",";
 		json << "\n";
 	}
@@ -936,9 +944,13 @@ void fitCombined(char* runName) {
 	minimizer->SetParameter(2,"RWjets", 0.037, 0.05,0.0,1.0); //fixed
 	// minimizer->SetParameter(2,"RWjets", 0.1298, 0.05,0.0,1.0); //fixed, restricted costheta
 
+
 	minimizer->SetParameter(3,"xi", 	0.00, 0.50, -1.0, 1.0);
 	minimizer->SetParameter(4,"delta",  0.00, 0.50, -1.0, 1.0);
 	minimizer->SetParameter(5,"Afb",    0.00, 0.10, -1.0, 1.0);
+
+	minimizer->SetParameter(6,"Rntmj", 0.03, 0.05,0.0,1.0); //fixed
+
 	//minimizer->FixParameter(0);
 	//minimizer->FixParameter(1);	//Rbck
 	//minimizer->FixParameter(2);	//RWjets
@@ -966,122 +978,32 @@ void fitCombined(char* runName) {
 	double fit_delta_err = minimizer->GetParError(4);
 	double fit_Afb     = minimizer->GetParameter(5);
 	double fit_Afb_err = minimizer->GetParError(5);
+	double fit_Rntmj     = minimizer->GetParameter(6);
+	double fit_Rntmj_err = minimizer->GetParError(6);
 	//make a new object and call the other Loop function to make plots of the results
-	free(ad);
-	angles_data *ad2 = new angles_data(mg_data_total_name);
-	ad2->LoadHistogramsCombined();
-	ad2->Loop(fit_Rqqbar,fit_Rqqbar_err,fit_Rbck,fit_Rbck_err,fit_RWJets,fit_RWJets_err,
-			  fit_xi,fit_xi_err,fit_delta,fit_delta_err,fit_Afb,fit_Afb_err,runName);
-	free(ad2);
+	// free(ad);
+	// angles_data *ad2 = new angles_data(mg_data_total_name);
+	// ad2->LoadHistogramsCombined();
+	// ad2->Loop(fit_Rqqbar,fit_Rqqbar_err,fit_Rbck,fit_Rbck_err,fit_RWJets,fit_RWJets_err,
+	// 		  fit_xi,fit_xi_err,fit_delta,fit_delta_err,fit_Afb,fit_Afb_err,runName);
+	// free(ad2);
 }
 
 //fits the data with the expected distribution and changes the values of the global parameters Rqqbar and Afb
 void fitSeparated(char* runName) {
-	//Create the angles_data object and load in histograms
-	ad = new angles_data(mg_data_total_name);
-	ad->LoadHistogramsSeparated();
-	//Create the minimizer
-	TFitter* minimizer = new TFitter();
-	//Set the function to be minimized
-	minimizer->SetFCN(minuitfuncseparated);
-	//Set the parameters
-	//arg1 - parameter number
-	//arg2 - parameter name
-	//arg3 - first guess at the parameter value
-	//arg4 - estimated distance to minimum
-	//arg5 - lower value
-	//arg6 - upper value 
-	minimizer->SetParameter(0,"Rqqbar_4jet", 0.08, 0.05,  0.0, 1.0);
-
-	// minimizer->SetParameter(1,"Rbck_4jet",   0.20, 0.05,  0.0, 1.0);   //floating
-	minimizer->SetParameter(1,"Rbck_4jet",   0.192, 0.05,  0.0, 1.0); //fixed
-	// minimizer->SetParameter(1,"Rbck_4jet",   0.2170, 0.05,  0.0, 1.0);  //fixed, 1.1*Rbck
-
-	// minimizer->SetParameter(2,"R_W4Jets",    0.18, 0.05,  0.0, 1.0); //floating
-	minimizer->SetParameter(2,"R_W4Jets",    0.043, 0.05,  0.0, 1.0); //fixed
-
-	minimizer->SetParameter(3,"Rqqbar_5jet", 0.05, 0.05,  0.0, 1.0);
-
-	//minimizer->SetParameter(4,"Rbck_5jet",   0.135, 0.05,  0.0, 1.0);   //floating
-	minimizer->SetParameter(4,"Rbck_5jet",   0.165, 0.05,  0.0, 1.0); //fixed
-	// minimizer->SetParameter(4,"Rbck_5jet",   0.2823, 0.05,  0.0, 1.0);   //fixed, 1.1*Rbck
-	
-	// minimizer->SetParameter(5,"R_W5Jets",    0.06, 0.05,  0.0, 1.0); //floating
-	minimizer->SetParameter(5,"R_W5Jets",    0.024, 0.05,  0.0, 1.0); //fixed
-
-	minimizer->SetParameter(6,"xi_4jet", 	 0.00, 0.50, -1.0, 1.0);
-	minimizer->SetParameter(7,"xi_5jet", 	 0.00, 0.50, -1.0, 1.0);
-	minimizer->SetParameter(8,"delta_4jet",  0.00, 0.50, -1.0, 1.0);
-	minimizer->SetParameter(9,"delta_5jet",  0.00, 0.50, -1.0, 1.0);
-	minimizer->SetParameter(10,"Afb_4jet",    0.00, 0.10, -1.0, 1.0);
-	minimizer->SetParameter(11,"Afb_5jet",    0.00, 0.10, -1.0, 1.0);
-	// minimizer->FixParameter(0);
-	//minimizer->FixParameter(1);			//Rbck_4jet
-//	minimizer->FixParameter(2);		//R_W4Jets
-	// minimizer->FixParameter(3);		
-	//minimizer->FixParameter(4);			//Rbck_5jet
-//	minimizer->FixParameter(5);		//R_W5Jets
-	minimizer->FixParameter(6);
-	minimizer->FixParameter(7);
-	minimizer->FixParameter(8);
-	minimizer->FixParameter(9);
-	// minimizer->FixParameter(10);
-	// minimizer->FixParameter(11);
-	//set up arguments and minimize
-	double arg[2];
-	arg[0] = 5000; //maximum number of iterations
-	arg[1] = 1000;  //function tolerance*1000
-	minimizer->ExecuteCommand("MIGRAD",arg,2);
-	double arg2[1]; 
-	arg2[0] = 5000;
-	minimizer->ExecuteCommand("HESSE",arg2,1);
-	//Get the resulting parameters and errors
-	double fit_Rqqbar_4jet     = minimizer->GetParameter(0);
-	double fit_Rqqbar_4jet_err = minimizer->GetParError(0);
-	double fit_Rbck_4jet 	   = minimizer->GetParameter(1);
-	double fit_Rbck_4jet_err   = minimizer->GetParError(1);
-	double fit_RW4Jets		   = minimizer->GetParameter(2);
-	double fit_RW4Jets_err	   = minimizer->GetParError(2);
-	double fit_Rqqbar_5jet     = minimizer->GetParameter(3);
-	double fit_Rqqbar_5jet_err = minimizer->GetParError(3);
-	double fit_Rbck_5jet 	   = minimizer->GetParameter(4);
-	double fit_Rbck_5jet_err   = minimizer->GetParError(4);
-	double fit_RW5Jets		   = minimizer->GetParameter(5);
-	double fit_RW5Jets_err	   = minimizer->GetParError(5);
-	double fit_xi_4jet 		   = minimizer->GetParameter(6);
-	double fit_xi_4jet_err 	   = minimizer->GetParError(6);
-	double fit_xi_5jet 		   = minimizer->GetParameter(7);
-	double fit_xi_5jet_err 	   = minimizer->GetParError(7);
-	double fit_delta_4jet 	   = minimizer->GetParameter(8);
-	double fit_delta_4jet_err  = minimizer->GetParError(8);
-	double fit_delta_5jet 	   = minimizer->GetParameter(9);
-	double fit_delta_5jet_err  = minimizer->GetParError(9);
-	double fit_Afb_4jet        = minimizer->GetParameter(10);
-	double fit_Afb_4jet_err    = minimizer->GetParError(10);
-	double fit_Afb_5jet        = minimizer->GetParameter(11);
-	double fit_Afb_5jet_err    = minimizer->GetParError(11);
-	//make a new object and call the other Loop function to make plots of the results
-	free(ad);
-	angles_data *ad2 = new angles_data(mg_data_total_name);
-	ad2->LoadHistogramsSeparated();
-	ad2->Loop(fit_Rqqbar_4jet,fit_Rqqbar_4jet_err,fit_Rbck_4jet,fit_Rbck_4jet_err,fit_RW4Jets,fit_RW4Jets_err,
-			  fit_Rqqbar_5jet,fit_Rqqbar_5jet_err,fit_Rbck_5jet,fit_Rbck_5jet_err,fit_RW5Jets,fit_RW5Jets_err,
-			  fit_xi_4jet,fit_xi_4jet_err,fit_xi_5jet,fit_xi_5jet_err,
-			  fit_delta_4jet,fit_delta_4jet_err,fit_delta_5jet,fit_delta_5jet_err,
-			  fit_Afb_4jet,fit_Afb_4jet_err,fit_Afb_5jet,fit_Afb_5jet_err,runName);
-	free(ad2);
+	cout << "fitSeparated is dummy!" << endl;
 }
 
 //The actual Likelihood fitting function: returns -2ln(L) for a given set of parameters
 //COMBINED CASE
-double myfunc(double R_qqbar, double R_bck, double R_WJets, double xi, double delta, double A_fb){
+double myfunc(double R_qqbar, double R_bck, double R_WJets, double xi, double delta, double A_fb, double R_ntmj){
 	iters = iters+1;
 	
 	//holds -2ln(L) value to be incremented
 	double logL = 0;
 	
 	//get the log likelihood from the angles_data object's loop
-	logL = ad->Loop(R_qqbar,R_bck,R_WJets,xi,delta,A_fb,0);
+	logL = ad->Loop(R_qqbar,R_bck,R_WJets,R_ntmj,xi,delta,A_fb,0);
 
 	if (verbose){
 		printf("fit values at iteration %i: -2ln(L),R_qqbar,R_bck,R_WJets,A_fb\n",iters);
@@ -1166,7 +1088,7 @@ void minuitfunccombined(int& nDim, double* gout, double& result, double* par, in
 	par=par;
 	flg=flg;
 	//calls our function to get the chi^2 for current set of parameters
-	result= myfunc(par[0],par[1],par[2],par[3],par[4],par[5]);
+	result= myfunc(par[0],par[1],par[2],par[3],par[4],par[5],par[6]);
 }
 
 //function for separated case
