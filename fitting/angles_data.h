@@ -43,20 +43,9 @@ class angles_data {
 	virtual Long64_t LoadTree(Long64_t entry);
 	virtual void     Init(TTree *tree);
 	virtual double   Loop(double Rqqbar, double Rbck, double RWJets, double xi, double delta, double Afb, int plot);
-	virtual double   Loop(double Rqqbar_4jet, double Rbck_4jet, double RW4Jets, double Rqqbar_5jet, double Rbck_5jet, double RW5Jets, 
-						 double xi_4jet, double xi_5jet, double delta_4jet, double delta_5jet, double Afb_4jet, double Afb_5jet);
 	virtual Bool_t   Notify();
 	virtual void     Show(Long64_t entry = -1);
 	void LoadHistogramsCombined();
-	void LoadHistogramsSeparated();
-	double Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double sigma_Rbck, double RWJets, double sigma_RWJets,
-						 double xi, double sigma_xi, double delta, double sigma_delta, 
-						 double Afb, double sigma_Afb, char* rname);
-	double Loop(double Rqqbar_4jet, double sigma_Rqqbar_4jet, double Rbck_4jet, double sigma_Rbck_4jet, double RW4Jets, double sigma_RW4Jets,
-						 double Rqqbar_5jet, double sigma_Rqqbar_5jet, double Rbck_5jet, double sigma_Rbck_5jet, double RW5Jets, double sigma_RW5Jets,
-						 double xi_4jet, double sigma_xi_4jet, double xi_5jet, double sigma_xi_5jet,
-						 double delta_4jet, double sigma_delta_4jet, double delta_5jet, double sigma_delta_5jet, 
-						 double Afb_4jet, double sigma_Afb_4jet, double Afb_5jet, double sigma_Afb_5jet, char* rname);
 };
 
 #endif
