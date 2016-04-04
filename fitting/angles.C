@@ -463,7 +463,10 @@ void angles::Loop(int is_for_dist, int neventsgenerated, double crosssection)
 		wadelta = w_a_delta;
 		wsxi = w_s_xi;
 		wsdelta = w_s_delta;
-		this_normalization_weight = normalization_weight;
+                if (has_norm_w)
+			{this_normalization_weight = normalization_weight;}
+                else
+			{this_normalization_weight = 1.0;}
 		outputTree->Fill();
 		if (addTwice) {
 			costheta = -1.0*cs;
@@ -479,7 +482,11 @@ void angles::Loop(int is_for_dist, int neventsgenerated, double crosssection)
 			wsxi = w_s_xi_opp;
 			wsdelta = w_s_delta_opp;
 			// Add norm_w for qcd sideband
-			this_normalization_weight = normalization_weight;
+	                if (has_norm_w)
+				{this_normalization_weight = normalization_weight;}
+               		else
+				{this_normalization_weight = 1.0;}
+
 			outputTree->Fill();
 		}
 	}
