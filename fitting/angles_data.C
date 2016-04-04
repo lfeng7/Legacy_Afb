@@ -365,7 +365,7 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 	// TH3D* sideband = new TH3D("sideband","Sideband Distribution; cos(#theta *); Feynman x (x_{F}); M_{t #bar{t}} (GeV)",
 	// 						   nbinsx,x_low,x_high,nbinsy,y_low,y_high,nbinsz,z_low,z_high);
 
-	// int count_added=0;
+	int count_added=0;
 	// //MAIN LOOP
 	// for (Long64_t jentry=0; jentry<nentries;jentry++) {
 	// 	Long64_t ientry = LoadTree(jentry);

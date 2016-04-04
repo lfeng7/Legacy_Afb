@@ -526,8 +526,10 @@ void mergeHistoFiles() {
 			wsxi = this_wsxi;
 			wsdelta = this_wsdelta;
 			// Add norm_w for qcd sideband
-			this_normalization_weight = normalization_weight;
-
+			if (has_norm_w)
+				{this_normalization_weight = normalization_weight;}
+			else
+				{this_normalization_weight = 1.0;}
 			out_file->cd();
 			final_tree->Fill();
 		}
