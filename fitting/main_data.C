@@ -797,7 +797,7 @@ void buildTemplates() {
 	for (int i=12; i<20; i++)
 		// entriesperbin[i] = (int)(((TH3F*)f->Get(names[i]))->GetEffectiveEntries()*0.000025)+1;
 		entriesperbin[i] = 2;
-	char* sample_temp_name = "f_qqs_plus_4jet";
+	char sample_temp_name[] = "f_qqs_plus_4jet";
 	int nBinsXLocal = ((TH3F*)f->Get(sample_temp_name))->GetNbinsX();
 	int nBinsYLocal = ((TH3F*)f->Get(sample_temp_name))->GetNbinsY();
 	int nBinsZLocal = ((TH3F*)f->Get(sample_temp_name))->GetNbinsZ();

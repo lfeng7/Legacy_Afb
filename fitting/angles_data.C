@@ -154,9 +154,9 @@ double angles_data::Loop(double Rqqbar, double Rbck, double RWJets, double Rntmj
 			double ev_L_bck = Rbck*ev_fbck;
 			double ev_L_WJets = RWJets*ev_WJets;
 			double ev_L_ntmj = Rntmj*ev_ntmj;
-			double ev_L_gg = (1.0-Rbck-RWJets)*(1.0-Rqqbar)*ev_fgg;
-			double ev_L_qqs = (1.0-Rbck-RWJets)*Rqqbar*((1.0)/(1.0+xi*F_xi_comb+delta*F_delta_comb))*(ev_fqqs+xi*ev_fqqs_xi+delta*ev_fqqs_delta);
-			double ev_L_qqa = Afb*(1.0-Rbck-RWJets)*Rqqbar*((1.0)/(1.0+xi*F_xi_comb+delta*F_delta_comb))*(ev_fqqa+xi*ev_fqqa_xi+delta*ev_fqqa_delta);
+			double ev_L_gg = (1.0-Rbck-RWJets-Rntmj)*(1.0-Rqqbar)*ev_fgg;
+			double ev_L_qqs = (1.0-Rbck-RWJets-Rntmj)*Rqqbar*((1.0)/(1.0+xi*F_xi_comb+delta*F_delta_comb))*(ev_fqqs+xi*ev_fqqs_xi+delta*ev_fqqs_delta);
+			double ev_L_qqa = Afb*(1.0-Rbck-RWJets-Rntmj)*Rqqbar*((1.0)/(1.0+xi*F_xi_comb+delta*F_delta_comb))*(ev_fqqa+xi*ev_fqqa_xi+delta*ev_fqqa_delta);
 			double ev_L = ev_L_ntmj+ev_L_bck+ev_L_WJets+ev_L_gg+ev_L_qqs+ev_L_qqa;
 			//make sure that there were a nonzero number of training set events
 			if (ev_fgg!=0 || ev_fqqs!=0 || ev_fbck!=0 || ev_WJets != 0 || ev_ntmj != 0) {
