@@ -797,11 +797,12 @@ void buildTemplates() {
 	for (int i=12; i<20; i++)
 		// entriesperbin[i] = (int)(((TH3F*)f->Get(names[i]))->GetEffectiveEntries()*0.000025)+1;
 		entriesperbin[i] = 2;
-	int nBinsXLocal = ((TH3F*)f->Get(names[0]))->GetNbinsX();
-	int nBinsYLocal = ((TH3F*)f->Get(names[0]))->GetNbinsY();
-	int nBinsZLocal = ((TH3F*)f->Get(names[0]))->GetNbinsZ();
-	double costhetalow = ((TH3F*)f->Get(names[0]))->GetXaxis()->GetXmin();
-	double costhetahigh = ((TH3F*)f->Get(names[0]))->GetXaxis()->GetXmax();
+	char* sample_temp_name = "f_qqs_plus_4jet";
+	int nBinsXLocal = ((TH3F*)f->Get(sample_temp_name))->GetNbinsX();
+	int nBinsYLocal = ((TH3F*)f->Get(sample_temp_name))->GetNbinsY();
+	int nBinsZLocal = ((TH3F*)f->Get(sample_temp_name))->GetNbinsZ();
+	double costhetalow = ((TH3F*)f->Get(sample_temp_name))->GetXaxis()->GetXmin();
+	double costhetahigh = ((TH3F*)f->Get(sample_temp_name))->GetXaxis()->GetXmax();
 	f->Close();
 	//build the "templates" section of the JSON file
 	for (int i=0; i<20; i++) {
