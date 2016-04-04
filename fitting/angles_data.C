@@ -104,6 +104,7 @@ double angles_data::Loop(double Rqqbar, double Rbck, double RWJets, double Rntmj
 			double ev_fgg = 0.0;
 			double ev_fbck = 0.0;
 			double ev_WJets = 0.0;
+                        double ev_ntmj = 0.0;
 			double ev_gtt = 0.0;
 			double ev_gbk = 0.0;
 			if (Q_l > 0) {
@@ -228,7 +229,7 @@ double angles_data::Loop(double Rqqbar, double Rbck, double RWJets, double Rntmj
 //COMBINED CASE
 void angles_data::LoadHistogramsCombined() {
 	//open the file
-	ssTFile *f = new TFile(template_filename);
+	TFile *f = new TFile(template_filename);
 	//load histograms into object variables
 	fqqs_plus = (TH3D*)f->Get("f_qqs_plus");
 	fqqs_xi_plus = (TH3D*)f->Get("f_qqs_xi_plus");
@@ -322,7 +323,7 @@ void angles_data::LoadHistogramsCombined() {
 
 //other loop function for making plots of the final fit compared to the data
 //COMBINED CASE
-double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double sigma_Rbck, double RWJets, double sigma_RWJets,
+double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double sigma_Rbck, double RWJets, double sigma_RWJets,double Rntmj, double sigma_Rntmj,
 						 double xi, double sigma_xi, double delta, double sigma_delta, 
 						 double Afb, double sigma_Afb, char* rname) {
 	// //Set up loop

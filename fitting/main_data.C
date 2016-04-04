@@ -345,8 +345,8 @@ void mergeHistoFiles() {
 	int has_norm_w = 0;
 	float normalization_weight = 1.0;
 	if(final_tree->GetListOfBranches()->FindObject("normalization_weight")) // This will check if the branch "Pdf_weights" exists for this template root
-		{
-			tree->SetBranchAddress("normalization_weight",&normalization_weight);
+	{
+		final_tree->SetBranchAddress("normalization_weight",&normalization_weight);
     		has_norm_w = 1;
     		printf("Input ttree has normalization_weight!\n" );
     	}	
@@ -508,7 +508,7 @@ void mergeHistoFiles() {
 		thistree->SetBranchAddress("wsdelta",&this_wsdelta);
 		// Add a norm_w for qcd sideband
 		float this_normalization_weight;
-		outputTree->Branch("normalization_weight",&this_normalization_weight);
+		thistree->Branch("normalization_weight",&this_normalization_weight);
 
 		Long64_t   nentries=thistree->GetEntriesFast();
 		for (Long64_t jentry=0; jentry<nentries;jentry++) {
@@ -973,12 +973,12 @@ void fitCombined(char* runName) {
 	double fit_Rntmj     = minimizer->GetParameter(6);
 	double fit_Rntmj_err = minimizer->GetParError(6);
 	//make a new object and call the other Loop function to make plots of the results
-	// free(ad);
-	// angles_data *ad2 = new angles_data(mg_data_total_name);
-	// ad2->LoadHistogramsCombined();
-	// ad2->Loop(fit_Rqqbar,fit_Rqqbar_err,fit_Rbck,fit_Rbck_err,fit_RWJets,fit_RWJets_err,
-	// 		  fit_xi,fit_xi_err,fit_delta,fit_delta_err,fit_Afb,fit_Afb_err,runName);
-	// free(ad2);
+	free(ad);
+	angles_data *ad2 = new angles_data(mg_data_total_name);
+	ad2->LoadHistogramsCombined();
+	ad2->Loop(fit_Rqqbar,fit_Rqqbar_err,fit_Rbck,fit_Rbck_err,fit_RWJets,fit_RWJets_err,fit_Rntmj,fit_Rntmj_err,
+			  fit_xi,fit_xi_err,fit_delta,fit_delta_err,fit_Afb,fit_Afb_err,runName);
+	free(ad2);
 }
 
 

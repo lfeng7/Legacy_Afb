@@ -42,10 +42,13 @@ class angles_data {
 	virtual Int_t    GetEntry(Long64_t entry);
 	virtual Long64_t LoadTree(Long64_t entry);
 	virtual void     Init(TTree *tree);
-	virtual double   Loop(double Rqqbar, double Rbck, double RWJets, double xi, double delta, double Afb, int plot);
+	virtual double   Loop(double Rqqbar, double Rbck, double RWJets,double Rntmj, double xi, double delta, double Afb, int plot);
 	virtual Bool_t   Notify();
 	virtual void     Show(Long64_t entry = -1);
 	void LoadHistogramsCombined();
+	double Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double sigma_Rbck, double RWJets, double sigma_RWJets,double Rntmj, double sigma_Rntmj,
+						 double xi, double sigma_xi, double delta, double sigma_delta, 
+						 double Afb, double sigma_Afb, char* rname);
 };
 
 #endif
