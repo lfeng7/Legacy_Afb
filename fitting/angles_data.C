@@ -691,34 +691,36 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 	// stack_file->Write();
 	// stack_file->Close();
 
-	// //finally, save the results of the fit to a text file.
-	// FILE* o = fopen("fit_results.txt","w");
-	// fprintf(o,"*************		FIT       RESULTS		*************\n");
-	// fprintf(o,"Rqqbar = %-.4f +/- %-.4f\n",Rqqbar,sigma_Rqqbar);
-	// fprintf(o,"Rbck = %-.4f +/- %-.4f\n",Rbck,sigma_Rbck);
-	// fprintf(o,"RWJets = %-.4f +/- %-.4f\n",RWJets,sigma_RWJets);
-	// fprintf(o,"xi = %-.4f +/- %-.4f\n",xi,sigma_xi);
-	// fprintf(o,"delta = %-.4f +/- %-.4f\n",delta,sigma_delta);
-	// fprintf(o,"Afb    = %-.4f +/- %-.4f\n",Afb,sigma_Afb);
-	// fprintf(o,"\n\n");
-	// fprintf(o,"Runname is %s\n",rname);
-	// fprintf(o,"\n");
-	// fprintf(o,"Binning and limits:\n");
-	// fprintf(o,"    %-.2f < costheta* < %-.2f in %d bins\n",x_low,x_high,nbinsx);
-	// fprintf(o,"    %-.2f < Feynman x < %-.2f in %d bins\n",y_low,y_high,nbinsy);
-	// fprintf(o,"    %-.2f < ttbarMass < %-.2f in %d bins\n",z_low,z_high,nbinsz);
-	// fclose(o);
-	// //and save an abridged version to the summary file
-	// o = fopen("summary_combined.txt","a");
-	// fprintf(o,"%s	%-.4f +/- %-.4f	%-.4f +/- %-.4f	%-.4f +/- %-.4f	%-.4f +/- %-.4f	%-.4f +/- %-.4f	%-.4f +/- %-.4f	%d	%.4f\n",
-	// 		rname,Rqqbar,sigma_Rqqbar,Rbck,sigma_Rbck,RWJets,sigma_RWJets,xi,sigma_xi,delta,sigma_delta,Afb,sigma_Afb,count_added,
-	// 		Loop(Rqqbar, Rbck, RWJets, xi, delta, Afb, 1));
-	// fclose(o);
-	// o = fopen("summary_combined.csv","a");
-	// fprintf(o,"%s,%-.4f,%-.4f,%-.4f,%-.4f,%-.4f,%-.4f,%-.4f,%-.4f,%-.4f,%-.4f,%-.4f,%-.4f,%d,%.4f\n",
-	// 		rname,Rqqbar,sigma_Rqqbar,Rbck,sigma_Rbck,RWJets,sigma_RWJets,xi,sigma_xi,delta,sigma_delta,Afb,sigma_Afb,count_added,
-	// 		Loop(Rqqbar, Rbck, RWJets, xi, delta, Afb, 0));
-	// fclose(o);
+	//finally, save the results of the fit to a text file.
+	FILE* o = fopen("fit_results.txt","w");
+	fprintf(o,"*************		FIT       RESULTS		*************\n");
+	fprintf(o,"Rqqbar = %-.4f +/- %-.4f\n",Rqqbar,sigma_Rqqbar);
+	fprintf(o,"Rbck = %-.4f +/- %-.4f\n",Rbck,sigma_Rbck);
+	fprintf(o,"RWJets = %-.4f +/- %-.4f\n",RWJets,sigma_RWJets);
+	fprintf(o,"Rntmj = %-.4f +/- %-.4f\n",Rntmj,sigma_Rntmj);
+	fprintf(o,"xi = %-.4f +/- %-.4f\n",xi,sigma_xi);
+	fprintf(o,"delta = %-.4f +/- %-.4f\n",delta,sigma_delta);
+	fprintf(o,"Afb    = %-.4f +/- %-.4f\n",Afb,sigma_Afb);
+	fprintf(o,"\n\n");
+	fprintf(o,"Runname is %s\n",rname);
+	fprintf(o,"\n");
+	fprintf(o,"Binning and limits:\n");
+	fprintf(o,"    %-.2f < costheta* < %-.2f in %d bins\n",x_low,x_high,nbinsx);
+	fprintf(o,"    %-.2f < Feynman x < %-.2f in %d bins\n",y_low,y_high,nbinsy);
+	fprintf(o,"    %-.2f < ttbarMass < %-.2f in %d bins\n",z_low,z_high,nbinsz);
+	fclose(o);
+	//and save an abridged version to the summary file
+	o = fopen("summary_combined.txt","a");
+	fprintf(o,"%s	%-.4f +/- %-.4f	%-.4f +/- %-.4f %-.4f +/- %-.4f	%-.4f +/- %-.4f	%-.4f +/- %-.4f	%-.4f +/- %-.4f	%-.4f +/- %-.4f	%d	%.4f\n",
+			rname,Rqqbar,sigma_Rqqbar,Rbck,sigma_Rbck,RWJets,sigma_RWJets,Rntmj,sigma_Rntmj,xi,sigma_xi,delta,sigma_delta,Afb,sigma_Afb,count_added,
+			Loop(Rqqbar, Rbck, RWJets, Rntmj, xi, delta, Afb, 1));
+	fclose(o);
+	o = fopen("summary_combined.csv","a");
+	fprintf(o,"%s,%-.4f,%-.4f,%-.4f,%-.4f,%-.4f,%-.4f,%-.4f,%-.4f,%-.4f,%-.4f,%-.4f,%-.4f,%-.4f,%-.4f,%d,%.4f\n",
+			rname,Rqqbar,sigma_Rqqbar,Rbck,sigma_Rbck,RWJets,sigma_RWJets,RWJets,sigma_RWJets,xi,sigma_xi,delta,sigma_delta,Afb,sigma_Afb,count_added,
+			Loop(Rqqbar, Rbck, RWJets, Rntmj, xi, delta, Afb, 0));
+	fclose(o);
+
 	return 0;
 }
 
