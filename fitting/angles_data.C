@@ -410,8 +410,8 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 			// This if is really to make sure the data and mc templates are in the same phase space, aka, compare apples to apples
 			if (
 				(Q_l>0  && (ev_fgg_plus!=0 || ev_fqqs_plus!=0 || ev_fbck_plus!=0 || ev_WJets_plus!=0 || ev_ntmj_plus>0)   ) ||
-				(Q_l<0  && (ev_fgg_minus!=0 || ev_fqqs_minus!=0 || ev_fbck_minus!=0 || ev_WJets_minus!=0 || ev_ntmj_minus>0)    ) ||
-				)
+				(Q_l<0  && (ev_fgg_minus!=0 || ev_fqqs_minus!=0 || ev_fbck_minus!=0 || ev_WJets_minus!=0 || ev_ntmj_minus>0)    ) 
+			   )
  {
 				data_hist->Fill(cos_theta_cs,Feynman_x,ttbar_mass);
 				data_x->Fill(cos_theta_cs);
@@ -442,24 +442,24 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 	TH3D *fgg = (TH3D*)fqqs_plus->Clone("fgg");
 	TH3D *fbck = (TH3D*)fqqs_plus->Clone("fbck");
 	TH3D *fWJets = (TH3D*)fqqs_plus->Clone("fWJets");
-	TH3D *fWJets = (TH3D*)fqqs_plus->Clone("fntmj");
+	TH3D *fntmj = (TH3D*)fqqs_plus->Clone("fntmj");
 	
 	for (double x = x_low+(0.5*xbinwidth); x<x_high; x=x+xbinwidth) {
 		for (double y = y_low+(0.5*ybinwidth); y<y_high; y=y+ybinwidth) {
 			for (double z = z_low+(0.5*zbinwidth); z<z_high; z=z+zbinwidth) {
-				double bck_events = fbck_plus->GetBinContent(fbck_plus->FindFixBin(x,y,z)) + fbck_minus->GetBinContent(fbck_minus->FindFixBin(x,y,z))
-				double WJets_events = WJets_plus->GetBinContent(WJets_plus->FindFixBin(x,y,z)) + WJets_minus->GetBinContent(WJets_minus->FindFixBin(x,y,z))
-				double ntmj_events = ntmj_plus->GetBinContent(ntmj_plus->FindFixBin(x,y,z)) + ntmj_minus->GetBinContent(ntmj_minus->FindFixBin(x,y,z))
+				double bck_events = fbck_plus->GetBinContent(fbck_plus->FindFixBin(x,y,z)) + fbck_minus->GetBinContent(fbck_minus->FindFixBin(x,y,z));
+				double WJets_events = WJets_plus->GetBinContent(WJets_plus->FindFixBin(x,y,z)) + WJets_minus->GetBinContent(WJets_minus->FindFixBin(x,y,z));
+				double ntmj_events = ntmj_plus->GetBinContent(ntmj_plus->FindFixBin(x,y,z)) + ntmj_minus->GetBinContent(ntmj_minus->FindFixBin(x,y,z));
 
-				double gg_events  = fgg_plus->GetBinContent(fgg_plus->FindFixBin(x,y,z)) + fgg_minus->GetBinContent(fgg_minus->FindFixBin(x,y,z))
-				double qqs_events = fqqs_plus->GetBinContent(fqqs_plus->FindFixBin(x,y,z)) + fqqs_minus->GetBinContent(fqqs_minus->FindFixBin(x,y,z))
-				double qqs_xi_events = fqqs_xi_plus->GetBinContent(fqqs_xi_plus->FindFixBin(x,y,z)) + fqqs_xi_minus->GetBinContent(fqqs_xi_minus->FindFixBin(x,y,z))
+				double gg_events  = fgg_plus->GetBinContent(fgg_plus->FindFixBin(x,y,z)) + fgg_minus->GetBinContent(fgg_minus->FindFixBin(x,y,z));
+				double qqs_events = fqqs_plus->GetBinContent(fqqs_plus->FindFixBin(x,y,z)) + fqqs_minus->GetBinContent(fqqs_minus->FindFixBin(x,y,z));
+				double qqs_xi_events = fqqs_xi_plus->GetBinContent(fqqs_xi_plus->FindFixBin(x,y,z)) + fqqs_xi_minus->GetBinContent(fqqs_xi_minus->FindFixBin(x,y,z));
 				double qqs_delta_events = fqqs_delta_plus->GetBinContent(fqqs_delta_plus->FindFixBin(x,y,z)) + 
-										  fqqs_delta_minus->GetBinContent(fqqs_delta_minus->FindFixBin(x,y,z)) +
-				double qqa_events = fqqa_plus->GetBinContent(fqqa_plus->FindFixBin(x,y,z)) + fqqa_minus->GetBinContent(fqqa_minus->FindFixBin(x,y,z))
-				double qqa_xi_events = fqqa_xi_plus->GetBinContent(fqqa_xi_plus->FindFixBin(x,y,z)) + fqqa_xi_minus->GetBinContent(fqqa_xi_minus->FindFixBin(x,y,z))
+										  fqqs_delta_minus->GetBinContent(fqqs_delta_minus->FindFixBin(x,y,z)) ;
+				double qqa_events = fqqa_plus->GetBinContent(fqqa_plus->FindFixBin(x,y,z)) + fqqa_minus->GetBinContent(fqqa_minus->FindFixBin(x,y,z));
+				double qqa_xi_events = fqqa_xi_plus->GetBinContent(fqqa_xi_plus->FindFixBin(x,y,z)) + fqqa_xi_minus->GetBinContent(fqqa_xi_minus->FindFixBin(x,y,z));
 				double qqa_delta_events = fqqa_delta_plus->GetBinContent(fqqa_delta_plus->FindFixBin(x,y,z)) + 
-										  fqqa_delta_minus->GetBinContent(fqqa_delta_minus->FindFixBin(x,y,z)) +
+										  fqqa_delta_minus->GetBinContent(fqqa_delta_minus->FindFixBin(x,y,z)) ;
 				double bck = Rbck*bck_events;
 				double WJets = RWJets*WJets_events;
 				double ntmj = Rntmj*ntmj_events;
