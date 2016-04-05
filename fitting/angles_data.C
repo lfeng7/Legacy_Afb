@@ -325,375 +325,397 @@ void angles_data::LoadHistogramsCombined() {
 
 
 
+
+
 //other loop function for making plots of the final fit compared to the data
 //COMBINED CASE
 double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double sigma_Rbck, double RWJets, double sigma_RWJets,double Rntmj, double sigma_Rntmj,
 						 double xi, double sigma_xi, double delta, double sigma_delta, 
 						 double Afb, double sigma_Afb, char* rname) {
-	// //Set up loop
-	// if (fChain == 0) return 0.0;
-	// Long64_t nentries = fChain->GetEntriesFast();
-	// Long64_t nbytes = 0, nb = 0;
+	//Set up loop
+	if (fChain == 0) return 0.0;
+	Long64_t nentries = fChain->GetEntriesFast();
+	Long64_t nbytes = 0, nb = 0;
 	
-	// //make histograms to hold the data and the fit and their projections
-	// TH3D* data_hist = new TH3D("data_hist","Data Distribution; cos(#theta *); Feynman x (x_{F}); M_{t #bar{t}} (GeV)",
-	// 						   nbinsx,x_low,x_high,nbinsy,y_low,y_high,nbinsz,z_low,z_high);
-	// TH1D* data_x = new TH1D("data_x","Data x Projection",nbinsx,x_low,x_high);
-	// TH1D* data_y = new TH1D("data_y","Data y Projection",nbinsy,y_low,y_high);
-	// TH1D* data_z = new TH1D("data_z","Data z Projection",nbinsz,z_low,z_high);
-	// TH1D* gg_x = new TH1D("gg_x","gg x Projection",nbinsx,x_low,x_high);
-	// TH1D* gg_y = new TH1D("gg_y","gg y Projection",nbinsy,y_low,y_high);
-	// TH1D* gg_z = new TH1D("gg_z","gg z Projection",nbinsz,z_low,z_high);
-	// TH1D* qq_x = new TH1D("qq_x","qqbar x Projection",nbinsx,x_low,x_high);
-	// TH1D* qq_y = new TH1D("qq_y","qqbar y Projection",nbinsy,y_low,y_high);
-	// TH1D* qq_z = new TH1D("qq_z","qqbar z Projection",nbinsz,z_low,z_high);
-	// TH1D* bg_x = new TH1D("bg_x","background x Projection",nbinsx,x_low,x_high);
-	// TH1D* bg_y = new TH1D("bg_y","background y Projection",nbinsy,y_low,y_high);
-	// TH1D* bg_z = new TH1D("bg_z","background z Projection",nbinsz,z_low,z_high);
-	// TH1D* wj_x = new TH1D("wj_x","WJets x Projection",nbinsx,x_low,x_high);
-	// TH1D* wj_y = new TH1D("wj_y","WJets y Projection",nbinsy,y_low,y_high);
-	// TH1D* wj_z = new TH1D("wj_z","WJets z Projection",nbinsz,z_low,z_high);
-	// TH1D* event_numbers_data = new TH1D("event_numbers_data","lepton charge and jet multiplicity in data",6,0.,6.);
-	// TH1D* event_numbers_bck = new TH1D("event_numbers_bck","lepton charge and jet multiplicity in background",6,0.,6.);
-	// TH1D* event_numbers_WJets = new TH1D("event_numbers_WJets","lepton charge and jet multiplicity in WJets",6,0.,6.);
-	// TH1D* event_numbers_gg = new TH1D("event_numbers_gg","lepton charge and jet multiplicity in gg",6,0.,6.);
-	// TH1D* event_numbers_qq = new TH1D("event_numbers_qq","lepton charge and jet multiplicity in qq",6,0.,6.);
-	// event_numbers_bck->SetBarWidth(0.70);
-	// event_numbers_WJets->SetBarWidth(0.70);
-	// event_numbers_gg->SetBarWidth(0.70);
-	// event_numbers_qq->SetBarWidth(0.70);
-	// event_numbers_bck->SetBarOffset(0.15);
-	// event_numbers_WJets->SetBarOffset(0.15);
-	// event_numbers_gg->SetBarOffset(0.15);
-	// event_numbers_qq->SetBarOffset(0.15);
-	// TH3D* sideband = new TH3D("sideband","Sideband Distribution; cos(#theta *); Feynman x (x_{F}); M_{t #bar{t}} (GeV)",
-	// 						   nbinsx,x_low,x_high,nbinsy,y_low,y_high,nbinsz,z_low,z_high);
+	//make histograms to hold the data and the fit and their projections
+	TH3D* data_hist = new TH3D("data_hist","Data Distribution; cos(#theta *); Feynman x (x_{F}); M_{t #bar{t}} (GeV)",
+							   nbinsx,x_low,x_high,nbinsy,y_low,y_high,nbinsz,z_low,z_high);
+	TH1D* data_x = new TH1D("data_x","Data x Projection",nbinsx,x_low,x_high);
+	TH1D* data_y = new TH1D("data_y","Data y Projection",nbinsy,y_low,y_high);
+	TH1D* data_z = new TH1D("data_z","Data z Projection",nbinsz,z_low,z_high);
+	TH1D* gg_x = new TH1D("gg_x","gg x Projection",nbinsx,x_low,x_high);
+	TH1D* gg_y = new TH1D("gg_y","gg y Projection",nbinsy,y_low,y_high);
+	TH1D* gg_z = new TH1D("gg_z","gg z Projection",nbinsz,z_low,z_high);
+	TH1D* qq_x = new TH1D("qq_x","qqbar x Projection",nbinsx,x_low,x_high);
+	TH1D* qq_y = new TH1D("qq_y","qqbar y Projection",nbinsy,y_low,y_high);
+	TH1D* qq_z = new TH1D("qq_z","qqbar z Projection",nbinsz,z_low,z_high);
+	TH1D* bg_x = new TH1D("bg_x","background x Projection",nbinsx,x_low,x_high);
+	TH1D* bg_y = new TH1D("bg_y","background y Projection",nbinsy,y_low,y_high);
+	TH1D* bg_z = new TH1D("bg_z","background z Projection",nbinsz,z_low,z_high);
+	TH1D* wj_x = new TH1D("wj_x","WJets x Projection",nbinsx,x_low,x_high);
+	TH1D* wj_y = new TH1D("wj_y","WJets y Projection",nbinsy,y_low,y_high);
+	TH1D* wj_z = new TH1D("wj_z","WJets z Projection",nbinsz,z_low,z_high);
+
+	TH1D* ntmj_x = new TH1D("ntmj_x","ntmj x Projection",nbinsx,x_low,x_high);
+	TH1D* ntmj_y = new TH1D("ntmj_y","ntmj y Projection",nbinsy,y_low,y_high);
+	TH1D* ntmj_z = new TH1D("ntmj_z","ntmj z Projection",nbinsz,z_low,z_high);
+
+	TH1D* event_numbers_data = new TH1D("event_numbers_data","lepton charge and jet multiplicity in data",6,0.,6.);
+	TH1D* event_numbers_bck = new TH1D("event_numbers_bck","lepton charge and jet multiplicity in background",6,0.,6.);
+	TH1D* event_numbers_WJets = new TH1D("event_numbers_WJets","lepton charge and jet multiplicity in WJets",6,0.,6.);
+	TH1D* event_numbers_ntmj = new TH1D("event_numbers_ntmj","lepton charge and jet multiplicity in ntmj",6,0.,6.);
+	TH1D* event_numbers_gg = new TH1D("event_numbers_gg","lepton charge and jet multiplicity in gg",6,0.,6.);
+	TH1D* event_numbers_qq = new TH1D("event_numbers_qq","lepton charge and jet multiplicity in qq",6,0.,6.);
+	event_numbers_bck->SetBarWidth(0.70);
+	event_numbers_WJets->SetBarWidth(0.70);
+	event_numbers_ntmj->SetBarWidth(0.70);
+	event_numbers_gg->SetBarWidth(0.70);
+	event_numbers_qq->SetBarWidth(0.70);
+	event_numbers_bck->SetBarOffset(0.15);
+	event_numbers_WJets->SetBarOffset(0.15);
+	event_numbers_ntmj->SetBarOffset(0.15);
+	event_numbers_gg->SetBarOffset(0.15);
+	event_numbers_qq->SetBarOffset(0.15);
+	TH3D* sideband = new TH3D("sideband","Sideband Distribution; cos(#theta *); Feynman x (x_{F}); M_{t #bar{t}} (GeV)",
+							   nbinsx,x_low,x_high,nbinsy,y_low,y_high,nbinsz,z_low,z_high);
 
 	int count_added=0;
-	// //MAIN LOOP
-	// for (Long64_t jentry=0; jentry<nentries;jentry++) {
-	// 	Long64_t ientry = LoadTree(jentry);
-	// 	if (ientry < 0) break;
+	//MAIN LOOP
+	for (Long64_t jentry=0; jentry<nentries;jentry++) {
+		Long64_t ientry = LoadTree(jentry);
+		if (ientry < 0) break;
 
-	// 	//If Feynman x is negative, flip it.
-	// 	if (Feynman_x<0.0) 
-	// 		Feynman_x = -1.0*Feynman_x;
+		//If Feynman x is negative, flip it.
+		if (Feynman_x<0.0) 
+			Feynman_x = -1.0*Feynman_x;
 		
-	// 	//cut on whether the event is in range of the training set
-	// 	if (cos_theta_cs>=x_low && cos_theta_cs<=x_high && Feynman_x>=y_low && Feynman_x<=y_high && ttbar_mass>=z_low && ttbar_mass<=z_high && n_bTags >= num_b_tag_cuts && ln_L < lnL_cut) {
-	// 		//Fill the data histogram with the appropriate values
-	// 		double ev_fqqs_plus = fqqs_plus->GetBinContent(fqqs_plus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-	// 		double ev_fqqs_minus = fqqs_minus->GetBinContent(fqqs_minus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-	// 		double ev_fgg_plus  = fgg_plus->GetBinContent(fgg_plus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-	// 		double ev_fgg_minus  = fgg_minus->GetBinContent(fgg_minus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-	// 		double ev_fbck_plus = fbck_plus->GetBinContent(fbck_plus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-	// 		double ev_fbck_minus = fbck_minus->GetBinContent(fbck_minus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-	// 		double ev_WJets_plus = WJets_plus->GetBinContent(WJets_plus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-	// 		double ev_WJets_minus = WJets_minus->GetBinContent(WJets_minus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-	// 		double ev_NTMJ_plus = NTMJ_plus->GetBinContent(NTMJ_plus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
-	// 		double ev_NTMJ_minus = NTMJ_minus->GetBinContent(NTMJ_minus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));			
-	// 		//double ev_gtt = gtt->GetBinContent(gtt->FindFixBin(ln_L));
-	// 		//double ev_gbk = gbk->GetBinContent(gbk->FindFixBin(ln_L));
-	// 		//double ev_gtt_5jet = gtt_5jet->GetBinContent(gtt_5jet->FindFixBin(ln_L));
-	// 		//double ev_gbk_5jet = gbk_5jet->GetBinContent(gbk_5jet->FindFixBin(ln_L));
+		//cut on whether the event is in range of the training set
+		if (cos_theta_cs>=x_low && cos_theta_cs<=x_high && Feynman_x>=y_low && Feynman_x<=y_high && ttbar_mass>=z_low && ttbar_mass<=z_high && n_bTags >= num_b_tag_cuts && ln_L < lnL_cut) {
+			//Fill the data histogram with the appropriate values
+			double ev_fqqs_plus = fqqs_plus->GetBinContent(fqqs_plus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+			double ev_fqqs_minus = fqqs_minus->GetBinContent(fqqs_minus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+			double ev_fgg_plus  = fgg_plus->GetBinContent(fgg_plus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+			double ev_fgg_minus  = fgg_minus->GetBinContent(fgg_minus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+			double ev_fbck_plus = fbck_plus->GetBinContent(fbck_plus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+			double ev_fbck_minus = fbck_minus->GetBinContent(fbck_minus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+			double ev_WJets_plus = WJets_plus->GetBinContent(WJets_plus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+			double ev_WJets_minus = WJets_minus->GetBinContent(WJets_minus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+			double ev_ntmj_plus = ntmj_plus->GetBinContent(ntmj_plus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
+			double ev_ntmj_minus = ntmj_minus->GetBinContent(ntmj_minus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));			
+			//double ev_gtt = gtt->GetBinContent(gtt->FindFixBin(ln_L));
+			//double ev_gbk = gbk->GetBinContent(gbk->FindFixBin(ln_L));
+			//double ev_gtt_5jet = gtt_5jet->GetBinContent(gtt_5jet->FindFixBin(ln_L));
+			//double ev_gbk_5jet = gbk_5jet->GetBinContent(gbk_5jet->FindFixBin(ln_L));
 
-	// 		// This if is really to make sure the data and mc templates are in the same phase space, aka, compare apples to apples
-	// 		if (
-	// 			(Q_l>0  && (ev_fgg_plus!=0 || ev_fqqs_plus!=0 || ev_fbck_plus!=0 || ev_WJets_plus || ev_NTMJ_plus)   ) ||
-	// 			(Q_l<0  && (ev_fgg_minus!=0 || ev_fqqs_minus!=0 || ev_fbck_minus!=0 || ev_WJets_minus || ev_NTMJ_minus)    ) ||
-	// 			)
- // {
-	// 			data_hist->Fill(cos_theta_cs,Feynman_x,ttbar_mass);
-	// 			data_x->Fill(cos_theta_cs);
-	// 			data_y->Fill(Feynman_x);
-	// 			data_z->Fill(ttbar_mass);
-	// 			++count_added;
-	// 			if (n_valid_jets==4 && Q_l>0)
-	// 				event_numbers_data->Fill(1.5);
-	// 			else if (n_valid_jets==4 && Q_l<0)
-	// 				event_numbers_data->Fill(2.5);
-	// 			else if (n_valid_jets==5 && Q_l>0)
-	// 				event_numbers_data->Fill(3.5);
-	// 			else if (n_valid_jets==5 && Q_l<0)
-	// 				event_numbers_data->Fill(4.5);
-	// 		}
-	// 		else 
-	// 			sideband->Fill(cos_theta_cs,Feynman_x,ttbar_mass);
-	// 	}//end cut
-	// 	nb = fChain->GetEntry(jentry);   nbytes += nb;
-	// }//end loop
+			// This if is really to make sure the data and mc templates are in the same phase space, aka, compare apples to apples
+			if (
+				(Q_l>0  && (ev_fgg_plus!=0 || ev_fqqs_plus!=0 || ev_fbck_plus!=0 || ev_WJets_plus!=0 || ev_ntmj_plus>0)   ) ||
+				(Q_l<0  && (ev_fgg_minus!=0 || ev_fqqs_minus!=0 || ev_fbck_minus!=0 || ev_WJets_minus!=0 || ev_ntmj_minus>0)    ) ||
+				)
+ {
+				data_hist->Fill(cos_theta_cs,Feynman_x,ttbar_mass);
+				data_x->Fill(cos_theta_cs);
+				data_y->Fill(Feynman_x);
+				data_z->Fill(ttbar_mass);
+				++count_added;
+				if (n_valid_jets==4 && Q_l>0)
+					event_numbers_data->Fill(1.5);
+				else if (n_valid_jets==4 && Q_l<0)
+					event_numbers_data->Fill(2.5);
+				else if (n_valid_jets==5 && Q_l>0)
+					event_numbers_data->Fill(3.5);
+				else if (n_valid_jets==5 && Q_l<0)
+					event_numbers_data->Fill(4.5);
+			}
+			else 
+				sideband->Fill(cos_theta_cs,Feynman_x,ttbar_mass);
+		}//end cut
+		nb = fChain->GetEntry(jentry);   nbytes += nb;
+	}//end loop
 
-	// printf("BUILDING FIT COMPARISON PLOT\n");
-	// printf("# of events in data = %d\n", count_added);
+	printf("BUILDING FIT COMPARISON PLOT\n");
+	printf("# of events in data = %d\n", count_added);
 
-	// //build the total histograms by summing over the lepton charge and jet number and rescaling
-	// TH3D *fqqs = (TH3D*)fqqs_plus->Clone("fqqs");
-	// TH3D *fqqa = (TH3D*)fqqs_plus->Clone("fqqa");
-	// TH3D *fgg = (TH3D*)fqqs_plus->Clone("fgg");
-	// TH3D *fbck = (TH3D*)fqqs_plus->Clone("fbck");
-	// TH3D *fWJets = (TH3D*)fqqs_plus->Clone("fWJets");
-	// for (double x = x_low+(0.5*xbinwidth); x<x_high; x=x+xbinwidth) {
-	// 	for (double y = y_low+(0.5*ybinwidth); y<y_high; y=y+ybinwidth) {
-	// 		for (double z = z_low+(0.5*zbinwidth); z<z_high; z=z+zbinwidth) {
-	// 			double bck_events = fbck_plus->GetBinContent(fbck_plus->FindFixBin(x,y,z)) + fbck_minus->GetBinContent(fbck_minus->FindFixBin(x,y,z))
-	// 							  + fbck_plus_5jet->GetBinContent(fbck_plus_5jet->FindFixBin(x,y,z)) + fbck_minus_5jet->GetBinContent(fbck_minus->FindFixBin(x,y,z));
-	// 			double WJets_events = WJets_plus->GetBinContent(WJets_plus->FindFixBin(x,y,z)) + WJets_minus->GetBinContent(WJets_minus->FindFixBin(x,y,z))
-	// 							  + WJets_plus_5jet->GetBinContent(WJets_plus_5jet->FindFixBin(x,y,z)) + WJets_minus_5jet->GetBinContent(WJets_minus->FindFixBin(x,y,z));
-	// 			double gg_events  = fgg_plus->GetBinContent(fgg_plus->FindFixBin(x,y,z)) + fgg_minus->GetBinContent(fgg_minus->FindFixBin(x,y,z))
-	// 							  + fgg_plus_5jet->GetBinContent(fgg_plus_5jet->FindFixBin(x,y,z)) + fgg_minus_5jet->GetBinContent(fgg_minus_5jet->FindFixBin(x,y,z));
-	// 			double qqs_events = fqqs_plus->GetBinContent(fqqs_plus->FindFixBin(x,y,z)) + fqqs_minus->GetBinContent(fqqs_minus->FindFixBin(x,y,z))
-	// 							  + fqqs_plus_5jet->GetBinContent(fqqs_plus_5jet->FindFixBin(x,y,z)) + fqqs_minus_5jet->GetBinContent(fqqs_minus_5jet->FindFixBin(x,y,z));
-	// 			double qqs_xi_events = fqqs_xi_plus->GetBinContent(fqqs_xi_plus->FindFixBin(x,y,z)) + fqqs_xi_minus->GetBinContent(fqqs_xi_minus->FindFixBin(x,y,z))
-	// 								 + fqqs_xi_plus_5jet->GetBinContent(fqqs_xi_plus_5jet->FindFixBin(x,y,z)) + fqqs_xi_minus_5jet->GetBinContent(fqqs_xi_minus_5jet->FindFixBin(x,y,z));
-	// 			double qqs_delta_events = fqqs_delta_plus->GetBinContent(fqqs_delta_plus->FindFixBin(x,y,z)) + 
-	// 									  fqqs_delta_minus->GetBinContent(fqqs_delta_minus->FindFixBin(x,y,z)) +
-	// 									  fqqs_delta_plus_5jet->GetBinContent(fqqs_delta_plus_5jet->FindFixBin(x,y,z)) + 
-	// 									  fqqs_delta_minus_5jet->GetBinContent(fqqs_delta_minus_5jet->FindFixBin(x,y,z));
-	// 			double qqa_events = fqqa_plus->GetBinContent(fqqa_plus->FindFixBin(x,y,z)) + fqqa_minus->GetBinContent(fqqa_minus->FindFixBin(x,y,z))
-	// 							  + fqqa_plus_5jet->GetBinContent(fqqa_plus_5jet->FindFixBin(x,y,z)) + fqqa_minus_5jet->GetBinContent(fqqa_minus_5jet->FindFixBin(x,y,z));
-	// 			double qqa_xi_events = fqqa_xi_plus->GetBinContent(fqqa_xi_plus->FindFixBin(x,y,z)) + fqqa_xi_minus->GetBinContent(fqqa_xi_minus->FindFixBin(x,y,z))
-	// 								 + fqqa_xi_plus_5jet->GetBinContent(fqqa_xi_plus_5jet->FindFixBin(x,y,z)) + fqqa_xi_minus_5jet->GetBinContent(fqqa_xi_minus_5jet->FindFixBin(x,y,z));
-	// 			double qqa_delta_events = fqqa_delta_plus->GetBinContent(fqqa_delta_plus->FindFixBin(x,y,z)) + 
-	// 									  fqqa_delta_minus->GetBinContent(fqqa_delta_minus->FindFixBin(x,y,z)) +
-	// 									  fqqa_delta_plus_5jet->GetBinContent(fqqa_delta_plus_5jet->FindFixBin(x,y,z)) + 
-	// 									  fqqa_delta_minus_5jet->GetBinContent(fqqa_delta_minus_5jet->FindFixBin(x,y,z));
-	// 			double bck = Rbck*bck_events;
-	// 			double WJets = RWJets*WJets_events;
-	// 			double gg  = (1.0-Rbck-RWJets)*(1.0-Rqqbar)*gg_events;
-	// 			double qqs = (1.0-Rbck-RWJets)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*(qqs_events+xi*qqs_xi_events+delta*qqs_delta_events);
-	// 			double qqa = Afb*(1.0-Rbck-RWJets)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*(qqa_events+xi*qqa_xi_events+delta*qqa_delta_events);
-	// 			fqqs->SetBinContent(fqqs->FindFixBin(x,y,z),qqs);
-	// 			fqqa->SetBinContent(fqqa->FindFixBin(x,y,z),qqa);
-	// 			fgg->SetBinContent(fgg->FindFixBin(x,y,z),gg);
-	// 			fbck->SetBinContent(fbck->FindFixBin(x,y,z),bck);
-	// 			fWJets->SetBinContent(fWJets->FindFixBin(x,y,z),WJets);
-	// 			gg_x->Fill(x,count_added*gg);
-	// 			gg_y->Fill(y,count_added*gg);
-	// 			gg_z->Fill(z,count_added*gg);
-	// 			qq_x->Fill(x,count_added*(qqs+qqa));
-	// 			qq_y->Fill(y,count_added*(qqs+qqa));
-	// 			qq_z->Fill(z,count_added*(qqs+qqa));
-	// 			bg_x->Fill(x,count_added*bck);
-	// 			bg_y->Fill(y,count_added*bck);
-	// 			bg_z->Fill(z,count_added*bck);
-	// 			wj_x->Fill(x,count_added*WJets);
-	// 			wj_y->Fill(y,count_added*WJets);
-	// 			wj_z->Fill(z,count_added*WJets);
-	// 		}
-	// 	}
-	// }//end loops over bins
+	//build the total histograms by summing over the lepton charge and jet number and rescaling
+	TH3D *fqqs = (TH3D*)fqqs_plus->Clone("fqqs");
+	TH3D *fqqa = (TH3D*)fqqs_plus->Clone("fqqa");
+	TH3D *fgg = (TH3D*)fqqs_plus->Clone("fgg");
+	TH3D *fbck = (TH3D*)fqqs_plus->Clone("fbck");
+	TH3D *fWJets = (TH3D*)fqqs_plus->Clone("fWJets");
+	TH3D *fWJets = (TH3D*)fqqs_plus->Clone("fntmj");
 	
-	// //and a few more loops over the histograms to set the errors on the projections for the data
-	// for (double x = x_low+(0.5*xbinwidth); x<x_high; x=x+xbinwidth) {
-	// 	double x_bin_var_data=0.0;
-	// 	for (double y = y_low+(0.5*ybinwidth); y<y_high; y=y+ybinwidth) {
-	// 		double y_bin_var_data=0.0;
-	// 		for (double z = z_low+(0.5*zbinwidth); z<z_high; z=z+zbinwidth) {
-	// 			y_bin_var_data=y_bin_var_data+data_hist->GetBinError(data_hist->FindFixBin(x,y,z))*data_hist->GetBinError(data_hist->FindFixBin(x,y,z));
-	// 		}
-	// 		x_bin_var_data=x_bin_var_data+y_bin_var_data;
-	// 	}
-	// 	data_x->SetBinError(data_x->FindFixBin(x),TMath::Sqrt(x_bin_var_data));
-	// }
-	// for (double z = z_low+(0.5*zbinwidth); z<z_high; z=z+zbinwidth) {
-	// 	double z_bin_var_data=0.0;
-	// 	for (double x = x_low+(0.5*xbinwidth); x<x_high; x=x+xbinwidth) {
-	// 		double x_bin_var_data=0.0;
-	// 		for (double y = y_low+(0.5*ybinwidth); y<y_high; y=y+ybinwidth) {
-	// 			x_bin_var_data=x_bin_var_data+data_hist->GetBinError(data_hist->FindFixBin(x,y,z))*data_hist->GetBinError(data_hist->FindFixBin(x,y,z));
-	// 		}
-	// 		z_bin_var_data=z_bin_var_data+x_bin_var_data;
-	// 	}
-	// 	data_z->SetBinError(data_z->FindFixBin(z),TMath::Sqrt(z_bin_var_data));
-	// }
-	// for (double y = y_low+(0.5*ybinwidth); y<y_high; y=y+ybinwidth) {
-	// 	double y_bin_var_data=0.0;
-	// 	for (double z = z_low+(0.5*zbinwidth); z<z_high; z=z+zbinwidth) {
-	// 		double z_bin_var_data=0.0;
-	// 		for (double x = x_low+(0.5*xbinwidth); x<x_high; x=x+xbinwidth) {
-	// 			z_bin_var_data=z_bin_var_data+data_hist->GetBinError(data_hist->FindFixBin(x,y,z))*data_hist->GetBinError(data_hist->FindFixBin(x,y,z));
-	// 		}
-	// 		y_bin_var_data=y_bin_var_data+z_bin_var_data;
-	// 	}
-	// 	data_y->SetBinError(data_y->FindFixBin(y),TMath::Sqrt(y_bin_var_data));
-	// }
+	for (double x = x_low+(0.5*xbinwidth); x<x_high; x=x+xbinwidth) {
+		for (double y = y_low+(0.5*ybinwidth); y<y_high; y=y+ybinwidth) {
+			for (double z = z_low+(0.5*zbinwidth); z<z_high; z=z+zbinwidth) {
+				double bck_events = fbck_plus->GetBinContent(fbck_plus->FindFixBin(x,y,z)) + fbck_minus->GetBinContent(fbck_minus->FindFixBin(x,y,z))
+				double WJets_events = WJets_plus->GetBinContent(WJets_plus->FindFixBin(x,y,z)) + WJets_minus->GetBinContent(WJets_minus->FindFixBin(x,y,z))
+				double ntmj_events = ntmj_plus->GetBinContent(ntmj_plus->FindFixBin(x,y,z)) + ntmj_minus->GetBinContent(ntmj_minus->FindFixBin(x,y,z))
 
-	// //Build the event type distributions for the background, gg, and qq
-	// double n_fit_bck_plus = (Rbck*fbck_plus->Integral());
-	// double n_fit_WJets_plus = (RWJets*WJets_plus->Integral());  
-	// double n_fit_gg_plus  = (1.0-Rbck-RWJets)*((1.0-Rqqbar)*fgg_plus->Integral());
-	// double n_fit_qq_plus  = (1.0-Rbck-RWJets)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*(fqqs_plus->Integral()+Afb*fqqa_plus->Integral());
-	// 	   n_fit_qq_plus += (1.0-Rbck-RWJets)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*xi*(fqqs_xi_plus->Integral()+Afb*fqqa_xi_plus->Integral());
-	// 	   n_fit_qq_plus += (1.0-Rbck-RWJets)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*delta*(fqqs_delta_plus->Integral()+Afb*fqqa_delta_plus->Integral());
-	// double n_fit_bck_minus = (Rbck*fbck_minus->Integral()); 
-	// double n_fit_WJets_minus = (RWJets*WJets_minus->Integral()); 
-	// double n_fit_gg_minus  = (1.0-Rbck-RWJets)*((1.0-Rqqbar)*fgg_minus->Integral());
-	// double n_fit_qq_minus  = (1.0-Rbck-RWJets)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*(fqqs_minus->Integral()+Afb*fqqa_minus->Integral());
-	// 	   n_fit_qq_minus += (1.0-Rbck-RWJets)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*xi*(fqqs_xi_minus->Integral()+Afb*fqqa_xi_minus->Integral());
-	// 	   n_fit_qq_minus += (1.0-Rbck-RWJets)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*delta*(fqqs_delta_minus->Integral()+Afb*fqqa_delta_minus->Integral());
-	// double n_fit_bck_plus_5jet = (Rbck*fbck_plus_5jet->Integral()); 
-	// double n_fit_WJets_plus_5jet = (RWJets*WJets_plus_5jet->Integral()); 
-	// double n_fit_gg_plus_5jet  = (1.0-Rbck-RWJets)*((1.0-Rqqbar)*fgg_plus_5jet->Integral());
-	// double n_fit_qq_plus_5jet  = (1.0-Rbck-RWJets)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*(fqqs_plus_5jet->Integral()+Afb*fqqa_plus_5jet->Integral());
-	// 	   n_fit_qq_plus_5jet += (1.0-Rbck-RWJets)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*xi*(fqqs_xi_plus_5jet->Integral()+Afb*fqqa_xi_plus_5jet->Integral());
-	// 	   n_fit_qq_plus_5jet += (1.0-Rbck-RWJets)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*delta*(fqqs_delta_plus_5jet->Integral()+Afb*fqqa_delta_plus_5jet->Integral());
-	// double n_fit_bck_minus_5jet = (Rbck*fbck_minus_5jet->Integral()); 
-	// double n_fit_WJets_minus_5jet = (RWJets*WJets_minus_5jet->Integral()); 
-	// double n_fit_gg_minus_5jet  = (1.0-Rbck-RWJets)*((1.0-Rqqbar)*fgg_minus_5jet->Integral());
-	// double n_fit_qq_minus_5jet  = (1.0-Rbck-RWJets)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*(fqqs_minus_5jet->Integral()+Afb*fqqa_minus_5jet->Integral());
-	// 	   n_fit_qq_minus_5jet += (1.0-Rbck-RWJets)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*xi*(fqqs_xi_minus_5jet->Integral()+Afb*fqqa_xi_minus_5jet->Integral());
-	// 	   n_fit_qq_minus_5jet += (1.0-Rbck-RWJets)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*delta*(fqqs_delta_minus_5jet->Integral()+Afb*fqqa_delta_minus_5jet->Integral());
-	// event_numbers_bck->Fill(1.5,count_added*n_fit_bck_plus); event_numbers_bck->Fill(2.5,count_added*n_fit_bck_minus);
-	// event_numbers_bck->Fill(3.5,count_added*n_fit_bck_plus_5jet); event_numbers_bck->Fill(4.5,count_added*n_fit_bck_minus_5jet);
-	// event_numbers_WJets->Fill(1.5,count_added*n_fit_WJets_plus); event_numbers_WJets->Fill(2.5,count_added*n_fit_WJets_minus);
-	// event_numbers_WJets->Fill(3.5,count_added*n_fit_WJets_plus_5jet); event_numbers_WJets->Fill(4.5,count_added*n_fit_WJets_minus_5jet);
-	// event_numbers_gg->Fill(1.5,count_added*n_fit_gg_plus); event_numbers_gg->Fill(2.5,count_added*n_fit_gg_minus);
-	// event_numbers_gg->Fill(3.5,count_added*n_fit_gg_plus_5jet); event_numbers_gg->Fill(4.5,count_added*n_fit_gg_minus_5jet);
-	// event_numbers_qq->Fill(1.5,count_added*n_fit_qq_plus); event_numbers_qq->Fill(2.5,count_added*n_fit_qq_minus);
-	// event_numbers_qq->Fill(3.5,count_added*n_fit_qq_plus_5jet); event_numbers_qq->Fill(4.5,count_added*n_fit_qq_minus_5jet);
+				double gg_events  = fgg_plus->GetBinContent(fgg_plus->FindFixBin(x,y,z)) + fgg_minus->GetBinContent(fgg_minus->FindFixBin(x,y,z))
+				double qqs_events = fqqs_plus->GetBinContent(fqqs_plus->FindFixBin(x,y,z)) + fqqs_minus->GetBinContent(fqqs_minus->FindFixBin(x,y,z))
+				double qqs_xi_events = fqqs_xi_plus->GetBinContent(fqqs_xi_plus->FindFixBin(x,y,z)) + fqqs_xi_minus->GetBinContent(fqqs_xi_minus->FindFixBin(x,y,z))
+				double qqs_delta_events = fqqs_delta_plus->GetBinContent(fqqs_delta_plus->FindFixBin(x,y,z)) + 
+										  fqqs_delta_minus->GetBinContent(fqqs_delta_minus->FindFixBin(x,y,z)) +
+				double qqa_events = fqqa_plus->GetBinContent(fqqa_plus->FindFixBin(x,y,z)) + fqqa_minus->GetBinContent(fqqa_minus->FindFixBin(x,y,z))
+				double qqa_xi_events = fqqa_xi_plus->GetBinContent(fqqa_xi_plus->FindFixBin(x,y,z)) + fqqa_xi_minus->GetBinContent(fqqa_xi_minus->FindFixBin(x,y,z))
+				double qqa_delta_events = fqqa_delta_plus->GetBinContent(fqqa_delta_plus->FindFixBin(x,y,z)) + 
+										  fqqa_delta_minus->GetBinContent(fqqa_delta_minus->FindFixBin(x,y,z)) +
+				double bck = Rbck*bck_events;
+				double WJets = RWJets*WJets_events;
+				double ntmj = Rntmj*ntmj_events;
+				double gg  = (1.0-Rbck-RWJets-Rntmj)*(1.0-Rqqbar)*gg_events;
+				double qqs = (1.0-Rbck-RWJets-Rntmj)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*(qqs_events+xi*qqs_xi_events+delta*qqs_delta_events);
+				double qqa = Afb*(1.0-Rbck-RWJets-Rntmj)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*(qqa_events+xi*qqa_xi_events+delta*qqa_delta_events);
+				fqqs->SetBinContent(fqqs->FindFixBin(x,y,z),qqs);
+				fqqa->SetBinContent(fqqa->FindFixBin(x,y,z),qqa);
+				fgg->SetBinContent(fgg->FindFixBin(x,y,z),gg);
+				fbck->SetBinContent(fbck->FindFixBin(x,y,z),bck);
+				fWJets->SetBinContent(fWJets->FindFixBin(x,y,z),WJets);
+				fntmj->SetBinContent(fntmj->FindFixBin(x,y,z),ntmj);
+				gg_x->Fill(x,count_added*gg);
+				gg_y->Fill(y,count_added*gg);
+				gg_z->Fill(z,count_added*gg);
+				qq_x->Fill(x,count_added*(qqs+qqa));
+				qq_y->Fill(y,count_added*(qqs+qqa));
+				qq_z->Fill(z,count_added*(qqs+qqa));
+				bg_x->Fill(x,count_added*bck);
+				bg_y->Fill(y,count_added*bck);
+				bg_z->Fill(z,count_added*bck);
+				wj_x->Fill(x,count_added*WJets);
+				wj_y->Fill(y,count_added*WJets);
+				wj_z->Fill(z,count_added*WJets);
+				ntmj_x->Fill(x,count_added*ntmj);
+				ntmj_y->Fill(y,count_added*ntmj);
+				ntmj_z->Fill(z,count_added*ntmj);
+			}
+		}
+	}//end loops over bins
 	
-	// //plot the new histograms on top of each other
-	// //build histogram stacks
-	// THStack *x_stack = new THStack("x_stack","cos(#theta *) Comparison; cos(#theta *)");
-	// THStack *y_stack = new THStack("y_stack","Feynman x Comparison; (x_{F})");
-	// THStack *z_stack = new THStack("z_stack","t #bar{t} Mass Comparison; M_{t #bar{t}}");
-	// THStack *event_numbers_stack = new THStack("event_numbers_stack","Lepton Charge and Jet Multiplicity Comparison");
-	// //add to stacks
-	// x_stack->Add(bg_x);
-	// y_stack->Add(bg_y);
-	// z_stack->Add(bg_z);
-	// x_stack->Add(wj_x);
-	// y_stack->Add(wj_y);
-	// z_stack->Add(wj_z);
-	// x_stack->Add(gg_x);
-	// y_stack->Add(gg_y);
-	// z_stack->Add(gg_z);
-	// x_stack->Add(qq_x);
-	// y_stack->Add(qq_y);
-	// z_stack->Add(qq_z);
-	// event_numbers_stack->Add(event_numbers_bck);
-	// event_numbers_stack->Add(event_numbers_WJets);
-	// event_numbers_stack->Add(event_numbers_gg);
-	// event_numbers_stack->Add(event_numbers_qq);
-	// //set drawing options for projections
-	// //glueglue
-	// gg_x->SetFillColor(38);
-	// gg_x->SetMarkerStyle(21);
-	// gg_x->SetMarkerColor(38);
-	// gg_y->SetFillColor(38);
-	// gg_y->SetMarkerStyle(21);
-	// gg_y->SetMarkerColor(38);
-	// gg_z->SetFillColor(38);
-	// gg_z->SetMarkerStyle(21);
-	// gg_z->SetMarkerColor(38);
-	// event_numbers_gg->SetFillColor(38);
-	// event_numbers_gg->SetMarkerStyle(21);
-	// event_numbers_gg->SetMarkerColor(38);
-	// //qqbar
-	// qq_x->SetFillColor(46);
-	// qq_x->SetMarkerStyle(21);
-	// qq_x->SetMarkerColor(46);
-	// qq_y->SetFillColor(46);
-	// qq_y->SetMarkerStyle(21);
-	// qq_y->SetMarkerColor(46);
-	// qq_z->SetFillColor(46);
-	// qq_z->SetMarkerStyle(21);
-	// qq_z->SetMarkerColor(46);
-	// event_numbers_qq->SetFillColor(46);
-	// event_numbers_qq->SetMarkerStyle(21);
-	// event_numbers_qq->SetMarkerColor(46);
-	// //background
-	// bg_x->SetFillColor(41);
-	// bg_x->SetMarkerStyle(21);
-	// bg_x->SetMarkerColor(41);
-	// bg_y->SetFillColor(41);
-	// bg_y->SetMarkerStyle(21);
-	// bg_y->SetMarkerColor(41);
-	// bg_z->SetFillColor(41);
-	// bg_z->SetMarkerStyle(21);
-	// bg_z->SetMarkerColor(41);
-	// event_numbers_bck->SetFillColor(41);
-	// event_numbers_bck->SetMarkerStyle(21);
-	// event_numbers_bck->SetMarkerColor(41);
-	// //WJets
-	// wj_x->SetFillColor(kGreen-3);
-	// wj_x->SetMarkerStyle(21);
-	// wj_x->SetMarkerColor(kGreen-3);
-	// wj_y->SetFillColor(kGreen-3);
-	// wj_y->SetMarkerStyle(21);
-	// wj_y->SetMarkerColor(kGreen-3);
-	// wj_z->SetFillColor(kGreen-3);
-	// wj_z->SetMarkerStyle(21);
-	// wj_z->SetMarkerColor(kGreen-3);
-	// event_numbers_WJets->SetFillColor(kGreen-3);
-	// event_numbers_WJets->SetMarkerStyle(21);
-	// event_numbers_WJets->SetMarkerColor(kGreen-3);
-	// //data
-	// data_x->SetMarkerColor(kBlack);
-	// data_y->SetMarkerColor(kBlack);
-	// data_z->SetMarkerColor(kBlack);
-	// data_x->SetLineWidth(2);
-	// data_y->SetLineWidth(2);
-	// data_z->SetLineWidth(2);
-	// event_numbers_data->SetMarkerColor(kBlack);
-	// event_numbers_data->SetLineWidth(2);
-	// //add a legend to the plot
-	// TLegend *leg = new TLegend(0.56,0.73,0.88,0.88);
-	// leg->SetName("legend");
-	// leg->AddEntry(data_x,"Data","LPEX0");
-	// leg->AddEntry(qq_x,"q#bar{q} #rightarrow t#bar{t}(j)","F");
-	// leg->AddEntry(gg_x,"gg(qg) #rightarrow t#bar{t}(j)","F");
-	// leg->AddEntry(wj_x,"WJets Background","F");
-	// leg->AddEntry(bg_x,"Other Backgrounds","F");
-	// TCanvas* c = new TCanvas("c","Fit Comparison",1200,1200);
-	// c->Divide(2,2);
-	// c->cd(1);
-	// event_numbers_stack->SetMaximum(1.1*event_numbers_data->GetMaximum());
-	// event_numbers_stack->Draw("bar1");
-	// event_numbers_stack->GetXaxis()->SetBinLabel(event_numbers_stack->GetXaxis()->FindFixBin(1.5),"4jets, l+");
-	// event_numbers_stack->GetXaxis()->SetBinLabel(event_numbers_stack->GetXaxis()->FindFixBin(2.5),"4jets, l-");
-	// event_numbers_stack->GetXaxis()->SetBinLabel(event_numbers_stack->GetXaxis()->FindFixBin(3.5),"5jets, l+");
-	// event_numbers_stack->GetXaxis()->SetBinLabel(event_numbers_stack->GetXaxis()->FindFixBin(4.5),"5jets, l-");
-	// event_numbers_data->Draw("SAME PE1X0");
-	// leg->Draw();
-	// c->cd(2);
-	// y_stack->SetMaximum(1.1*data_y->GetMaximum());
-	// y_stack->Draw();
-	// data_y->Draw("SAME PE1X0");
-	// c->cd(3);
-	// x_stack->SetMaximum(1.1*data_x->GetMaximum());
-	// x_stack->Draw();
-	// data_x->Draw("SAME PE1X0");	
-	// c->cd(4);
-	// z_stack->SetMaximum(1.1*data_z->GetMaximum());
-	// z_stack->Draw();
-	// data_z->Draw("SAME PE1X0");
-	// //save the plots
-	// c->Print("fit_comparison.png","png");	
+	//and a few more loops over the histograms to set the errors on the projections for the data
+	for (double x = x_low+(0.5*xbinwidth); x<x_high; x=x+xbinwidth) {
+		double x_bin_var_data=0.0;
+		for (double y = y_low+(0.5*ybinwidth); y<y_high; y=y+ybinwidth) {
+			double y_bin_var_data=0.0;
+			for (double z = z_low+(0.5*zbinwidth); z<z_high; z=z+zbinwidth) {
+				y_bin_var_data=y_bin_var_data+data_hist->GetBinError(data_hist->FindFixBin(x,y,z))*data_hist->GetBinError(data_hist->FindFixBin(x,y,z));
+			}
+			x_bin_var_data=x_bin_var_data+y_bin_var_data;
+		}
+		data_x->SetBinError(data_x->FindFixBin(x),TMath::Sqrt(x_bin_var_data));
+	}
+	for (double z = z_low+(0.5*zbinwidth); z<z_high; z=z+zbinwidth) {
+		double z_bin_var_data=0.0;
+		for (double x = x_low+(0.5*xbinwidth); x<x_high; x=x+xbinwidth) {
+			double x_bin_var_data=0.0;
+			for (double y = y_low+(0.5*ybinwidth); y<y_high; y=y+ybinwidth) {
+				x_bin_var_data=x_bin_var_data+data_hist->GetBinError(data_hist->FindFixBin(x,y,z))*data_hist->GetBinError(data_hist->FindFixBin(x,y,z));
+			}
+			z_bin_var_data=z_bin_var_data+x_bin_var_data;
+		}
+		data_z->SetBinError(data_z->FindFixBin(z),TMath::Sqrt(z_bin_var_data));
+	}
+	for (double y = y_low+(0.5*ybinwidth); y<y_high; y=y+ybinwidth) {
+		double y_bin_var_data=0.0;
+		for (double z = z_low+(0.5*zbinwidth); z<z_high; z=z+zbinwidth) {
+			double z_bin_var_data=0.0;
+			for (double x = x_low+(0.5*xbinwidth); x<x_high; x=x+xbinwidth) {
+				z_bin_var_data=z_bin_var_data+data_hist->GetBinError(data_hist->FindFixBin(x,y,z))*data_hist->GetBinError(data_hist->FindFixBin(x,y,z));
+			}
+			y_bin_var_data=y_bin_var_data+z_bin_var_data;
+		}
+		data_y->SetBinError(data_y->FindFixBin(y),TMath::Sqrt(y_bin_var_data));
+	}
 
-	// TCanvas* c1 = new TCanvas("c1","Sideband",900,900);
-	// c1->Divide(2,2,0.01,0.01,0);
-	// c1->cd(1);
-	// sideband->Draw("BOX");
-	// c1->cd(2);
-	// (sideband->ProjectionY())->Draw();
-	// c1->cd(3);
-	// (sideband->ProjectionX())->Draw();
-	// c1->cd(4);
-	// (sideband->ProjectionZ())->Draw();
-	// c1->Print("sideband.pdf","pdf");
+	//Build the event type distributions for the background, gg, and qq
+	double n_fit_bck_plus = (Rbck*fbck_plus->Integral());
+	double n_fit_WJets_plus = (RWJets*WJets_plus->Integral());  
+	double n_fit_gg_plus  = (1.0-Rbck-RWJets-Rntmj)*((1.0-Rqqbar)*fgg_plus->Integral());
+	double n_fit_qq_plus  = (1.0-Rbck-RWJets-Rntmj)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*(fqqs_plus->Integral()+Afb*fqqa_plus->Integral());
+		   n_fit_qq_plus += (1.0-Rbck-RWJets-Rntmj)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*xi*(fqqs_xi_plus->Integral()+Afb*fqqa_xi_plus->Integral());
+		   n_fit_qq_plus += (1.0-Rbck-RWJets-Rntmj)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*delta*(fqqs_delta_plus->Integral()+Afb*fqqa_delta_plus->Integral());
+	double n_fit_bck_minus = (Rbck*fbck_minus->Integral()); 
+	double n_fit_WJets_minus = (RWJets*WJets_minus->Integral()); 
+	double n_fit_gg_minus  = (1.0-Rbck-RWJets-Rntmj)*((1.0-Rqqbar)*fgg_minus->Integral());
+	double n_fit_qq_minus  = (1.0-Rbck-RWJets-Rntmj)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*(fqqs_minus->Integral()+Afb*fqqa_minus->Integral());
+		   n_fit_qq_minus += (1.0-Rbck-RWJets-Rntmj)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*xi*(fqqs_xi_minus->Integral()+Afb*fqqa_xi_minus->Integral());
+		   n_fit_qq_minus += (1.0-Rbck-RWJets-Rntmj)*(Rqqbar/(1.0+xi*F_xi_comb+delta*F_delta_comb))*delta*(fqqs_delta_minus->Integral()+Afb*fqqa_delta_minus->Integral());
+	event_numbers_bck->Fill(1.5,count_added*n_fit_bck_plus); event_numbers_bck->Fill(2.5,count_added*n_fit_bck_minus);
+	event_numbers_WJets->Fill(1.5,count_added*n_fit_WJets_plus); event_numbers_WJets->Fill(2.5,count_added*n_fit_WJets_minus);
+	event_numbers_gg->Fill(1.5,count_added*n_fit_gg_plus); event_numbers_gg->Fill(2.5,count_added*n_fit_gg_minus);
+	event_numbers_qq->Fill(1.5,count_added*n_fit_qq_plus); event_numbers_qq->Fill(2.5,count_added*n_fit_qq_minus);
 	
-	// // Save final stacks and data hist and legend into a root file for post processing
-	// printf("Writing final stack and data hists into a root file!\n");
-	// TFile* stack_file = new TFile("final_stack.root","Recreate");
-	// stack_file->cd();
-	// x_stack->Write();data_x->Write();
-	// y_stack->Write();data_y->Write();
-	// z_stack->Write();data_z->Write();
-	// event_numbers_stack->Write();event_numbers_data->Write();
-	// leg->Write();
-	// stack_file->Write();
-	// stack_file->Close();
+	double n_fit_ntmj_plus = (Rntmj*ntmj_plus->Integral());  
+	double n_fit_ntmj_minus = (Rntmj*ntmj_minus->Integral()); 
+	event_numbers_ntmj->Fill(1.5,count_added*n_fit_ntmj_plus); event_numbers_ntmj->Fill(2.5,count_added*n_fit_ntmj_minus);
+
+	//plot the new histograms on top of each other
+	//build histogram stacks
+	THStack *x_stack = new THStack("x_stack","cos(#theta *) Comparison; cos(#theta *)");
+	THStack *y_stack = new THStack("y_stack","Feynman x Comparison; (x_{F})");
+	THStack *z_stack = new THStack("z_stack","t #bar{t} Mass Comparison; M_{t #bar{t}}");
+	THStack *event_numbers_stack = new THStack("event_numbers_stack","Lepton Charge and Jet Multiplicity Comparison");
+	//add to stacks
+	x_stack->Add(bg_x);
+	y_stack->Add(bg_y);
+	z_stack->Add(bg_z);
+	x_stack->Add(wj_x);
+	y_stack->Add(wj_y);
+	z_stack->Add(wj_z);
+
+	x_stack->Add(ntmj_x);
+	y_stack->Add(ntmj_y);
+	z_stack->Add(ntmj_z);
+
+	x_stack->Add(gg_x);
+	y_stack->Add(gg_y);
+	z_stack->Add(gg_z);
+	x_stack->Add(qq_x);
+	y_stack->Add(qq_y);
+	z_stack->Add(qq_z);
+	event_numbers_stack->Add(event_numbers_bck);
+	event_numbers_stack->Add(event_numbers_WJets);
+	event_numbers_stack->Add(event_numbers_gg);
+	event_numbers_stack->Add(event_numbers_qq);
+
+	event_numbers_stack->Add(event_numbers_ntmj);
+
+	//set drawing options for projections
+	//glueglue
+	gg_x->SetFillColor(38);
+	gg_x->SetMarkerStyle(21);
+	gg_x->SetMarkerColor(38);
+	gg_y->SetFillColor(38);
+	gg_y->SetMarkerStyle(21);
+	gg_y->SetMarkerColor(38);
+	gg_z->SetFillColor(38);
+	gg_z->SetMarkerStyle(21);
+	gg_z->SetMarkerColor(38);
+	event_numbers_gg->SetFillColor(38);
+	event_numbers_gg->SetMarkerStyle(21);
+	event_numbers_gg->SetMarkerColor(38);
+	//qqbar
+	qq_x->SetFillColor(46);
+	qq_x->SetMarkerStyle(21);
+	qq_x->SetMarkerColor(46);
+	qq_y->SetFillColor(46);
+	qq_y->SetMarkerStyle(21);
+	qq_y->SetMarkerColor(46);
+	qq_z->SetFillColor(46);
+	qq_z->SetMarkerStyle(21);
+	qq_z->SetMarkerColor(46);
+	event_numbers_qq->SetFillColor(46);
+	event_numbers_qq->SetMarkerStyle(21);
+	event_numbers_qq->SetMarkerColor(46);
+	//background
+	bg_x->SetFillColor(41);
+	bg_x->SetMarkerStyle(21);
+	bg_x->SetMarkerColor(41);
+	bg_y->SetFillColor(41);
+	bg_y->SetMarkerStyle(21);
+	bg_y->SetMarkerColor(41);
+	bg_z->SetFillColor(41);
+	bg_z->SetMarkerStyle(21);
+	bg_z->SetMarkerColor(41);
+	event_numbers_bck->SetFillColor(41);
+	event_numbers_bck->SetMarkerStyle(21);
+	event_numbers_bck->SetMarkerColor(41);
+	//WJets
+	wj_x->SetFillColor(kGreen-3);
+	wj_x->SetMarkerStyle(21);
+	wj_x->SetMarkerColor(kGreen-3);
+	wj_y->SetFillColor(kGreen-3);
+	wj_y->SetMarkerStyle(21);
+	wj_y->SetMarkerColor(kGreen-3);
+	wj_z->SetFillColor(kGreen-3);
+	wj_z->SetMarkerStyle(21);
+	wj_z->SetMarkerColor(kGreen-3);
+	event_numbers_WJets->SetFillColor(kGreen-3);
+	event_numbers_WJets->SetMarkerStyle(21);
+	event_numbers_WJets->SetMarkerColor(kGreen-3);
+
+	//ntmj
+	ntmj_x->SetFillColor(kMagenta+3);
+	ntmj_x->SetMarkerStyle(21);
+	ntmj_x->SetMarkerColor(kMagenta+3);
+	ntmj_y->SetFillColor(kMagenta+3);
+	ntmj_y->SetMarkerStyle(21);
+	ntmj_y->SetMarkerColor(kMagenta+3);
+	ntmj_z->SetFillColor(kMagenta+3);
+	ntmj_z->SetMarkerStyle(21);
+	ntmj_z->SetMarkerColor(kMagenta+3);
+	event_numbers_ntmj->SetFillColor(kMagenta+3);
+	event_numbers_ntmj->SetMarkerStyle(21);
+	event_numbers_ntmj->SetMarkerColor(kMagenta+3);
+
+	//data
+	data_x->SetMarkerColor(kBlack);
+	data_y->SetMarkerColor(kBlack);
+	data_z->SetMarkerColor(kBlack);
+	data_x->SetLineWidth(2);
+	data_y->SetLineWidth(2);
+	data_z->SetLineWidth(2);
+	event_numbers_data->SetMarkerColor(kBlack);
+	event_numbers_data->SetLineWidth(2);
+	//add a legend to the plot
+	TLegend *leg = new TLegend(0.56,0.73,0.88,0.88);
+	leg->SetName("legend");
+	leg->AddEntry(data_x,"Data","LPEX0");
+	leg->AddEntry(qq_x,"q#bar{q} #rightarrow t#bar{t}(j)","F");
+	leg->AddEntry(gg_x,"gg(qg) #rightarrow t#bar{t}(j)","F");
+	leg->AddEntry(wj_x,"WJets Background","F");
+	leg->AddEntry(bg_x,"Other Backgrounds","F");
+
+	leg->AddEntry(ntmj_x,"ntmj Background","F");
+
+	TCanvas* c = new TCanvas("c","Fit Comparison",1200,1200);
+	c->Divide(2,2);
+	c->cd(1);
+	event_numbers_stack->SetMaximum(1.1*event_numbers_data->GetMaximum());
+	event_numbers_stack->Draw("bar1");
+	event_numbers_stack->GetXaxis()->SetBinLabel(event_numbers_stack->GetXaxis()->FindFixBin(1.5),"4jets, l+");
+	event_numbers_stack->GetXaxis()->SetBinLabel(event_numbers_stack->GetXaxis()->FindFixBin(2.5),"4jets, l-");
+	event_numbers_stack->GetXaxis()->SetBinLabel(event_numbers_stack->GetXaxis()->FindFixBin(3.5),"5jets, l+");
+	event_numbers_stack->GetXaxis()->SetBinLabel(event_numbers_stack->GetXaxis()->FindFixBin(4.5),"5jets, l-");
+	event_numbers_data->Draw("SAME PE1X0");
+	leg->Draw();
+	c->cd(2);
+	y_stack->SetMaximum(1.1*data_y->GetMaximum());
+	y_stack->Draw();
+	data_y->Draw("SAME PE1X0");
+	c->cd(3);
+	x_stack->SetMaximum(1.1*data_x->GetMaximum());
+	x_stack->Draw();
+	data_x->Draw("SAME PE1X0");	
+	c->cd(4);
+	z_stack->SetMaximum(1.1*data_z->GetMaximum());
+	z_stack->Draw();
+	data_z->Draw("SAME PE1X0");
+	//save the plots
+	c->Print("fit_comparison.png","png");	
+
+	TCanvas* c1 = new TCanvas("c1","Sideband",900,900);
+	c1->Divide(2,2,0.01,0.01,0);
+	c1->cd(1);
+	sideband->Draw("BOX");
+	c1->cd(2);
+	(sideband->ProjectionY())->Draw();
+	c1->cd(3);
+	(sideband->ProjectionX())->Draw();
+	c1->cd(4);
+	(sideband->ProjectionZ())->Draw();
+	c1->Print("sideband.pdf","pdf");
+	
+	// Save final stacks and data hist and legend into a root file for post processing
+	printf("Writing final stack and data hists into a root file!\n");
+	TFile* stack_file = new TFile("final_stack.root","Recreate");
+	stack_file->cd();
+	x_stack->Write();data_x->Write();
+	y_stack->Write();data_y->Write();
+	z_stack->Write();data_z->Write();
+	event_numbers_stack->Write();event_numbers_data->Write();
+	leg->Write();
+	stack_file->Write();
+	stack_file->Close();
 
 	//finally, save the results of the fit to a text file.
 	FILE* o = fopen("fit_results.txt","w");
