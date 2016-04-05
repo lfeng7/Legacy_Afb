@@ -342,14 +342,10 @@ void mergeHistoFiles() {
 	final_tree->Branch("wsxi",&wsxi);
 	final_tree->Branch("wsdelta",&wsdelta);
 	// Set up address for normalization_weight if this branch is in the input ttree. Only newer version of *_template.root has this branch
-	int has_norm_w = 0;
-	float normalization_weight = 1.0;
-	if(final_tree->GetListOfBranches()->FindObject("normalization_weight")) // This will check if the branch "Pdf_weights" exists for this template root
-	{
-		final_tree->SetBranchAddress("normalization_weight",&normalization_weight);
-    		has_norm_w = 1;
-    		printf("Input ttree has normalization_weight!\n" );
-    	}	
+	float normalization_weight ;
+	final_tree->Branch("normalization_weight",&normalization_weight);
+
+
 	//get the first histogram to set bins and axis limits
 	char file[250];
 	strcpy(file,prepend);
@@ -508,7 +504,13 @@ void mergeHistoFiles() {
 		thistree->SetBranchAddress("wsdelta",&this_wsdelta);
 		// Add a norm_w for qcd sideband
 		float this_normalization_weight;
-		thistree->Branch("normalization_weight",&this_normalization_weight);
+		bool has_norm_w = false;
+		if(thistree->GetListOfBranches()->FindObject("normalization_weight")) // This will check if the branch "Pdf_weights" exists for this template root
+		{	
+	    		has_norm_w = true;
+	    		thistree->SetBranchAddress("normalization_weight",&this_normalization_weight);
+	    		printf("Input ttree has normalization_weight!\n" );
+	    }	
 
 		Long64_t   nentries=thistree->GetEntriesFast();
 		for (Long64_t jentry=0; jentry<nentries;jentry++) {
@@ -527,9 +529,9 @@ void mergeHistoFiles() {
 			wsdelta = this_wsdelta;
 			// Add norm_w for qcd sideband
 			if (has_norm_w)
-				{this_normalization_weight = normalization_weight;}
+				{normalization_weight = this_normalization_weight;}
 			else
-				{this_normalization_weight = 1.0;}
+				{normalization_weight = 1.0;}
 			out_file->cd();
 			final_tree->Fill();
 		}
@@ -893,7 +895,7 @@ void buildTemplates() {
 		json << "		],\n";
 		json << "		\"conserveSumOfWeights\":true\n";
 		json << "		}";
-		if (i<12)
+		if (i!=11) // add a ',' if this is not the last sections of config strings to add into the json file
 			json << ",";
 		json << "\n";
 	}
