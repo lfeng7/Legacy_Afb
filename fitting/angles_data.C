@@ -151,21 +151,25 @@ double angles_data::Loop(double Rqqbar, double Rbck, double RWJets, double Rntmj
 			// double ev_L_gg = (1.0-Rbck-RWJets)*ev_gtt*(1.0-Rqqbar)*ev_fgg;
 			// double ev_L_qqs = (1.0-Rbck-RWJets)*ev_gtt*Rqqbar*((1.0)/(1.0+xi*F_xi_comb+delta*F_delta_comb))*(ev_fqqs+xi*ev_fqqs_xi+delta*ev_fqqs_delta);
 			// double ev_L_qqa = Afb*(1.0-Rbck-RWJets)*ev_gtt*Rqqbar*((1.0)/(1.0+xi*F_xi_comb+delta*F_delta_comb))*(ev_fqqa+xi*ev_fqqa_xi+delta*ev_fqqa_delta);
+
 			double ev_L_bck = Rbck*ev_fbck;
 			double ev_L_WJets = RWJets*ev_WJets;
+
 			double ev_L_ntmj = Rntmj*ev_ntmj;
+			if (ev_L_ntmj<0) ev_L_ntmj = 0.0; // reset negetive evt of qcd_bkg to 0 by hand
+
 			double ev_L_gg = (1.0-Rbck-RWJets-Rntmj)*(1.0-Rqqbar)*ev_fgg;
 			double ev_L_qqs = (1.0-Rbck-RWJets-Rntmj)*Rqqbar*((1.0)/(1.0+xi*F_xi_comb+delta*F_delta_comb))*(ev_fqqs+xi*ev_fqqs_xi+delta*ev_fqqs_delta);
 			double ev_L_qqa = Afb*(1.0-Rbck-RWJets-Rntmj)*Rqqbar*((1.0)/(1.0+xi*F_xi_comb+delta*F_delta_comb))*(ev_fqqa+xi*ev_fqqa_xi+delta*ev_fqqa_delta);
 			double ev_L = ev_L_ntmj+ev_L_bck+ev_L_WJets+ev_L_gg+ev_L_qqs+ev_L_qqa;
 			//make sure that there were a nonzero number of training set events
-			if (ev_fgg!=0 || ev_fqqs!=0 || ev_fbck!=0 || ev_WJets != 0 || ev_ntmj != 0) {
+			if (ev_fgg!=0 || ev_fqqs!=0 || ev_fbck!=0 || ev_WJets != 0 || ev_L_ntmj != 0 ) { // there are negative ev_ntmj in tail region
 				if (ev_L<=0) {
 					printf("Parameters are in a bad spot: event likelihood = %.12f\n",ev_L);
 					printf("	costheta = %.4f,   x_F = %.4f,   M_tt = %.4f,   nJets = %d,   Q_l = %d\n", cos_theta_cs, Feynman_x, ttbar_mass, n_valid_jets, Q_l);
 					printf("	ev_fqqs = %f,   ev_fqqs_delta = %f,   ev_fqqa = %f,   ev_fqqa_delta = %f,   ev_fgg = %f,   ev_fbck = %f,    ev_WJets = %f,	ev_ntmj = %f, ev_gtt = %f,   ev_gbk = %f\n",
 							ev_fqqs, ev_fqqs_delta, ev_fqqa, ev_fqqa_delta, ev_fgg, ev_fbck, ev_WJets, ev_ntmj, ev_gtt, ev_gbk);
-					printf("	10^12*ev_L_bck = %f,   10^12*ev_L_WJets= %f,   10^12*ev_L_WJets= %f,   10^12*ev_L_gg = %f,   10^12*ev_L_qqs = %f,   10^12*ev_L_qqa = %f\n",
+					printf("	10^12*ev_L_bck = %f,   10^12*ev_L_WJets= %f,   10^12*ev_L_ntmj= %f,   10^12*ev_L_gg = %f,   10^12*ev_L_qqs = %f,   10^12*ev_L_qqa = %f\n",
 							ev_L_bck*1000000000000, ev_L_WJets*1000000000000,  ev_L_ntmj*1000000000000, ev_L_gg*1000000000000, ev_L_qqs*1000000000000, ev_L_qqa*1000000000000);
 					printf("	Rqqbar = %.4f,   Rbck = %.4f,   RWJets = %.4f,    Rntmj = %.4f,   delta = %.4f,   Afb = %.4f\n", Rqqbar, Rbck, RWJets, Rntmj, delta, Afb);
 					ev_L = DBL_EPSILON;
