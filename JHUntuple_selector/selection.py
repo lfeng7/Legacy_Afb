@@ -29,6 +29,14 @@ import os
 import glob
 import math
 
+argv = sys.argv[1:]
+if len(argv) == 0:
+    print """
+    Usage:
+    python selection.py --txtfiles inputfiles/QCD_Pt-15to3000.txt --makeplots no --mcordata mc --selection_type qcd --mctype qcd --maxevts -1 --type QCD_Pt-15to3000 --grid yes --maxfiles 1 --startfile 0 --maxevts 100000
+    """
+    sys.exit(1)
+
 # Some predefined var
 evt_to_run = -1 
 csv_cut = 0.679
@@ -400,6 +408,8 @@ def selection(rootfiles):
 
         if options.mcordata == 'mc' :
             evt.getByLabel(jet_PartonFlavor_label, jet_PartonFlavor_hndl)  # not for data
+            jets_PartonFlavor = jet_PartonFlavor_hndl.product()
+
 
         el_p4 = el_hndl.product()
         el_iso = el_iso_hndl.product()
@@ -570,7 +580,6 @@ def selection(rootfiles):
         # Informations for MC only     
         if options.mcordata == 'mc' :
 
-            jets_PartonFlavor = jet_PartonFlavor_hndl.product()
 
             # Get gen particles and find out the true identy of the PF electron collection
             evt.getByLabel(gen_label,gen_hndl)
