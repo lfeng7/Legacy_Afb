@@ -16,6 +16,9 @@
 # Edit log
 # V3 , 11-13-15
 # Now switch to Nick's ntuple
+# V3.1 4-7-15
+# Add an new selection criterio for QCD sample only, with a looser b-tag cuts
+# change option.fakelep to option.selection_type
 
 
 from Legacy_Afb.Tools.fwlite_boilerplate import *
@@ -104,10 +107,10 @@ parser.add_option('--mctype', metavar='F', type='string', action='store',
                   dest='sampletype',
                   help='type of sample files')
 
-parser.add_option('--fakelep', metavar='F', type='string', action='store',
-                  default = 'no',
-                  dest='fakelep',
-                  help='If select fake leptons')
+parser.add_option('--selection_type', metavar='F', type='string', action='store',
+                  default = 'signal',
+                  dest='selection_type',
+                  help='Type of cuts: signal, QCD, or sideband')
 
 # if want to make plots, use multiple input patfiles instead of looping over each files
 parser.add_option('--makeplots', metavar='F', type='string', action='store',
@@ -164,11 +167,14 @@ def main():
 # selection is the function to do selection. patfile should be EDM PATtuple files
 def selection(rootfiles):
 
-    if options.fakelep == 'yes': 
+    if options.selection_type == 'sideband': 
         btag_cut = 1
         el_postfix = 'Loose'
-    else : 
+    elif options.selection_type == 'signal' : 
         btag_cut = 2
+        el_postfix = ''
+    elif options.selection_type == 'qcd':
+        btag_cut = 1
         el_postfix = ''
 
     # Get input files
@@ -474,10 +480,11 @@ def selection(rootfiles):
                 el_loose.append((el,icharge,el_iso[i]))
             # PFelectrons passed tight selection
             # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Signal
-            #signal region
-            if options.fakelep == 'no' and el_isTight[i] and not el_isModTight[i] and el.pt()>30 and abs(el.eta())<2.5 and el_iso[i]<0.1: 
+            #signal region, with a tight and isolated electron
+            if options.selection_type != 'sideband' and el_isTight[i] and not el_isModTight[i] and el.pt()>30 and abs(el.eta())<2.5 and el_iso[i]<0.1: 
                 el_cand.append((el,icharge,el_iso[i]))
-            elif options.fakelep == 'yes' and el_isPseudoTight[i] and not el_isModTight[i] and lepiso_cut < el_iso[i] < 1.2 and el.pt()>30 and abs(el.eta())<2.5:
+            # sideband region, with a tight but non-isolated electron
+            elif options.selection_type == 'sideband' and el_isPseudoTight[i] and not el_isModTight[i] and lepiso_cut < el_iso[i] < 1.2 and el.pt()>30 and abs(el.eta())<2.5:
                 el_cand.append((el,icharge,el_iso[i]))
         el_extra = list( ipar for ipar in el_loose if ipar not in el_cand)
 
@@ -491,7 +498,7 @@ def selection(rootfiles):
 #        if len(el_cand) >1 :print len(el_cand)
 
         # Selection on leptons 
-        if options.fakelep == 'yes' and not len(el_cand)>=1  : continue            
+        if options.selection_type == 'sideband' and not len(el_cand)>=1  : continue            
         elif not len(el_cand)==1 : continue # continue
         h_cutflow.Fill('el',1)
         if len(mu_loose) > 0 : continue
