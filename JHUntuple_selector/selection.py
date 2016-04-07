@@ -481,10 +481,13 @@ def selection(rootfiles):
             # PFelectrons passed tight selection
             # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Signal
             #signal region, with a tight and isolated electron
-            if options.selection_type != 'sideband' and el_isTight[i] and not el_isModTight[i] and el.pt()>30 and abs(el.eta())<2.5 and el_iso[i]<0.1: 
+            if options.selection_type == 'signal' and el_isTight[i] and not el_isModTight[i] and el.pt()>30 and abs(el.eta())<2.5 and el_iso[i]<0.1: 
                 el_cand.append((el,icharge,el_iso[i]))
             # sideband region, with a tight but non-isolated electron
             elif options.selection_type == 'sideband' and el_isPseudoTight[i] and not el_isModTight[i] and lepiso_cut < el_iso[i] < 1.2 and el.pt()>30 and abs(el.eta())<2.5:
+                el_cand.append((el,icharge,el_iso[i]))
+            # qcd selection, with a tight electron, no cut on isolation yet here
+            elif options.selection_type == 'qcd' and el_isPseudoTight[i] and not el_isModTight[i] and el_iso[i] < 1.2 and el.pt()>30 and abs(el.eta())<2.5:
                 el_cand.append((el,icharge,el_iso[i]))
         el_extra = list( ipar for ipar in el_loose if ipar not in el_cand)
 
@@ -498,13 +501,15 @@ def selection(rootfiles):
 #        if len(el_cand) >1 :print len(el_cand)
 
         # Selection on leptons 
-        if options.selection_type == 'sideband' and not len(el_cand)>=1  : continue            
-        elif not len(el_cand)==1 : continue # continue
+        if options.selection_type in ['sideband','qcd'] 
+            if not len(el_cand)>=1  : continue  # for sideband selection and qcd selection, need at least one electron candidate          
+        elif not len(el_cand)==1 : continue # signal election requires exactly one good ele candidate
         h_cutflow.Fill('el',1)
         if len(mu_loose) > 0 : continue
         h_cutflow.Fill('loose mu veto',1)
-        if len(el_extra) > 0 : continue
-        h_cutflow.Fill('dilep veto',1)            
+        if options.selection_type in ['signal','sideband']: # for both signal and sideband region, no additional "loose" electron is allowed
+            if len(el_extra) > 0 : continue
+            h_cutflow.Fill('dilep veto',1)            
 
         ##### AK5 jets ####
 
