@@ -430,16 +430,19 @@ def selection(rootfiles):
         jets_csv = jet_csv_hndl.product()
 
         # Get trigger bits
-        evt.getByLabel(trig_label,trig_hndl)
-        trig_ = trig_hndl.product()
-        iev = evt.object()
-        triggerNames = iev.triggerNames(trig_)        
-        trigName = ''
-        for itrig in triggerNames.triggerNames():
-            if trigger_path in itrig : trigName = itrig
-        if trigger_path not in trigName :
-            print 'No trigger',trigger_path,'found in evt',n_evt,'! Will skip this event.'
-        passTrig=trig_.accept(triggerNames.triggerIndex(trigName))   
+        if options.selection_type != 'qcd':
+            evt.getByLabel(trig_label,trig_hndl)
+            trig_ = trig_hndl.product()
+            iev = evt.object()
+            triggerNames = iev.triggerNames(trig_)        
+            trigName = ''
+            for itrig in triggerNames.triggerNames():
+                if trigger_path in itrig : trigName = itrig
+            if trigger_path not in trigName :
+                print 'No trigger',trigger_path,'found in evt',n_evt,'! Will skip this event.'
+            passTrig=trig_.accept(triggerNames.triggerIndex(trigName))   
+        else:
+            passTrig = False
         trigger_vec.push_back(passTrig)     
 
         # Initialize cutflow histogram
