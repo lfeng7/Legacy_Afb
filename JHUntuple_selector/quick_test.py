@@ -36,9 +36,14 @@ argv = []
 #debug
 print options.inputFiles
 
+# options
+maxfiles = options.maxfiles
+startfile = options.startfile
+
 # Get the inputfiles.
 if options.inputFiles != 'none':
     files = glob.glob( options.inputFiles )
+    files = files[startfile,startfile+maxfiles]
     print 'Getting these files:'
     for ifile in files :    
         print ifile
@@ -123,6 +128,16 @@ for evt in events:
     evt.getByLabel(el_iso_label,el_iso_hndl)
     evt.getByLabel(electronLooseispseudotight_label,electronLooseispseudotight_hndl)
     evt.getByLabel(electronLooseistight_label,electronLooseistight_hndl)
+
+
+    jets_csv = jets_csv_hndl.product()
+    el_iso = el_iso_hndl.product()
+    el_is_pseudotight = electronLooseispseudotight_hndl.product()
+    el_istight = electronLooseistight_hndl.product() 
+
+    # cuts
+    if not el_iso.size()>0 and el_is_pseudotight.size()>0 and jets_csv.size()>0 : continue
+
     # pdf
     for i in range(len(pdf_hndls)):
         evt.getByLabel(pdf_label[i],pdf_hndls[i])
@@ -130,13 +145,6 @@ for evt in events:
         pdf_w0 = pdf_ws[0]
         for item in pdf_ws:
             pdf_vecs[i].push_back(item/pdf_w0)
-
-    jets_csv = jets_csv_hndl.product()
-    el_iso = el_iso_hndl.product()
-    el_is_pseudotight = electronLooseispseudotight_hndl.product()
-    el_istight = electronLooseistight_hndl.product() 
-
-    if not el_iso.size()>0 and el_istight.size()>0 and jets_csv.size()>0 : continue
 
     for ijet in jets_csv: jets_csv_vec.push_back(ijet)
     for iel in el_iso : lep_iso_vec.push_back(iel)
