@@ -175,7 +175,7 @@ def selection(rootfiles):
         el_postfix = ''
     elif options.selection_type == 'qcd':
         btag_cut = 1
-        el_postfix = ''
+        el_postfix = 'Loose'
 
     # Get input files
     files = rootfiles
@@ -440,31 +440,7 @@ def selection(rootfiles):
                 if not passTrig : continue
                 h_cutflow.Fill('HLT',1)
 
-        # Informations for MC only     
-        if options.mcordata == 'mc' :
 
-            jets_PartonFlavor = jet_PartonFlavor_hndl.product()
-
-            # Get gen particles and find out the true identy of the PF electron collection
-            evt.getByLabel(gen_label,gen_hndl)
-            if not gen_hndl.isValid() :
-                print 'No Genparticles info available!'
-                continue
-            genpars = gen_hndl.product()
-            # get all final state particles,status = 3,and particles with no daughters(final state partons) 
-            # or particles from W's which may have daughters
-            final_par = []
-            for ipar in genpars:
-                if ipar.status() == 3:
-                    if ipar.numberOfDaughters()==0 or abs(ipar.pdgId())==5 : final_par.append(ipar)
-                    elif ipar.numberOfMothers():
-                        if abs(ipar.mother(0).pdgId())==24: final_par.append(ipar)
-            # Find events with electron in final states
-            gen_el = list(ipar for ipar in final_par if ipar.status() == 3 and abs(ipar.pdgId()) == 11)
-            gen_mu = list(ipar for ipar in final_par if ipar.status() == 3 and abs(ipar.pdgId()) == 13)
-            gen_tau = list(ipar for ipar in final_par if ipar.status() == 3 and abs(ipar.pdgId()) == 15)
-            gen_b = list(ipar for ipar in final_par if abs(ipar.pdgId()) == 5)
-            gen_jets = list(ipar for ipar in final_par if abs(ipar.pdgId()) in pdg_jets)
 
         ################################################################ 
         #       Physics objects picking and event selections           # 
@@ -488,9 +464,15 @@ def selection(rootfiles):
             elif options.selection_type == 'sideband' and el_isPseudoTight[i] and not el_isModTight[i] and lepiso_cut < el_iso[i] < 1.2 and el.pt()>30 and abs(el.eta())<2.5:
                 el_cand.append((el,icharge,el_iso[i]))
             # qcd selection, with a tight electron, no cut on isolation yet here
-            elif options.selection_type == 'qcd' and el_isPseudoTight[i] and not el_isModTight[i] and el_iso[i] < 1.2 and el.pt()>30 and abs(el.eta())<2.5:
+            elif options.selection_type == 'qcd' and el_isPseudoTight[i] and not el_isModTight[i] and el_iso[i] < 0.1 and el.pt()>30 and abs(el.eta())<2.5:
                 el_cand.append((el,icharge,el_iso[i]))
         el_extra = list( ipar for ipar in el_loose if ipar not in el_cand)
+
+        # Selection on leptons 
+        if options.selection_type in ['sideband','qcd']: 
+            if not len(el_cand)>=1  : continue  # for sideband selection and qcd selection, need at least one electron candidate          
+        elif not len(el_cand)==1 : continue # signal election requires exactly one good ele candidate
+        h_cutflow.Fill('el',1)
 
         #### PF muons ####
         mu_loose = []
@@ -501,13 +483,9 @@ def selection(rootfiles):
 
 #        if len(el_cand) >1 :print len(el_cand)
 
-        # Selection on leptons 
-        if options.selection_type in ['sideband','qcd']: 
-            if not len(el_cand)>=1  : continue  # for sideband selection and qcd selection, need at least one electron candidate          
-        elif not len(el_cand)==1 : continue # signal election requires exactly one good ele candidate
-        h_cutflow.Fill('el',1)
         if len(mu_loose) > 0 : continue
         h_cutflow.Fill('loose mu veto',1)
+
         if options.selection_type in ['signal','sideband']: # for both signal and sideband region, no additional "loose" electron is allowed
             if len(el_extra) > 0 : continue
             h_cutflow.Fill('dilep veto',1)            
@@ -588,6 +566,32 @@ def selection(rootfiles):
         ############################################################
         #               Get some correction weights for MC         #
         ############################################################
+
+        # Informations for MC only     
+        if options.mcordata == 'mc' :
+
+            jets_PartonFlavor = jet_PartonFlavor_hndl.product()
+
+            # Get gen particles and find out the true identy of the PF electron collection
+            evt.getByLabel(gen_label,gen_hndl)
+            if not gen_hndl.isValid() :
+                print 'No Genparticles info available!'
+                continue
+            genpars = gen_hndl.product()
+            # get all final state particles,status = 3,and particles with no daughters(final state partons) 
+            # or particles from W's which may have daughters
+            final_par = []
+            for ipar in genpars:
+                if ipar.status() == 3:
+                    if ipar.numberOfDaughters()==0 or abs(ipar.pdgId())==5 : final_par.append(ipar)
+                    elif ipar.numberOfMothers():
+                        if abs(ipar.mother(0).pdgId())==24: final_par.append(ipar)
+            # Find events with electron in final states
+            gen_el = list(ipar for ipar in final_par if ipar.status() == 3 and abs(ipar.pdgId()) == 11)
+            gen_mu = list(ipar for ipar in final_par if ipar.status() == 3 and abs(ipar.pdgId()) == 13)
+            gen_tau = list(ipar for ipar in final_par if ipar.status() == 3 and abs(ipar.pdgId()) == 15)
+            gen_b = list(ipar for ipar in final_par if abs(ipar.pdgId()) == 5)
+            gen_jets = list(ipar for ipar in final_par if abs(ipar.pdgId()) in pdg_jets)
 
         # Initialize all weights
         w_top_pT = 1.0
