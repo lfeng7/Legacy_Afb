@@ -43,7 +43,7 @@ startfile = options.startfile
 # Get the inputfiles.
 if options.inputFiles != 'none':
     files = glob.glob( options.inputFiles )
-    files = files[startfile,startfile+maxfiles]
+    files = files[startfile:startfile+maxfiles]
     print 'Getting these files:'
     for ifile in files :    
         print ifile
@@ -55,7 +55,7 @@ if options.inputFiles != 'none':
 events = Events(files)
 
 # Control constants
-nevt_cut = 10000
+nevt_cut = -1 
 event_type  = 'test'
 
 # Handles and labels
@@ -79,12 +79,20 @@ el_iso_label = ("jhuElePFlowLoose"   ,  "electronLooseiso" ,  "jhu" )
 electronLooseispseudotight_hndl = Handle('vector<unsigned int>' )
 electronLooseispseudotight_label = ("jhuElePFlowLoose"   ,  "electronLooseispseudotight" ,  "jhu")
 
+electronLooseispseudoLoose_hndl = Handle('vector<unsigned int>' )
+electronLooseispseudoLoose_label = ("jhuElePFlowLoose"   ,  "electronLooseispseudoloose" ,  "jhu")
+
+
 electronLooseistight_hndl = Handle('vector<unsigned int>' )
 electronLooseistight_label = ("jhuElePFlowLoose"  ,   "electronLooseistight" ,  "jhu")
 
 #PDF
 pdf_hndls = [Handle('vector<double>'),Handle('vector<double>'),Handle('vector<double>')]
-pdf_label = ('cteq66','CT10','GJR08VFnloE')
+pdf_label = [("pdfWeights"   ,        "cteq66"      ,      "jhu")]
+pdf_label.append( ("pdfWeights"   ,        "CT10"     ,       "jhu") ) 
+pdf_label.append( ("pdfWeights"   ,        "GJR08VFnloE"     ,       "jhu") ) 
+
+pdf_types = ["cteq66","CT10","GJR08VFnloE"]
 
 # Make output file with ttree
 fout = ROOT.TFile('testtree.root','recreate')
@@ -94,15 +102,16 @@ outputtree = ROOT.TTree('selected','selected')
 jets_csv_vec = ROOT.vector('float')()
 lep_iso_vec = ROOT.vector('float')()
 electronLooseispseudotight = ROOT.vector('int')()
+electronLooseispseudoLoose = ROOT.vector('int')()
 electronLooseistight = ROOT.vector('int')()
-vecs = [jets_csv_vec,lep_iso_vec,electronLooseispseudotight,electronLooseistight]
-br_names = ['jets_csv','lep_iso','electronLooseispseudotight','electronLooseistight']
+vecs = [jets_csv_vec,lep_iso_vec,electronLooseispseudotight,electronLooseispseudoLoose,electronLooseistight]
+br_names = ['jets_csv','lep_iso','electronLooseispseudotight','electronLooseispseudoLoose','electronLooseistight']
 #pdf
 pdf_vecs = [] 
-for i in range(len(pdf_label)): 
+for i,ipdf in enumerate(pdf_label): 
     pdf_vecs += [ROOT.vector('float')()]
     vecs += [pdf_vecs[i]]
-    br_names += [pdf_label[i]]
+    br_names += [ipdf[1]]
 
 branches = zip(br_names,vecs)
 
@@ -129,27 +138,37 @@ for evt in events:
     evt.getByLabel(electronLooseispseudotight_label,electronLooseispseudotight_hndl)
     evt.getByLabel(electronLooseistight_label,electronLooseistight_hndl)
 
+    evt.getByLabel(electronLooseispseudoLoose_label,electronLooseispseudoLoose_hndl)
+
 
     jets_csv = jets_csv_hndl.product()
     el_iso = el_iso_hndl.product()
     el_is_pseudotight = electronLooseispseudotight_hndl.product()
     el_istight = electronLooseistight_hndl.product() 
+    el_is_pseudoLoose = electronLooseispseudoLoose_hndl.product()
+
 
     # cuts
     if not el_iso.size()>0 and el_is_pseudotight.size()>0 and jets_csv.size()>0 : continue
+    if len([item for item in el_iso if item < 0.15 ])==0: continue # we will see how many events has iso<0.2 electrons
 
     # pdf
     for i in range(len(pdf_hndls)):
+        continue
         evt.getByLabel(pdf_label[i],pdf_hndls[i])
-        pdf_ws = pdf_hndls.product()
+        pdf_ws = pdf_hndls[i].product()
         pdf_w0 = pdf_ws[0]
         for item in pdf_ws:
             pdf_vecs[i].push_back(item/pdf_w0)
 
-    for ijet in jets_csv: jets_csv_vec.push_back(ijet)
-    for iel in el_iso : lep_iso_vec.push_back(iel)
-    for iel in el_is_pseudotight: electronLooseispseudotight.push_back(iel)
-    for iel in el_istight: electronLooseistight.push_back(iel)
+#    for ijet in jets_csv: jets_csv_vec.push_back(ijet)
+    for i,iel in enumerate(el_iso) : 
+        if iel > 0.15: continue
+        lep_iso_vec.push_back(iel)
+        electronLooseispseudotight.push_back(el_is_pseudotight[i])
+        electronLooseistight.push_back(el_istight[i])
+        electronLooseispseudoLoose.push_back(el_is_pseudoLoose[i])
+
 
     outputtree.Fill()
 # End of event loop
