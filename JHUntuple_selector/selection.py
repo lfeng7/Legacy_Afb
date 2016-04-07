@@ -435,9 +435,10 @@ def selection(rootfiles):
         # Initialize cutflow histogram
         h_cutflow.Fill("no cut",1)
         # Apply trigger 
-        if options.applyHLT == 'yes' :
-            if not passTrig : continue
-        h_cutflow.Fill('HLT',1)
+        if options.selection_type in ['signal','sideband']:
+            if options.applyHLT == 'yes' :
+                if not passTrig : continue
+                h_cutflow.Fill('HLT',1)
 
         # Informations for MC only     
         if options.mcordata == 'mc' :
@@ -501,7 +502,7 @@ def selection(rootfiles):
 #        if len(el_cand) >1 :print len(el_cand)
 
         # Selection on leptons 
-        if options.selection_type in ['sideband','qcd'] 
+        if options.selection_type in ['sideband','qcd']: 
             if not len(el_cand)>=1  : continue  # for sideband selection and qcd selection, need at least one electron candidate          
         elif not len(el_cand)==1 : continue # signal election requires exactly one good ele candidate
         h_cutflow.Fill('el',1)
