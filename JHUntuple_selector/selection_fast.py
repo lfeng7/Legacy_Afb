@@ -185,6 +185,7 @@ def findTrigName(evt):
         if trigger_path in itrig : trigName = itrig
     # return the trigger bits only if the trigger we use is correct
     if trigger_path not in trigName :
+        print 'No trigger found! Trigger used : %s, trigger Name: %s'%(trigger_path,trigName)
         return None
     else:
         trigIndex = triggerNames.triggerIndex(trigName)
