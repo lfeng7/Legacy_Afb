@@ -19,7 +19,7 @@
 # V3.1 4-7-15
 # Add an new selection criterio for QCD sample only, with a looser b-tag cuts
 # change option.fakelep to option.selection_type
-
+# A major efficiency improvement by modifying the way to handle trigger bits. Now the speed of running signal MC is 10 times faster!!!
 
 from Legacy_Afb.Tools.fwlite_boilerplate import *
 from Legacy_Afb.Tools.root_utility import *
@@ -165,12 +165,33 @@ def main():
         for ifile in files:
             if options.inputFiles == '':
                 # find the index of the input file
-                index_ = ifile.split('numEvent')[1].split('.root')[0].split('_')[1]
-                f_index = int( index_[0])
+                index_ = ifile.split('numEvent')[1].split('.root')[0].split('_')[-1]
+                f_index = int( index_)
             print 'processing file  '+ifile
-            #print 'current file index is',f_index
+            print 'current file index is',f_index
             selection(ifile)
 
+def findTrigIndex(evt):
+    print 'Finding trigIndex!'
+    # Trigger
+    trig_hndl = Handle('edm::TriggerResults')
+    trig_label = ("TriggerResults","","HLT")
+    evt.getByLabel(trig_label,trig_hndl)
+    trig_ = trig_hndl.product()
+    iev = evt.object()    
+    triggerNames = iev.triggerNames(trig_)        
+    trigName = ''
+    # find the full trigger name match the trigger path we want to use
+    for itrig in triggerNames.triggerNames():
+        if trigger_path in itrig : trigName = itrig
+    # return the trigger bits only if the trigger we use is correct
+    if trigger_path not in trigName :
+        print 'No trigger found! Trigger used : %s, trigger Name: %s'%(trigger_path,trigName)
+        return None
+    else:
+        trigIndex = triggerNames.triggerIndex(trigName)
+        print 'Trigger used : %s, trigger Name: %s, triggerIndex: %s'%(trigger_path,trigName,trigIndex)
+        return trigIndex
 
 # selection is the function to do selection. patfile should be EDM PATtuple files
 def selection(rootfiles):
@@ -203,6 +224,11 @@ def selection(rootfiles):
     fout = ROOT.TFile(outname,'update')
 
     ######## Define handles here ########
+
+    # trigger
+    triggerIndex = None
+    trig_hndl = Handle('edm::TriggerResults')
+    trig_label = ("TriggerResults","","HLT")
 
     # leptons
     el_hndl = Handle('vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > >')
@@ -245,9 +271,7 @@ def selection(rootfiles):
     jet_PartonFlavor_hndl = Handle('vector<int> ')
     jet_PartonFlavor_label = ( "jhuAk5","AK5PartonFlavour") 
 
-    # Trigger
-    trig_hndl = Handle('edm::TriggerResults')
-    trig_label = ("TriggerResults","","HLT")
+
 
     # PU
     dataPileupHandle = Handle('unsigned int')
@@ -386,6 +410,42 @@ def selection(rootfiles):
         # Reset all vector containers
         for ivec in all_vecs: ivec.clear()
 
+        ##### trigger
+
+        evt.getByLabel(trig_label,trig_hndl)
+        trig_ = trig_hndl.product()
+        # find trigger index if it is not found yet
+        if triggerIndex is None:
+            triggerIndex = findTrigIndex(evt)
+
+        # check if an index is found 
+        if triggerIndex is None:
+            print 'No trigger',trigger_path,'found in evt',n_evt,'! Will skip this event.'
+            sys.exit(1)
+
+        # Get trigger bits        
+        passTrig=trig_.accept(triggerIndex)  
+
+        trigger_vec.push_back(passTrig)     
+
+        # Initialize cutflow histogram
+        h_cutflow.Fill("no cut",1)
+
+        # Apply trigger 
+        if options.selection_type in ['signal','sideband']:
+            if options.applyHLT == 'yes' :
+                if not passTrig : continue
+                h_cutflow.Fill('HLT',1)
+
+
+        ################################################################ 
+        #       Physics objects picking and event selections           # 
+        ################################################################
+
+        #### Leptons ####
+
+        # electrons
+
         # Read objects in nTuple
         evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix,el_hndl)
         evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'iso',el_iso_hndl)
@@ -395,22 +455,6 @@ def selection(rootfiles):
         evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'charge',el_charge_hndl)
         evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'ispseudotight',el_isPseudoTight_hndl)
 
-
-        evt.getByLabel('jhuMuonPFlow','muon',mu_hndl)
-        evt.getByLabel('jhuMuonPFlow','muoniso',mu_iso_hndl)
-        evt.getByLabel('jhuMuonPFlow','muonisloose',mu_isLoose_hndl)
-      
-        evt.getByLabel(met_label,met_hndl)
-        evt.getByLabel(met_phi_label,met_phi_hndl)
-
-        evt.getByLabel(jet_p4_label, jet_p4_hndl)
-        evt.getByLabel(jet_csv_label, jet_csv_hndl)
-
-        if options.mcordata == 'mc' :
-            evt.getByLabel(jet_PartonFlavor_label, jet_PartonFlavor_hndl)  # not for data
-            jets_PartonFlavor = jet_PartonFlavor_hndl.product()
-
-
         el_p4 = el_hndl.product()
         el_iso = el_iso_hndl.product()
         el_isLoose = el_isLoose_hndl.product()
@@ -419,45 +463,6 @@ def selection(rootfiles):
         el_charge = el_charge_hndl.product()
         el_isPseudoTight = el_isPseudoTight_hndl.product()
 
-        mu_p4 = mu_hndl.product()
-        mu_is_loose = mu_isLoose_hndl.product()
-        mu_iso = mu_iso_hndl.product()
-
-        met_pt = met_hndl.product()
-        met_phi = met_phi_hndl.product()
-
-        jets_p4 = jet_p4_hndl.product()
-        jets_csv = jet_csv_hndl.product()
-
-        # Get trigger bits
-        if options.selection_type != 'qcd':
-            evt.getByLabel(trig_label,trig_hndl)
-            trig_ = trig_hndl.product()
-            iev = evt.object()
-            triggerNames = iev.triggerNames(trig_)        
-            trigName = ''
-            for itrig in triggerNames.triggerNames():
-                if trigger_path in itrig : trigName = itrig
-            if trigger_path not in trigName :
-                print 'No trigger',trigger_path,'found in evt',n_evt,'! Will skip this event.'
-            passTrig=trig_.accept(triggerNames.triggerIndex(trigName))   
-        else:
-            passTrig = False
-        trigger_vec.push_back(passTrig)     
-
-        # Initialize cutflow histogram
-        h_cutflow.Fill("no cut",1)
-        # Apply trigger 
-        if options.selection_type in ['signal','sideband']:
-            if options.applyHLT == 'yes' :
-                if not passTrig : continue
-                h_cutflow.Fill('HLT',1)
-
-
-
-        ################################################################ 
-        #       Physics objects picking and event selections           # 
-        ################################################################
 
         #### PF electrons ####
         el_loose,el_cand = [],[]
@@ -468,6 +473,7 @@ def selection(rootfiles):
             # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Veto
             if el_isLoose[i] and el_iso[i]<0.15 and el.pt()>20 and math.fabs(el.eta())<2.5 : 
                 el_loose.append((el,icharge,el_iso[i]))
+
             # PFelectrons passed tight selection
             # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Signal
             #signal region, with a tight and isolated electron
@@ -479,6 +485,7 @@ def selection(rootfiles):
             # qcd selection, with a tight electron, no cut on isolation yet here
             elif options.selection_type == 'qcd' and el_isPseudoTight[i] and not el_isModTight[i] and el_iso[i] < 0.1 and el.pt()>30 and abs(el.eta())<2.5:
                 el_cand.append((el,icharge,el_iso[i]))
+        # extra loose leptons
         el_extra = list( ipar for ipar in el_loose if ipar not in el_cand)
 
         # Selection on leptons 
@@ -488,24 +495,52 @@ def selection(rootfiles):
         h_cutflow.Fill('el',1)
 
         #### PF muons ####
+
+        evt.getByLabel('jhuMuonPFlow','muon',mu_hndl)
+        evt.getByLabel('jhuMuonPFlow','muoniso',mu_iso_hndl)
+        evt.getByLabel('jhuMuonPFlow','muonisloose',mu_isLoose_hndl)
+
+        mu_p4 = mu_hndl.product()
+        mu_is_loose = mu_isLoose_hndl.product()
+        mu_iso = mu_iso_hndl.product()
+
         mu_loose = []
         # https://twiki.cern.ch/twiki/bin/view/CMS/TopMUORun1
         for i in range(len(mu_p4)):
             mu = mu_p4[i]
             if mu_is_loose[i] and mu_iso[i]< 0.2 and mu.pt()>10 and abs(mu.eta())<2.5: mu_loose.append(mu)
 
-#        if len(el_cand) >1 :print len(el_cand)
+#       if len(el_cand) >1 :print len(el_cand)
 
         if len(mu_loose) > 0 : continue
         h_cutflow.Fill('loose mu veto',1)
 
+        #### Dilep veto ####
+
         if options.selection_type in ['signal','sideband']: # for both signal and sideband region, no additional "loose" electron is allowed
             if len(el_extra) > 0 : continue
-            h_cutflow.Fill('dilep veto',1)            
+            h_cutflow.Fill('dilep veto',1)  
+
 
         ##### AK5 jets ####
-
         # jets Selection       https://twiki.cern.ch/twiki/bin/view/CMS/TopJMERun1#Jets
+
+        evt.getByLabel(met_label,met_hndl)
+        evt.getByLabel(met_phi_label,met_phi_hndl)
+
+        evt.getByLabel(jet_p4_label, jet_p4_hndl)
+        evt.getByLabel(jet_csv_label, jet_csv_hndl)
+
+        if options.mcordata == 'mc' :
+            evt.getByLabel(jet_PartonFlavor_label, jet_PartonFlavor_hndl)  # not for data
+            jets_PartonFlavor = jet_PartonFlavor_hndl.product()
+
+        met_pt = met_hndl.product()
+        met_phi = met_phi_hndl.product()
+
+        jets_p4 = jet_p4_hndl.product()
+        jets_csv = jet_csv_hndl.product()
+
         jets_cand = []
         for i in range(len(jets_p4)):
             if jets_p4[i].pt()>30 and abs(jets_p4[i].eta())<2.5: 
