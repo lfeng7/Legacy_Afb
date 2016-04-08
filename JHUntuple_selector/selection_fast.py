@@ -171,6 +171,25 @@ def main():
             #print 'current file index is',f_index
             selection(ifile)
 
+def findTrigName(evt):
+    # Trigger
+    trig_hndl = Handle('edm::TriggerResults')
+    trig_label = ("TriggerResults","","HLT")
+    evt.getByLabel(trig_label,trig_hndl)
+    trig_ = trig_hndl.product()
+    iev = evt.object()    
+    triggerNames = iev.triggerNames(trig_)        
+    trigName = ''
+    # find the full trigger name match the trigger path we want to use
+    for itrig in triggerNames.triggerNames():
+        if trigger_path in itrig : trigName = itrig
+    # return the trigger bits only if the trigger we use is correct
+    if trigger_path not in trigName :
+        return None
+    else:
+        trigIndex = triggerNames.triggerIndex(trigName)
+        print 'Trigger used : %s, trigger Name: %s, triggerIndex: %s'%(trigger_path,trigName,trigIndex)
+        return trigIndex
 
 # selection is the function to do selection. patfile should be EDM PATtuple files
 def selection(rootfiles):
@@ -203,6 +222,9 @@ def selection(rootfiles):
     fout = ROOT.TFile(outname,'update')
 
     ######## Define handles here ########
+
+    # trigger
+    triggerIndex = None
 
     # leptons
     el_hndl = Handle('vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > >')
@@ -245,9 +267,7 @@ def selection(rootfiles):
     jet_PartonFlavor_hndl = Handle('vector<int> ')
     jet_PartonFlavor_label = ( "jhuAk5","AK5PartonFlavour") 
 
-    # Trigger
-    trig_hndl = Handle('edm::TriggerResults')
-    trig_label = ("TriggerResults","","HLT")
+
 
     # PU
     dataPileupHandle = Handle('unsigned int')
@@ -386,22 +406,20 @@ def selection(rootfiles):
         # Reset all vector containers
         for ivec in all_vecs: ivec.clear()
 
-        # trigger
+        ##### trigger
+
+        evt.getByLabel(trig_label,trig_hndl)
+        trig_ = trig_hndl.product()
+        # find trigger index if it is not found yet
+        if triggerIndex is None:
+            triggerIndex = findTrigName(evt)
+            # check if an index is found 
+            if triggerIndex is None:
+                print 'No trigger',trigger_path,'found in evt',n_evt,'! Will skip this event.'
+                sys.exit(1)
 
         # Get trigger bits
-        if options.selection_type != 'qcd':
-            evt.getByLabel(trig_label,trig_hndl)
-            trig_ = trig_hndl.product()
-            iev = evt.object()
-            triggerNames = iev.triggerNames(trig_)        
-            trigName = ''
-            for itrig in triggerNames.triggerNames():
-                if trigger_path in itrig : trigName = itrig
-            if trigger_path not in trigName :
-                print 'No trigger',trigger_path,'found in evt',n_evt,'! Will skip this event.'
-            passTrig=trig_.accept(triggerNames.triggerIndex(trigName))   
-        else:
-            passTrig = False
+        passTrig=trig_.accept(triggerIndex)  
         trigger_vec.push_back(passTrig)     
 
         # Initialize cutflow histogram
