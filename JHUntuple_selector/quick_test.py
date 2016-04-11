@@ -14,6 +14,9 @@ if len(argv)<2:
     """
     sys.exit(1)
 
+timer = ROOT.TStopwatch()
+timer.Start()
+
 # Job steering
 
 # Input inputFiles to use. This is in "glob" format, so you can use wildcards.
@@ -36,6 +39,11 @@ parser.add_option('--maxevts', metavar='F', type='int', action='store',
                   default = -1,
                   dest='maxevts',
                   help='max number of input ntuple events')
+
+parser.add_option('--evts_passed', metavar='F', type='int', action='store',
+                  default = -1,
+                  dest='evts_passed',
+                  help='max number of evts_passed to stop')
 
 parser.add_option('--startfile', metavar='F', type='int', action='store',
                   default = 0,
@@ -69,6 +77,7 @@ events = Events(files)
 
 # Control constants
 nevt_cut = options.maxevts
+nevt_passed_cut = options.evts_passed
 event_type  = 'test'
 
 # Handles and labels
@@ -103,6 +112,9 @@ electronLooseispseudoLoose_label = ("jhuElePFlowLoose"   ,  "electronLooseispseu
 
 electronLooseistight_hndl = Handle('vector<unsigned int>' )
 electronLooseistight_label = ("jhuElePFlowLoose"  ,   "electronLooseistight" ,  "jhu")
+
+electronLoosemodtight_hndl = Handle('vector<unsigned int>' )
+electronLoosemodtight_label = ("jhuElePFlowLoose"  ,   "electronLoosemodtight" ,  "jhu")
 
 #PDF
 pdf_hndls = [Handle('vector<double>'),Handle('vector<double>'),Handle('vector<double>')]
@@ -139,7 +151,7 @@ for ibr in branches:
     outputtree.Branch(ibr[0],ibr[1])
 
 # Counter initiation 
-n_evt = 0
+n_evt,n_evts_passed = 0,0
 n_evt_csv = 0
 
 # cutflows
@@ -152,10 +164,13 @@ for evt in events:
     for ivec in vecs: ivec.clear()
 
     # counting and stuff
-    if n_evt == nevt_cut: break
+    if n_evt == nevt_cut or n_evts_passed == nevt_passed_cut: 
+        break
+
     #print 'loop over',n_evt,'events'
     n_evt += 1
-    if n_evt%5000 == 0: print 'Loop over',n_evt,'event'
+    if n_evt%5000 == 0: 
+        print 'Loop over %i evts, %i evts selected'%(n_evt,n_evts_passed)
 
     evt.getByLabel(jets_csv_label, jets_csv_hndl)
     evt.getByLabel(jets_p4_label, jets_p4_hndl)
@@ -167,13 +182,17 @@ for evt in events:
     evt.getByLabel(el_p4_label,el_p4_hndl)
     evt.getByLabel(el_iso_label,el_iso_hndl)
     evt.getByLabel(electronLooseispseudotight_label,electronLooseispseudotight_hndl)
-    evt.getByLabel(electronLooseistight_label,electronLooseistight_hndl)
     evt.getByLabel(electronLooseispseudoLoose_label,electronLooseispseudoLoose_hndl)
+
+    evt.getByLabel(electronLooseistight_label,electronLooseistight_hndl)
+    evt.getByLabel(electronLoosemodtight_label,electronLoosemodtight_hndl)
+
 
     el_iso = el_iso_hndl.product()
     el_is_pseudotight = electronLooseispseudotight_hndl.product()
     el_istight = electronLooseistight_hndl.product() 
     el_is_pseudoLoose = electronLooseispseudoLoose_hndl.product()
+    el_isModTight = electronLoosemodtight_hndl.product()
     el_p4 = el_p4_hndl.product()
 
 
@@ -203,19 +222,20 @@ for evt in events:
 
     el_cand = []
     for i in range(len(el_p4)):
-        if el_is_pseudoLoose[i] and not el_isModTight[i] :
+        if el_is_pseudoLoose[i] and el_iso[i] < 0.1 :
+            el_cand.append(i)
+    if not len(el_cand)>0:
+        continue
+    h_cutflow.Fill("iso<0.1",1)
+
+    el_cand = []
+    for i in range(len(el_p4)):
+        if el_is_pseudoLoose[i] and not el_isModTight[i] and el_iso[i] < 0.1  :
             el_cand.append(i)
     if not len(el_cand)>0:
         continue
     h_cutflow.Fill("ECAL_gap",1)
 
-    el_cand = []
-    for i in range(len(el_p4)):
-        if el_is_pseudoLoose[i] and not el_isModTight[i] and el_iso[i] < 0.1 :
-            el_cand.append(i)
-    if not len(el_cand)>0:
-        continue
-    h_cutflow.Fill("iso<0.1",1)
 
     el_cand = []
     for i in range(len(el_p4)):
@@ -260,7 +280,7 @@ for evt in events:
     # write some branches into ttree
     for i in el_cand : 
         el = el_p4[i]
-        lep_iso_vec.push_back(lep_iso[i])
+        lep_iso_vec.push_back(el_iso[i])
         electronLooseispseudotight.push_back(el_is_pseudotight[i])
         electronLooseistight.push_back(el_istight[i])
         electronLooseispseudoLoose.push_back(el_is_pseudoLoose[i])
@@ -268,12 +288,29 @@ for evt in events:
         lep_eta.push_back(el.eta())
 
     outputtree.Fill()
+    n_evts_passed += 1
+
 # End of event loop
 
 # Run summary
-print 'break at event',n_evt
+print 'break at event %i, selected evts %i'%(n_evt,n_evts_passed)
 
 fout.Write()
 fout.Close()
 
-  
+# Stop our timer
+timer.Stop()
+# Print out our timing information
+print '\n'
+rtime = timer.RealTime(); # Real time (or "wall time")
+ctime = timer.CpuTime(); # CPU time
+print("RealTime={0:6.2f} seconds, CpuTime={1:6.2f} seconds").format(rtime,ctime)
+print("{0:4.2f} events / RealTime second .").format( n_evt/rtime)
+print("{0:4.2f} events / CpuTime second .").format( n_evt/ctime)
+print("{0:4.2f} candidate events / RealTime second .").format( n_evts_passed/rtime)
+print("{0:4.2f} candidate events / CpuTime second .").format( n_evts_passed/ctime)
+# Run summary
+print("Analyzed events: {0:6d}").format(n_evt)
+print("Candidate events: {0:6d}").format(n_evts_passed)
+print '\n'
+
