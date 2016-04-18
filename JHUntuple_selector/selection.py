@@ -42,6 +42,7 @@ evt_to_run = -1
 csv_cut = 0.679
 trigger_path='HLT_Ele27_WP80_v'
 lepiso_cut = 0.2
+xrootd = 'root://cmsxrootd.fnal.gov/'
 
 #event_type = 'Powheg_TT_btag'
 events_passed = -1
@@ -157,19 +158,17 @@ def main():
     # Run selection function to do selections
     # If we want to make plots, use many files input form
     # If not make plots, each PATtuple file will generate a ntuple files, with index go from 0 to maxFiles
-    if options.makeplots == 'True' :
-        selection(files)
-    else :
-        global f_index
-        f_index = 0
-        for ifile in files:
-            if options.inputFiles == '':
-                # find the index of the input file
-                index_ = ifile.split('numEvent')[1].split('.root')[0].split('_')[-1]
-                f_index = int( index_)
-            print 'processing file  '+ifile
-            print 'current file index is',f_index
-            selection(ifile)
+
+    global f_index
+    f_index = 0
+    for ifile in files:
+        if options.inputFiles == '':
+            # find the index of the input file
+            index_ = ifile.split('numEvent')[1].split('.root')[0].split('_')[-1]
+            f_index = int( index_)
+        print 'processing file  '+ifile
+        print 'current file index is',f_index
+        selection(ifile)
 
 def findTrigIndex(evt):
     print 'Finding trigIndex!'
@@ -207,7 +206,7 @@ def selection(rootfiles):
         el_postfix = 'Loose'
 
     # Get input files
-    files = rootfiles
+    files = xrootd + rootfiles.split('/eos/uscms')[-1]
     events = Events(files)
     print 'Getting',events.size(),'events'    
 
@@ -483,7 +482,7 @@ def selection(rootfiles):
             elif options.selection_type == 'sideband' and el_isPseudoTight[i] and not el_isModTight[i] and lepiso_cut < el_iso[i] < 1.2 and el.pt()>30 and abs(el.eta())<2.5:
                 el_cand.append((el,icharge,el_iso[i]))
             # qcd selection, with a tight electron, no cut on isolation yet here
-            elif options.selection_type == 'qcd' and el_isPseudoTight[i] and not el_isModTight[i] and el_iso[i] < 0.1 and el.pt()>30 and abs(el.eta())<2.5:
+            elif options.selection_type == 'qcd' and el_isLoose[i] and not el_isModTight[i] and el_iso[i] < 0.1 and el.pt()>30 and abs(el.eta())<2.5:
                 el_cand.append((el,icharge,el_iso[i]))
         # extra loose leptons
         el_extra = list( ipar for ipar in el_loose if ipar not in el_cand)

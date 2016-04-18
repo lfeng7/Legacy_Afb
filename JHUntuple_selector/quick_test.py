@@ -17,6 +17,7 @@ if len(argv)<2:
 timer = ROOT.TStopwatch()
 timer.Start()
 
+iso_cut = 1.0
 # Job steering
 
 # Input inputFiles to use. This is in "glob" format, so you can use wildcards.
@@ -222,15 +223,15 @@ for evt in events:
 
     el_cand = []
     for i in range(len(el_p4)):
-        if el_is_pseudoLoose[i] and el_iso[i] < 0.1 :
+        if el_is_pseudoLoose[i] and el_iso[i] < iso_cut :
             el_cand.append(i)
     if not len(el_cand)>0:
         continue
-    h_cutflow.Fill("iso<0.1",1)
+    h_cutflow.Fill("iso<%.1f"%iso_cut,1)
 
     el_cand = []
     for i in range(len(el_p4)):
-        if el_is_pseudoLoose[i] and not el_isModTight[i] and el_iso[i] < 0.1  :
+        if el_is_pseudoLoose[i] and not el_isModTight[i] and el_iso[i] < iso_cut  :
             el_cand.append(i)
     if not len(el_cand)>0:
         continue
@@ -240,7 +241,7 @@ for evt in events:
     el_cand = []
     for i in range(len(el_p4)):
         el = el_p4[i]
-        if el_is_pseudoLoose[i] and not el_isModTight[i] and el_iso[i] < 0.1 and el.pt()>30 :
+        if el_is_pseudoLoose[i] and not el_isModTight[i] and el_iso[i] < iso_cut and el.pt()>30 :
             el_cand.append(i)
     if not len(el_cand)>0:
         continue
@@ -249,7 +250,7 @@ for evt in events:
     el_cand = []
     for i in range(len(el_p4)):
         el = el_p4[i]
-        if el_is_pseudoLoose[i] and not el_isModTight[i] and el_iso[i] < 0.1 and el.pt()>30 and abs(el.eta())<2.5 :
+        if el_is_pseudoLoose[i] and not el_isModTight[i] and el_iso[i] < iso_cut and el.pt()>30 and abs(el.eta())<2.5 :
             el_cand.append(i)
     if not len(el_cand)>0:
         continue
