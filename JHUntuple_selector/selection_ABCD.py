@@ -44,9 +44,9 @@ if len(argv) == 0:
 # Some predefined var
 evt_to_run = -1 
 csv_cut = 0.679
-met_cut = 15000
+met_cut = 1500
 trigger_path='HLT_Ele27_WP80_v'
-lepiso_cut = 0.2
+lepiso_cut = 0
 xrootd = 'root://cmsxrootd.fnal.gov/'
 eosdir = '/eos/uscms/'
 data_lumi = 19700
@@ -153,11 +153,11 @@ def main():
     if options.inputFiles != '':
         allfiles = glob.glob( options.inputFiles )
     elif options.txtfiles:
-        # input txt looks like ['/store/user/lfeng7/ntuples/jhu_diffmo_v3/QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6/crab_QCD_Pt-15to3000/151118_062313/0000/\n',
+        # input txt looks like ['/store/user/lfeng7/ntuples/jhu_diffmo_v3/QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6/crab_QCD_Pt-15to3000/151118_062313/0000/*.root\n',
         # 'jhutester_numEvent1000_1.root\n']
         with open(options.txtfiles, 'r') as input_:
             allfiles = input_.readlines()
-            input_dir = allfiles.pop(0).strip()
+            input_dir = allfiles.pop(0).strip().split('*.root')[0]
             for i,item in enumerate(allfiles):
                 allfiles[i] = input_dir+item.strip()
     else:
@@ -242,7 +242,7 @@ class selector():
         if options.grid in ['yes']:
             files = xrootd + rootfiles.split('/eos/uscms')[-1]
         else:
-            files = eosdir + rootfiles
+            files = rootfiles
         print 'openning file: %s'%files
         events = Events(files)
         print 'Getting',events.size(),'events'    
@@ -538,9 +538,8 @@ class selector():
             el_extra = list( ipar for ipar in el_loose if ipar not in el_cand)
 
             # Selection on leptons 
-            if options.selection_type in ['sideband','qcd']: 
-                if not len(el_cand)>=1  : continue  # for sideband selection and qcd selection, need at least one electron candidate          
-            elif not len(el_cand)==1 : continue # signal election requires exactly one good ele candidate
+        
+            if not len(el_cand)==1 : continue # Requires exactly one good el candidate
             h_cutflow.Fill('el',1)
 
             #### PF muons ####
