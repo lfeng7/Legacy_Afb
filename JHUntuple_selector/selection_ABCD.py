@@ -36,17 +36,19 @@ argv = sys.argv[1:]
 if len(argv) == 0:
     print """
     Usage:
-    python selection.py --txtfiles inputfiles/QCD_Pt-15to3000.txt --makeplots no --mcordata mc --selection_type qcd --mctype qcd --maxevts -1 --type QCD_Pt-15to3000 --grid yes --maxfiles 1 --startfile 0 --maxevts 100000
+    python selection.py --txtfiles inputfiles/QCD_Pt-15to3000.txt --makeplots no --mcordata mc --selection_type qcd --mctype qcd  --type QCD_Pt-15to3000 --grid no --maxfiles 1 --startfile 0 --maxevts 100000
+    python selection_ABCD.py --txtfiles inputfiles/SingleEl_Run2012A_v1.txt --makeplots no --mcordata data --selection_type signal --maxevts 10000 --type SingleEl_Run2012A_v1 --grid no --startfile 0 --maxfiles 1
     """
     sys.exit(1)
 
 # Some predefined var
 evt_to_run = -1 
 csv_cut = 0.679
-met_cut = 15
+met_cut = 15000
 trigger_path='HLT_Ele27_WP80_v'
 lepiso_cut = 0.2
 xrootd = 'root://cmsxrootd.fnal.gov/'
+eosdir = '/eos/uscms/'
 data_lumi = 19700
 
 #event_type = 'Powheg_TT_btag'
@@ -156,8 +158,8 @@ def main():
         with open(options.txtfiles, 'r') as input_:
             allfiles = input_.readlines()
             input_dir = allfiles.pop(0).strip()
-            for item in allfiles:
-                item = input_dir+item.strip()
+            for i,item in enumerate(allfiles):
+                allfiles[i] = input_dir+item.strip()
     else:
         allfiles = []
 
@@ -165,16 +167,12 @@ def main():
     # Only keep certain number of input files for fexibility
     files = GetSomeFiles(allfiles,options.startfile,options.maxfiles)
 
-    # debug only
-    #files = ['ntuples/sample_jhudiffmo/TT_jhutester_numEvent1000_99.root']
     # Print out information on the input files
     print 'Getting these files:'
     for ifile in files : print ifile
-   
-    # Run selection function to do selections
-    # If we want to make plots, use many files input form
-    # If not make plots, each PATtuple file will generate a ntuple files, with index go from 0 to maxFiles
 
+    # Run selection function to do selections
+    # Each PATtuple file will generate a ntuple files, with index kept as the same as input root file
     f_index = 0
     for ifile in files:
         if options.inputFiles == '':
@@ -187,17 +185,19 @@ def main():
         self.selection(rootfiles = ifile,f_index = f_index)
         del self
 
+
 class selector():
     """docstring for ClassName"""
     def __init__(self, xsec,ngen,data_Lumi):
         self.xsec = xsec
         self.ngen = ngen
+        self.on_grid = False
         self.data_Lumi = data_Lumi
         self.norm_w = self.get_norm_w()
         print 'norm_w = %.3f'%self.norm_w
         
     def get_norm_w(self):
-        if xsec>0:
+        if self.xsec>0:
             return self.data_Lumi*self.xsec/self.ngen
         else:
             return 1.0
@@ -239,7 +239,11 @@ class selector():
             el_postfix = 'Loose'
 
         # Get input files
-        files = xrootd + rootfiles.split('/eos/uscms')[-1]
+        if options.grid in ['yes']:
+            files = xrootd + rootfiles.split('/eos/uscms')[-1]
+        else:
+            files = eosdir + rootfiles
+        print 'openning file: %s'%files
         events = Events(files)
         print 'Getting',events.size(),'events'    
 
@@ -357,12 +361,14 @@ class selector():
         met_phi_vec = array('f',[0.])
         trigger_vec = array('i',[0])
         pileup_events = array('f',[0.])
+        weight_norm = array('f',[1.])   # data normalization weight
 
         br_defs = []
         br_defs += [('met_pt_vec',met_pt_vec,'met_pt_vec/F')]
         br_defs += [('met_phi_vec',met_phi_vec,'met_phi_vec/F')]
         br_defs += [('trigger_vec',trigger_vec,'trigger_vec/F')]
         br_defs += [('pileup_events',pileup_events,'pileup_events/F')]
+        br_defs += [('weight_norm',weight_norm,'weight_norm/F')]
 
 
         # Set up branches contains vectors
@@ -421,16 +427,14 @@ class selector():
             mc_pileup_events = array('f',[-1])
             # Top pT weights
             weight_top_pT = array('f',[1.])
-            # data normalization weight
-            weight_norm = array('f',[1.])
+
             # Set vectors for corrections
             br_defs += [('mc_pileup_events',mc_pileup_events,'mc_pileup_events/F')]
             br_defs += [('weight_top_pT',weight_top_pT,'weight_top_pT/F')]
-            br_defs += [('weight_norm',weight_norm,'weight_norm/F')]
 
         # Add branches contains array into ttree
         for ibr in br_defs:
-            newtree.Branch(ibr[0],ibr[1],ibr[2])
+            outputtree.Branch(ibr[0],ibr[1],ibr[2])
 
 
 
@@ -606,7 +610,7 @@ class selector():
             bjets = [ jet for jet in jets_cand if jet[2] > csv_cut ]
 
             # Met veto
-            if met_pt > met_cut : continue
+            if met_pt[0] > met_cut : continue
             h_cutflow.Fill('MET Veto',1)
 
 
