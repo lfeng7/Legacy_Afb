@@ -11,10 +11,10 @@ for ifile in all_txt:
 		# find the eos dir of files
 	    lines = tmp.readlines()
 	    lines = lines[0].strip()
+	    lines = lines.split('/eos/uscms')[1]
 	    lines = lines.split('/*.root')[0]
 	    cmd = 'eosls %s >> %s'%(lines,ifile)
 	    print cmd
-	    # os.system()
 
 
 
