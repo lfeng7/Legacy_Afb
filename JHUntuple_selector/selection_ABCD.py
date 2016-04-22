@@ -366,7 +366,7 @@ class selector():
         br_defs = []
         br_defs += [('met_pt_vec',met_pt_vec,'met_pt_vec/F')]
         br_defs += [('met_phi_vec',met_phi_vec,'met_phi_vec/F')]
-        br_defs += [('trigger_vec',trigger_vec,'trigger_vec/F')]
+        br_defs += [('trigger_vec',trigger_vec,'trigger_vec/I')]
         br_defs += [('pileup_events',pileup_events,'pileup_events/F')]
         br_defs += [('weight_norm',weight_norm,'weight_norm/F')]
 
@@ -475,7 +475,7 @@ class selector():
             # Get trigger bits        
             passTrig=trig_.accept(triggerIndex)  
 
-            trigger_vec[0] = passTrig    
+            trigger_vec[0] = passTrig
 
             # Initialize cutflow histogram
             h_cutflow.Fill("no cut",1)

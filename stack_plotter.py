@@ -133,6 +133,7 @@ def main():
     mc_samples = []
     for line in txt_MC:
         items = line.split()
+        if '#' in items[0] or len(items)<3 : continue
         # TT_CT10_qq                      qq      21560109        245.9   
         mc_samples += [(items[1],items[2],int(items[3]),float(items[4]))]
 
@@ -186,7 +187,7 @@ def main():
         if cut == '': 
             ttree_mc.Draw(var+">>"+hname_mc,weight, "goff")
         else :
-            ttree_mc.Draw(var+">>"+hname_mc,'('+cut+')*('+weight+')', "goff")
+            ttree_mc.Draw(var+">>"+hname_mc,""+ cut, "goff")
         # decide if we want a last bin for overflow
         if plot_overflow == 'yes':
             h_mc = overflow(h_mc) 
@@ -196,6 +197,8 @@ def main():
         nevts_gen = isample[2]
         w_scale = data_lumi*cross_section_NLO/nevts_gen 
         h_mc.Scale(w_scale)
+        print 'sample name %s norm_w = %.3f'%(hname_mc,w_scale)
+
         # Add into stack
         sample_type = isample[1]
         icolor = GetSampleColor(sample_type)

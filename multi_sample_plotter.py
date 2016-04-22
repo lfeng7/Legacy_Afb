@@ -110,7 +110,7 @@ ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
 if not plot: ROOT.gROOT.SetBatch(True)
 
 # some preset stuff
-colors = [2,4,6,8,9]
+colors = [2,4,6,8,9,11]
 # Set root interactive or not
 if not plot: ROOT.gROOT.SetBatch(True)
 

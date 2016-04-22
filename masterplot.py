@@ -4,7 +4,7 @@
 import sys
 import os
 
-dir_plotting_code = '/Users/ray/HEP/analysis/Legacy_Afb'
+dir_plotting_code = '/uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/'
 
 argv = sys.argv[1:]
 
