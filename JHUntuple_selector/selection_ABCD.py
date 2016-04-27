@@ -349,12 +349,17 @@ class selector():
         jets_mass = ROOT.vector('float')()
         jets_csv_vec = ROOT.vector('float')()
 
-        lep_pt = ROOT.vector('float')()
-        lep_eta = ROOT.vector('float')()
-        lep_phi = ROOT.vector('float')()
-        lep_mass = ROOT.vector('float')()
-        lep_charge = ROOT.vector('int')()
-        lep_iso = ROOT.vector('float')()
+        # electron-jet relations
+        el_j_delR = ROOT.vector('float')()
+        el_j_mass = ROOT.vector('float')()
+
+
+        lep_pt = array('f',[0.])
+        lep_eta = array('f',[0.])
+        lep_phi = array('f',[0.])
+        lep_mass = array('f',[0.])
+        lep_charge = array('i',[0])
+        lep_iso = array('f',[0.])
 
         # set up array containers known length objects
         met_pt_vec = array('f',[0.])
@@ -362,19 +367,30 @@ class selector():
         trigger_vec = array('i',[0])
         pileup_events = array('f',[0.])
         weight_norm = array('f',[1.])   # data normalization weight
+        njets = array('i',[-1])
+
 
         br_defs = []
+        #leptons
+        br_defs += [('lep_pt',lep_pt,'lep_pt/F')]
+        br_defs += [('lep_eta',lep_eta,'lep_eta/F')]
+        br_defs += [('lep_phi',lep_phi,'lep_phi/F')]
+        br_defs += [('lep_mass',lep_mass,'lep_mass/F')]
+        br_defs += [('lep_charge',lep_charge,'lep_charge/I')]
+        br_defs += [('lep_iso',lep_iso,'lep_iso/F')]
+
         br_defs += [('met_pt_vec',met_pt_vec,'met_pt_vec/F')]
         br_defs += [('met_phi_vec',met_phi_vec,'met_phi_vec/F')]
         br_defs += [('trigger_vec',trigger_vec,'trigger_vec/I')]
         br_defs += [('pileup_events',pileup_events,'pileup_events/F')]
         br_defs += [('weight_norm',weight_norm,'weight_norm/F')]
+        br_defs += [('njets',njets,'njets/I')]
 
 
         # Set up branches contains vectors
-        data_vecs = [jets_pt,jets_eta,jets_phi,jets_mass,jets_csv_vec,lep_pt,lep_eta,lep_phi,lep_mass,lep_charge,lep_iso]
+        data_vecs = [jets_pt,jets_eta,jets_phi,jets_mass,jets_csv_vec,el_j_mass,el_j_delR]
 
-        branch_names = ['jets_pt','jets_eta','jets_phi','jets_mass','jets_csv','lep_pt','lep_eta','lep_phi','lep_mass','lep_charge','lep_iso']
+        branch_names = ['jets_pt','jets_eta','jets_phi','jets_mass','jets_csv','el_j_mass','el_j_delR']
 
         all_branches = zip(branch_names,data_vecs)
         for ibranch in all_branches:
@@ -529,7 +545,7 @@ class selector():
                 if options.selection_type == 'signal' and el_isTight[i] and not el_isModTight[i] and el.pt()>30 and abs(el.eta())<2.5 and el_iso[i]<0.1: 
                     el_cand.append((el,icharge,el_iso[i]))
                 # sideband region, with a tight but non-isolated electron
-                elif options.selection_type == 'sideband' and el_isPseudoTight[i] and not el_isModTight[i] and lepiso_cut < el_iso[i] < 1.2 and el.pt()>30 and abs(el.eta())<2.5:
+                elif options.selection_type == 'sideband' and el_isPseudoTight[i] and not el_isModTight[i] and lepiso_cut < el_iso[i] < 1.2 and el.pt()>20 and abs(el.eta())<2.5:
                     el_cand.append((el,icharge,el_iso[i]))
                 # qcd selection, with a tight electron, no cut on isolation yet here
                 elif options.selection_type == 'qcd' and el_isLoose[i] and not el_isModTight[i] and el_iso[i] < 0.1 and el.pt()>30 and abs(el.eta())<2.5:
@@ -537,10 +553,10 @@ class selector():
             # extra loose leptons
             el_extra = list( ipar for ipar in el_loose if ipar not in el_cand)
 
-            # Selection on leptons 
-        
+            # Selection on ele cand 
+            # 1 and only 1 tight ele
             if not len(el_cand)==1 : continue # Requires exactly one good el candidate
-            h_cutflow.Fill('el',1)
+            h_cutflow.Fill('1 tight el',1)
 
             #### PF muons ####
 
@@ -599,19 +615,16 @@ class selector():
                     else :
                         print 'The sample is neither mc or data! Serious bug!'
                         break
-            jets_cand_p4 = [ ijet[1] for ijet in jets_cand ]
      
             # Selection on jets
-            if not len(jets_cand) == 1 : continue
-            h_cutflow.Fill('jets',1)
+
+            if not len(jets_cand) > 0 : continue
+            h_cutflow.Fill('zero jets',1)
+            njets[0] = len(jets_cand)
+
 
             # Do b-tagging. Work for both MC and data
             bjets = [ jet for jet in jets_cand if jet[2] > csv_cut ]
-
-            # Met veto
-            if met_pt[0] > met_cut : continue
-            h_cutflow.Fill('MET Veto',1)
-
 
             n_evts_passed += 1
 
@@ -621,6 +634,7 @@ class selector():
             ################################################################
 
             # jets
+            el_cand_p4 = el_cand[0][0]
             # First sort jets by pT
             jets_cand.sort(reverse = True)
 
@@ -632,14 +646,22 @@ class selector():
                 if options.mcordata == 'mc' :
                     iflavor = ijet[3]
                     jets_flavor.push_back(iflavor)
+                # el_jet relations
+                lep_p4 = el_cand_p4
+                ijet_p4 = ip4
+                el_j_mass.push_back((lep_p4+ijet_p4).mass())
+                el_j_delR.push_back(DeltaR2(lep_p4,ijet_p4)) # DeltaR2 = fwlite_boilerplate.DeltaR2
             # lep
             for iel in el_cand:
                 lepp4 = iel[0]
                 lepcharge = iel[1]
                 lepiso = iel[2]
-                lep_pt.push_back(lepp4.pt());lep_eta.push_back(lepp4.eta());lep_phi.push_back(lepp4.phi());lep_mass.push_back(lepp4.mass())
-                lep_charge.push_back(lepcharge)
-                lep_iso.push_back(lepiso)
+                lep_pt[0] = lepp4.pt() 
+                lep_eta[0] = lepp4.eta() 
+                lep_phi[0] = lepp4.phi() 
+                lep_mass[0] = lepp4.mass()
+                lep_charge[0] = lepcharge
+                lep_iso[0] = lepiso
             # MET
             met_pt_vec[0] = met_pt[0]
             met_phi_vec[0] = met_phi[0]
@@ -666,7 +688,6 @@ class selector():
 
             # Informations for MC only     
             if options.mcordata == 'mc' :
-
 
                 # Get gen particles and find out the true identy of the PF electron collection
                 evt.getByLabel(gen_label,gen_hndl)
