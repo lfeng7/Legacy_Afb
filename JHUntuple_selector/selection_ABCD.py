@@ -22,6 +22,10 @@
 # A major efficiency improvement by modifying the way to handle trigger bits. Now the speed of running signal MC is 10 times faster!!!
 # V3.2 4-14-16
 # This version is to selected events for QCD bkg estimation using ABCD method
+# V3.3 5-4-16
+# This version is the final version to select QCD enriched region with following selections:
+# 2 jets with pT>30 GeV, 1 PAT el with pT>30 GeV
+# Keep information of the PAT el such as el ID tags, transvers IP , conversion veto etc for further study purpose
 
 from Legacy_Afb.Tools.fwlite_boilerplate import *
 from Legacy_Afb.Tools.root_utility import *
@@ -45,6 +49,7 @@ if len(argv) == 0:
 evt_to_run = -1 
 csv_cut = 0.679
 met_cut = 1500
+njets_cut = 2 # how many energetic jets to be selected
 trigger_path='HLT_Ele27_WP80_v'
 lepiso_cut = 0
 xrootd = 'root://cmsxrootd.fnal.gov/'
@@ -273,7 +278,20 @@ class selector():
         el_isLoose_hndl = Handle('vector<unsigned int>')
         el_isTight_hndl = Handle('vector<unsigned int>')
         el_isPseudoTight_hndl = Handle('vector<unsigned int>')
+        el_isPseudoLoose_hndl = Handle('vector<unsigned int>')
         el_isModTight_hndl = Handle('vector<unsigned int>')
+
+        # study electrons further
+        electronLooseMVA_hndl = Handle('vector<double>' )
+        electronLooseMVA_label = ("jhuElePFlowLoose"  ,   "electronLooseMVA" ,  "jhu")
+        electronLooseTransverseIP_hndl = Handle('vector<double>' )
+        electronLooseTransverseIP_label = ("jhuElePFlowLoose"  ,   "electronLooseTransverseIP" ,  "jhu")
+        electronLooseisEBEEGap_hndl = Handle('vector<unsigned int>' )
+        electronLooseisEBEEGap_label = ("jhuElePFlowLoose"  ,   "electronLooseisEBEEGap" ,  "jhu")
+        electronLoosenumberOfHits_hndl = Handle('vector<unsigned int>' )
+        electronLoosenumberOfHits_label = ("jhuElePFlowLoose"  ,   "electronLoosenumberOfHits" ,  "jhu")
+        electronLoosepassConversionVeto_hndl = Handle('vector<unsigned int>' )
+        electronLoosepassConversionVeto_label = ("jhuElePFlowLoose"  ,   "electronLoosepassConversionVeto" ,  "jhu")
 
         mu_hndl = Handle('vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > >')
         mu_label = ("jhuMuonPFlow", "muon")
@@ -343,18 +361,32 @@ class selector():
         # Data
 
         # set up vector containers
-        jets_pt = ROOT.vector('float')()
-        jets_eta = ROOT.vector('float')()
-        jets_phi = ROOT.vector('float')()
-        jets_mass = ROOT.vector('float')()
-        jets_csv_vec = ROOT.vector('float')()
+        jets_pt = array('f',njets_cut*[-100.])
+        jets_eta = array('f',njets_cut*[-100.])
+        jets_phi = array('f',njets_cut*[-100.])
+        jets_mass = array('f',njets_cut*[-100.])
+        jets_csv_vec = array('f',njets_cut*[-100.])
 
-        lep_pt = ROOT.vector('float')()
-        lep_eta = ROOT.vector('float')()
-        lep_phi = ROOT.vector('float')()
-        lep_mass = ROOT.vector('float')()
-        lep_charge = ROOT.vector('int')()
-        lep_iso = ROOT.vector('float')()
+        # electron-jet relations
+        el_j_delR = array('f',njets_cut*[-100.])
+        el_j_mass = array('f',njets_cut*[-100.])
+
+
+        lep_pt = array('f',[0.])
+        lep_eta = array('f',[0.])
+        lep_phi = array('f',[0.])
+        lep_mass = array('f',[0.])
+        lep_charge = array('i',[0])
+        lep_iso = array('f',[0.])
+
+        MVA = array('f',[0.])
+        TransverseIP = array('f',[0.])
+        isEBEEGap = array('i',[-1])
+        numberOfHits = array('i',[100])
+        passConversionVeto = array('i',[-1])
+        lep_isLoose = array('i',[-1])
+        lep_isTight = array('i',[-1])
+
 
         # set up array containers known length objects
         met_pt_vec = array('f',[0.])
@@ -362,19 +394,56 @@ class selector():
         trigger_vec = array('i',[0])
         pileup_events = array('f',[0.])
         weight_norm = array('f',[1.])   # data normalization weight
+        weight_tmp = array('f',[1.])   # data normalization weight with signs to construct QCD templates. Plus for data, minus for MC
+        njets = array('i',[-1]) 
+        n_looseEl = array('i',[-1])
+        n_elCands = array('i',[-1])
+        n_btags = array('i',[-1])
+
+
 
         br_defs = []
+        # jets
+        br_defs += [('jets_pt',jets_pt,'jets_pt[%i]/F'%njets_cut)]
+        br_defs += [('jets_eta',jets_eta,'jets_eta[%i]/F'%njets_cut)]
+        br_defs += [('jets_phi',jets_phi,'jets_phi[%i]/F'%njets_cut)]
+        br_defs += [('jets_mass',jets_mass,'jets_mass[%i]/F'%njets_cut)]
+        br_defs += [('jets_csv_vec',jets_csv_vec,'jets_csv_vec[%i]/F'%njets_cut)]
+        #leptons
+        br_defs += [('lep_pt',lep_pt,'lep_pt/F')]
+        br_defs += [('lep_eta',lep_eta,'lep_eta/F')]
+        br_defs += [('lep_phi',lep_phi,'lep_phi/F')]
+        br_defs += [('lep_mass',lep_mass,'lep_mass/F')]
+        br_defs += [('lep_charge',lep_charge,'lep_charge/I')]
+        br_defs += [('lep_iso',lep_iso,'lep_iso/F')]
+
+
+        br_defs += [('MVA',MVA,'MVA/F')]
+        br_defs += [('TransverseIP',TransverseIP,'TransverseIP/F')]
+        br_defs += [('isEBEEGap',isEBEEGap,'isEBEEGap/I')]
+        br_defs += [('numberOfHits',numberOfHits,'numberOfHits/I')]
+        br_defs += [('passConversionVeto',passConversionVeto,'passConversionVeto/I')]
+        br_defs += [('lep_isLoose',lep_isLoose,'lep_isLoose/I')]
+        br_defs += [('lep_isTight',lep_isTight,'lep_isTight/I')]
+
+
         br_defs += [('met_pt_vec',met_pt_vec,'met_pt_vec/F')]
         br_defs += [('met_phi_vec',met_phi_vec,'met_phi_vec/F')]
         br_defs += [('trigger_vec',trigger_vec,'trigger_vec/I')]
         br_defs += [('pileup_events',pileup_events,'pileup_events/F')]
         br_defs += [('weight_norm',weight_norm,'weight_norm/F')]
+        br_defs += [('weight_tmp',weight_tmp,'weight_tmp/F')]
+
+        br_defs += [('njets',njets,'njets/I')]
+        br_defs += [('n_looseEl',n_looseEl,'n_looseEl/I')]
+        br_defs += [('n_elCands',n_elCands,'n_elCands/I')]
+        br_defs += [('n_btags',n_btags,'n_btags/I')]
 
 
         # Set up branches contains vectors
-        data_vecs = [jets_pt,jets_eta,jets_phi,jets_mass,jets_csv_vec,lep_pt,lep_eta,lep_phi,lep_mass,lep_charge,lep_iso]
+        data_vecs = []
 
-        branch_names = ['jets_pt','jets_eta','jets_phi','jets_mass','jets_csv','lep_pt','lep_eta','lep_phi','lep_mass','lep_charge','lep_iso']
+        branch_names = []
 
         all_branches = zip(branch_names,data_vecs)
         for ibranch in all_branches:
@@ -389,10 +458,11 @@ class selector():
         if options.mcordata == 'mc' :
 
             # set up vector containers
-            jets_flavor = ROOT.vector('int')()
-
-            mc_vecs = [jets_flavor]
-            mc_branch_names = ['jets_flavor']
+            mc_vecs = []
+            mc_branch_names = []
+            # non vector containers
+            jets_flavor = array('i',njets_cut*[-100])
+            br_defs += [('jets_flavor',jets_flavor,'jets_flavor[%i]/I'%njets_cut)]
 
             if options.isSignal == 'yes' or options.sampletype == 'ttbar':
                 # The sequence of storage in each vector would be :
@@ -444,6 +514,8 @@ class selector():
 
         # initialize norm weight for all events
         weight_norm[0] = self.norm_w
+        if self.xsec > 0 : # aka data sample
+            weight_tmp[0] = -1.0*self.norm_w
 
         for evt in events:
             # progrss reporting
@@ -503,6 +575,7 @@ class selector():
             evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'modtight',el_isModTight_hndl)
             evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'charge',el_charge_hndl)
             evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'ispseudotight',el_isPseudoTight_hndl)
+            evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'ispseudoloose',el_isPseudoLoose_hndl)
 
             el_p4 = el_hndl.product()
             el_iso = el_iso_hndl.product()
@@ -511,36 +584,45 @@ class selector():
             el_isModTight = el_isModTight_hndl.product()
             el_charge = el_charge_hndl.product()
             el_isPseudoTight = el_isPseudoTight_hndl.product()
+            el_isPseudoLoose = el_isPseudoLoose_hndl.product()
+
 
 
             #### PF electrons ####
             el_loose,el_cand = [],[]
+            el_loose_index,el_cand_index = [],[]
             for i in range(len(el_p4)):
                 el = el_p4[i]
                 icharge = el_charge[i]
                 # PFelectrons passed loose selection
                 # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Veto
-                if el_isLoose[i] and el_iso[i]<0.15 and el.pt()>20 and math.fabs(el.eta())<2.5 : 
+                if el_isPseudoLoose[i] and el.pt()>20 and math.fabs(el.eta())<2.5 : 
                     el_loose.append((el,icharge,el_iso[i]))
+                    el_loose_index.append(i)
 
                 # PFelectrons passed tight selection
                 # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Signal
                 #signal region, with a tight and isolated electron
                 if options.selection_type == 'signal' and el_isTight[i] and not el_isModTight[i] and el.pt()>30 and abs(el.eta())<2.5 and el_iso[i]<0.1: 
                     el_cand.append((el,icharge,el_iso[i]))
+                    el_cand_index.append(i)
                 # sideband region, with a tight but non-isolated electron
-                elif options.selection_type == 'sideband' and el_isPseudoTight[i] and not el_isModTight[i] and lepiso_cut < el_iso[i] < 1.2 and el.pt()>30 and abs(el.eta())<2.5:
+                elif options.selection_type == 'sideband' and not el_isModTight[i] and el.pt()>30 and abs(el.eta())<2.5:
                     el_cand.append((el,icharge,el_iso[i]))
+                    el_cand_index.append(i)
                 # qcd selection, with a tight electron, no cut on isolation yet here
                 elif options.selection_type == 'qcd' and el_isLoose[i] and not el_isModTight[i] and el_iso[i] < 0.1 and el.pt()>30 and abs(el.eta())<2.5:
                     el_cand.append((el,icharge,el_iso[i]))
-            # extra loose leptons
-            el_extra = list( ipar for ipar in el_loose if ipar not in el_cand)
 
-            # Selection on leptons 
-        
+            n_elCands[0] = len(el_cand_index)
+            n_looseEl[0] = len(el_loose_index)
+            # Selection on ele cand 
+            # 1 and only 1 tight ele
             if not len(el_cand)==1 : continue # Requires exactly one good el candidate
-            h_cutflow.Fill('el',1)
+            h_cutflow.Fill('1 el Cand',1)
+
+            # extra loose leptons
+            el_extra = list( ipar for ipar in el_loose_index if ipar not in el_cand_index)
 
             #### PF muons ####
 
@@ -566,8 +648,9 @@ class selector():
             #### Dilep veto ####
 
             if options.selection_type in ['signal','sideband']: # for both signal and sideband region, no additional "loose" electron is allowed
-                if len(el_extra) > 0 : continue
-                h_cutflow.Fill('dilep veto',1)  
+                # if len(el_extra) > 0 : continue
+                # h_cutflow.Fill('dilep veto',1)
+                pass  
 
 
             ##### AK5 jets ####
@@ -599,20 +682,18 @@ class selector():
                     else :
                         print 'The sample is neither mc or data! Serious bug!'
                         break
-            jets_cand_p4 = [ ijet[1] for ijet in jets_cand ]
      
             # Selection on jets
-            if not len(jets_cand) == 1 : continue
-            h_cutflow.Fill('jets',1)
+
+            if not 2 == len(jets_cand) : continue
+            h_cutflow.Fill('two jets',1)
+            njets[0] = len(jets_cand)
+
 
             # Do b-tagging. Work for both MC and data
             bjets = [ jet for jet in jets_cand if jet[2] > csv_cut ]
 
-            # Met veto
-            if met_pt[0] > met_cut : continue
-            h_cutflow.Fill('MET Veto',1)
-
-
+            n_btags[0] = len(bjets)
             n_evts_passed += 1
 
 
@@ -620,26 +701,61 @@ class selector():
             #                    Fill TTree                                # 
             ################################################################
 
+            # extra objects to get here
+            evt.getByLabel(electronLooseMVA_label,electronLooseMVA_hndl)
+            evt.getByLabel(electronLooseTransverseIP_label,electronLooseTransverseIP_hndl)
+            evt.getByLabel(electronLooseisEBEEGap_label,electronLooseisEBEEGap_hndl)
+            evt.getByLabel(electronLoosenumberOfHits_label,electronLoosenumberOfHits_hndl)
+            evt.getByLabel(electronLoosepassConversionVeto_label,electronLoosepassConversionVeto_hndl)
+
+            electronLooseMVA_prod = electronLooseMVA_hndl.product()
+            electronLooseTransverseIP_prod = electronLooseTransverseIP_hndl.product()
+            electronLooseisEBEEGap_prod = electronLooseisEBEEGap_hndl.product()
+            electronLoosenumberOfHits_prod = electronLoosenumberOfHits_hndl.product()
+            electronLoosepassConversionVeto_prod = electronLoosepassConversionVeto_hndl.product()
+
+            lep_isLoose[0] = el_isPseudoLoose[0]
+            lep_isTight[0] = el_isPseudoTight[0]
+            MVA[0] = electronLooseMVA_prod[0]
+            TransverseIP[0] = electronLooseTransverseIP_prod[0]
+            isEBEEGap[0] = electronLooseisEBEEGap_prod[0]
+            numberOfHits[0] = electronLoosenumberOfHits_prod[0]
+            passConversionVeto[0] = electronLoosepassConversionVeto_prod[0]
+
             # jets
+            el_cand_p4 = el_cand[0][0]
             # First sort jets by pT
             jets_cand.sort(reverse = True)
 
-            for ijet in jets_cand :
+            for i,ijet in enumerate(jets_cand) :
                 icsv = ijet[2]
                 ip4 = ijet[1]
-                jets_csv_vec.push_back(icsv)
-                jets_pt.push_back(ip4.pt()); jets_eta.push_back(ip4.eta()); jets_phi.push_back(ip4.phi()); jets_mass.push_back(ip4.mass())                        
+                jets_csv_vec[i] = icsv
+                jets_pt[i] = ip4.pt() 
+                jets_eta[i] = ip4.eta() 
+                jets_phi[i] = ip4.phi() 
+                jets_mass[i] = ip4.mass()                        
                 if options.mcordata == 'mc' :
                     iflavor = ijet[3]
-                    jets_flavor.push_back(iflavor)
+                    jets_flavor[i] = iflavor
+                # el_jet relations
+                lep_p4 = el_cand_p4
+                ijet_p4 = ip4
+                el_j_mass[i] = (lep_p4+ijet_p4).mass()
+                el_j_delR[i] = DeltaR2(lep_p4,ijet_p4) # DeltaR2 = fwlite_boilerplate.DeltaR2
             # lep
-            for iel in el_cand:
+            for i,iel in enumerate(el_cand):
                 lepp4 = iel[0]
                 lepcharge = iel[1]
                 lepiso = iel[2]
-                lep_pt.push_back(lepp4.pt());lep_eta.push_back(lepp4.eta());lep_phi.push_back(lepp4.phi());lep_mass.push_back(lepp4.mass())
-                lep_charge.push_back(lepcharge)
-                lep_iso.push_back(lepiso)
+                lep_pt[0] = lepp4.pt() 
+                lep_eta[0] = lepp4.eta() 
+                lep_phi[0] = lepp4.phi() 
+                lep_mass[0] = lepp4.mass()
+                lep_charge[0] = lepcharge
+                lep_iso[0] = lepiso
+
+
             # MET
             met_pt_vec[0] = met_pt[0]
             met_phi_vec[0] = met_phi[0]
@@ -666,7 +782,6 @@ class selector():
 
             # Informations for MC only     
             if options.mcordata == 'mc' :
-
 
                 # Get gen particles and find out the true identy of the PF electron collection
                 evt.getByLabel(gen_label,gen_hndl)
@@ -841,21 +956,6 @@ class selector():
            
         # cutflows
         histlist = [h_cutflow,h_cutflow_norm]
-
-        if options.makeplots == 'yes' and options.grid != 'yes':
-            print '\nPlot and saven'
-            plotting(histlist,event_type,'not dump')
-            histlist1 = [h_cutflow_log,h_cutflow_norm_log]
-            plotting(histlist1,event_type,"dump","setlogy")
-            # Save to root files
-            gridsaving(histlist,event_type,'hists')
-        else :
-            if options.grid == 'yes' :
-                print '\nSaving output into root files for grid use\n'
-        #        gridsaving(histlist+[outputtree],event_type,f_index,'update')
-            else :
-                print '\nSaving output into root files to local dir \n'
-        #        saving(histlist+[outputtree],event_type,f_index)#,'update')
 
         for item in histlist+[outputtree]:
             item.SetDirectory(fout) 

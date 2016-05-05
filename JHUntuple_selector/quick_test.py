@@ -5,6 +5,7 @@ import ROOT
 from optparse import OptionParser
 
 import sys
+from array import array
 
 argv = sys.argv[1:]
 if len(argv)<2:
@@ -117,6 +118,22 @@ electronLooseistight_label = ("jhuElePFlowLoose"  ,   "electronLooseistight" ,  
 electronLoosemodtight_hndl = Handle('vector<unsigned int>' )
 electronLoosemodtight_label = ("jhuElePFlowLoose"  ,   "electronLoosemodtight" ,  "jhu")
 
+# study electrons further
+electronLooseMVA_hndl = Handle('vector<double>' )
+electronLooseMVA_label = ("jhuElePFlowLoose"  ,   "electronLooseMVA" ,  "jhu")
+
+electronLooseTransverseIP_hndl = Handle('vector<double>' )
+electronLooseTransverseIP_label = ("jhuElePFlowLoose"  ,   "electronLooseTransverseIP" ,  "jhu")
+
+electronLooseisEBEEGap_hndl = Handle('vector<unsigned int>' )
+electronLooseisEBEEGap_label = ("jhuElePFlowLoose"  ,   "electronLooseisEBEEGap" ,  "jhu")
+
+electronLoosenumberOfHits_hndl = Handle('vector<unsigned int>' )
+electronLoosenumberOfHits_label = ("jhuElePFlowLoose"  ,   "electronLoosenumberOfHits" ,  "jhu")
+
+electronLoosepassConversionVeto_hndl = Handle('vector<unsigned int>' )
+electronLoosepassConversionVeto_label = ("jhuElePFlowLoose"  ,   "electronLoosepassConversionVeto" ,  "jhu")
+
 #PDF
 pdf_hndls = [Handle('vector<double>'),Handle('vector<double>'),Handle('vector<double>')]
 pdf_label = [("pdfWeights"   ,        "cteq66"      ,      "jhu")]
@@ -126,8 +143,11 @@ pdf_label.append( ("pdfWeights"   ,        "GJR08VFnloE"     ,       "jhu") )
 pdf_types = ["cteq66","CT10","GJR08VFnloE"]
 
 # Make output file with ttree
-fout = ROOT.TFile('testtree.root','recreate')
+output_name = 'testtree_%i_%i.root'%(startfile,maxfiles+startfile)
+fout = ROOT.TFile(output_name,'recreate')
 outputtree = ROOT.TTree('selected','selected')
+
+print 'output file is %s'%output_name
 
 lep_pt = ROOT.vector('float')()
 lep_eta = ROOT.vector('float')()
@@ -137,8 +157,20 @@ lep_iso_vec = ROOT.vector('float')()
 electronLooseispseudotight = ROOT.vector('int')()
 electronLooseispseudoLoose = ROOT.vector('int')()
 electronLooseistight = ROOT.vector('int')()
+
+MVA = ROOT.vector('float')()
+TransverseIP = ROOT.vector('float')()
+isEBEEGap = ROOT.vector('int')()
+numberOfHits = ROOT.vector('int')()
+passConversionVeto = ROOT.vector('int')()
+
+
+
 vecs = [jets_csv_vec,lep_iso_vec,electronLooseispseudotight,electronLooseispseudoLoose,electronLooseistight,lep_pt,lep_eta]
+vecs += [MVA,TransverseIP,isEBEEGap,numberOfHits,passConversionVeto]
 br_names = ['jets_csv','lep_iso','electronLooseispseudotight','electronLooseispseudoLoose','electronLooseistight','lep_pt','lep_eta']
+br_names += ['MVA','TransverseIP','isEBEEGap','numberOfHits','passConversionVeto']
+
 #pdf
 pdf_vecs = [] 
 for i,ipdf in enumerate(pdf_label): 
@@ -150,6 +182,18 @@ branches = zip(br_names,vecs)
 
 for ibr in branches:
     outputtree.Branch(ibr[0],ibr[1])
+
+# array formated stuff
+br_defs = []
+
+njets = array('i',[-1])
+n_el = array('i',[-1])
+br_defs += [('njets',njets,'njets/I')]
+br_defs += [('n_el',n_el,'n_el/I')]
+
+# Add branches contains array into ttree
+for ibr in br_defs:
+    outputtree.Branch(ibr[0],ibr[1],ibr[2])
 
 # Counter initiation 
 n_evt,n_evts_passed = 0,0
@@ -188,7 +232,14 @@ for evt in events:
     evt.getByLabel(electronLooseistight_label,electronLooseistight_hndl)
     evt.getByLabel(electronLoosemodtight_label,electronLoosemodtight_hndl)
 
+    # other stuff
+    evt.getByLabel(electronLooseMVA_label,electronLooseMVA_hndl)
+    evt.getByLabel(electronLooseTransverseIP_label,electronLooseTransverseIP_hndl)
+    evt.getByLabel(electronLooseisEBEEGap_label,electronLooseisEBEEGap_hndl)
+    evt.getByLabel(electronLoosenumberOfHits_label,electronLoosenumberOfHits_hndl)
+    evt.getByLabel(electronLoosepassConversionVeto_label,electronLoosepassConversionVeto_hndl)
 
+    # Get opbject from ntuple
     el_iso = el_iso_hndl.product()
     el_is_pseudotight = electronLooseispseudotight_hndl.product()
     el_istight = electronLooseistight_hndl.product() 
@@ -196,77 +247,84 @@ for evt in events:
     el_isModTight = electronLoosemodtight_hndl.product()
     el_p4 = el_p4_hndl.product()
 
+    electronLooseMVA_prod = electronLooseMVA_hndl.product()
+    electronLooseTransverseIP_prod = electronLooseTransverseIP_hndl.product()
+    electronLooseisEBEEGap_prod = electronLooseisEBEEGap_hndl.product()
+    electronLoosenumberOfHits_prod = electronLoosenumberOfHits_hndl.product()
+    electronLoosepassConversionVeto_prod = electronLoosepassConversionVeto_hndl.product()
 
-    # cuts
+
+
+    # # cuts
     h_cutflow.Fill("no cut",1)
 
-    if not el_iso.size()>0 and el_is_pseudotight.size()>0 : 
+    if not el_iso.size()>0 : 
         continue
-    h_cutflow.Fill("no_el",1)
+    h_cutflow.Fill("no el",1)
 
     selected_jets = []
     for i,ijet in enumerate(jets_p4):
         if ijet.pt()>30 and abs(ijet.eta())<2.5: 
             selected_jets.append(i)
-    if len(selected_jets)<4:
+    if len(selected_jets)!=2:
         continue
-    h_cutflow.Fill("<4j",1)
+    h_cutflow.Fill("not 2 pT>30 jets",1)
 
-    #### PF electrons selection ####
-    el_cand = []
-    for i in range(len(el_p4)):
-        if el_is_pseudoLoose[i]:
-            el_cand.append(i)
-    if not len(el_cand)>0:
-        continue
-    h_cutflow.Fill("PseudoLoose",1)
+    # #### PF electrons selection ####
+    # el_cand = []
+    # for i in range(len(el_p4)):
+    #     if el_is_pseudoLoose[i]:
+    #         el_cand.append(i)
+    # if not len(el_cand)>0:
+    #     continue
+    # h_cutflow.Fill("PseudoLoose",1)
 
-    el_cand = []
-    for i in range(len(el_p4)):
-        if el_is_pseudoLoose[i] and el_iso[i] < iso_cut :
-            el_cand.append(i)
-    if not len(el_cand)>0:
-        continue
-    h_cutflow.Fill("iso<%.1f"%iso_cut,1)
+    # el_cand = []
+    # for i in range(len(el_p4)):
+    #     if el_is_pseudoLoose[i] and el_iso[i] < iso_cut :
+    #         el_cand.append(i)
+    # if not len(el_cand)>0:
+    #     continue
+    # h_cutflow.Fill("iso<%.1f"%iso_cut,1)
 
-    el_cand = []
-    for i in range(len(el_p4)):
-        if el_is_pseudoLoose[i] and not el_isModTight[i] and el_iso[i] < iso_cut  :
-            el_cand.append(i)
-    if not len(el_cand)>0:
-        continue
-    h_cutflow.Fill("ECAL_gap",1)
+    # el_cand = []
+    # for i in range(len(el_p4)):
+    #     if el_is_pseudoLoose[i] and not el_isModTight[i] and el_iso[i] < iso_cut  :
+    #         el_cand.append(i)
+    # if not len(el_cand)>0:
+    #     continue
+    # h_cutflow.Fill("ECAL_gap",1)
 
 
-    el_cand = []
-    for i in range(len(el_p4)):
-        el = el_p4[i]
-        if el_is_pseudoLoose[i] and not el_isModTight[i] and el_iso[i] < iso_cut and el.pt()>30 :
-            el_cand.append(i)
-    if not len(el_cand)>0:
-        continue
-    h_cutflow.Fill("pt>30",1)
+    # el_cand = []
+    # for i in range(len(el_p4)):
+    #     el = el_p4[i]
+    #     if el_is_pseudoLoose[i] and not el_isModTight[i] and el_iso[i] < iso_cut and el.pt()>30 :
+    #         el_cand.append(i)
+    # if not len(el_cand)>0:
+    #     continue
+    # h_cutflow.Fill("pt>30",1)
 
-    el_cand = []
-    for i in range(len(el_p4)):
-        el = el_p4[i]
-        if el_is_pseudoLoose[i] and not el_isModTight[i] and el_iso[i] < iso_cut and el.pt()>30 and abs(el.eta())<2.5 :
-            el_cand.append(i)
-    if not len(el_cand)>0:
-        continue
-    h_cutflow.Fill("|#eta|<2.5",1)
+    # el_cand = []
+    # for i in range(len(el_p4)):
+    #     el = el_p4[i]
+    #     if el_is_pseudoLoose[i] and not el_isModTight[i] and el_iso[i] < iso_cut and el.pt()>30 and abs(el.eta())<2.5 :
+    #         el_cand.append(i)
+    # if not len(el_cand)>0:
+    #     continue
+    # h_cutflow.Fill("|#eta|<2.5",1)
 
-    # extra loose leptons
-    el_loose = []
-    for i in range(len(el_p4)):
-        el = el_p4[i]
-        if el_is_pseudoLoose and el_iso[i]<0.15 and el.pt()>20 and math.fabs(el.eta())<2.5 : 
-            el_loose.append(i)
+    # # extra loose leptons
+    # el_loose = []
+    # for i in range(len(el_p4)):
+    #     el = el_p4[i]
+    #     if el_is_pseudoLoose and el_iso[i]<0.15 and el.pt()>20 and math.fabs(el.eta())<2.5 : 
+    #         el_loose.append(i)
 
-    el_extra = list( ipar for ipar in el_loose if ipar not in el_cand)
-    if len(el_extra)>0:
-        continue
-    h_cutflow.Fill("dilep",1)
+    # el_extra = list( ipar for ipar in el_loose if ipar not in el_cand)
+    # if len(el_extra)>0:
+    #     continue
+    # h_cutflow.Fill("dilep",1)
 
 
     # # pdf
@@ -278,8 +336,12 @@ for evt in events:
     #     for item in pdf_ws:
     #         pdf_vecs[i].push_back(item/pdf_w0)
 
+
     # write some branches into ttree
-    for i in el_cand : 
+    njets[0] = jets_p4.size()
+    n_el[0] = el_iso.size()
+
+    for i,item in enumerate(el_iso) : 
         el = el_p4[i]
         lep_iso_vec.push_back(el_iso[i])
         electronLooseispseudotight.push_back(el_is_pseudotight[i])
@@ -287,7 +349,13 @@ for evt in events:
         electronLooseispseudoLoose.push_back(el_is_pseudoLoose[i])
         lep_pt.push_back(el.pt())
         lep_eta.push_back(el.eta())
-
+        # other electron stuff
+        MVA.push_back(electronLooseMVA_prod[i])
+        TransverseIP.push_back(electronLooseTransverseIP_prod[i])
+        isEBEEGap.push_back(electronLooseisEBEEGap_prod[i])
+        numberOfHits.push_back(electronLoosenumberOfHits_prod[i])
+        passConversionVeto.push_back(electronLoosepassConversionVeto_prod[i])
+    
     outputtree.Fill()
     n_evts_passed += 1
 

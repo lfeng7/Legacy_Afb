@@ -113,8 +113,11 @@ plotting_code = ''
 if file1 != "":
 	if file2 == "": # single file to plot
 		if var2 == "": # single var to plot
-			if len(file1.split())>1 or '*' in file1:	# more than one file to plot 		
-				plotting_code = 'multi_sample_plotter.py'
+			if len(file1.split())>1 or '*' in file1:	# more than one file to plot 
+				if stack == 'yes':
+					plotting_code = 'simple_stacker.py'
+				else:		
+					plotting_code = 'multi_sample_plotter.py'
 			else:
 				plotting_code = 'plotter.py'
 		else:
@@ -179,6 +182,9 @@ if plotting_code == 'double_sample_plotter.py':
 	cmd += ' --Min %s --Max %s --file1 %s --file2 %s --var %s'%(Minx,Maxx,file1,file2,var1)
 
 if plotting_code == 'multi_sample_plotter.py':
+	cmd += ' --Min %s --Max %s --files %s --var %s'%(Minx,Maxx,file1,var1)
+
+if plotting_code == 'simple_stacker.py':
 	cmd += ' --Min %s --Max %s --files %s --var %s'%(Minx,Maxx,file1,var1)
 
 if plotting_code == 'multi_sample_plotter_v2.py':

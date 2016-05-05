@@ -187,7 +187,7 @@ def main():
         if cut == '': 
             ttree_mc.Draw(var+">>"+hname_mc,weight, "goff")
         else :
-            ttree_mc.Draw(var+">>"+hname_mc,""+ cut, "goff")
+            ttree_mc.Draw(var+">>"+hname_mc,"(%s)*(%s)"%(cut,weight), "goff")
         # decide if we want a last bin for overflow
         if plot_overflow == 'yes':
             h_mc = overflow(h_mc) 
@@ -289,10 +289,10 @@ def main():
     # fout.Close()
 
 def GetSampleColor(itype):
-    if itype=='gg'                          : return 38
-    if itype in ['qq','signal']             : return 46
-    if itype in ['bck','bkg']               : return 41
-    if itype in ['singletop','T+x']         : return 41
+    if itype in ['gg','w1jet','z1jet']                          : return 38
+    if itype in ['qq','signal','w2jet','z2jet']             : return 46
+    if itype in ['bck','bkg','w3jet','z3jet']               : return 41
+    if itype in ['singletop','T+x','w4jet','z4jet']         : return 41
     if itype=='WJets'                       : return ROOT.kGreen-3
     if itype=='tt_bkg'                      : return ROOT.kMagenta
     if itype=='qcd'                         : return ROOT.kYellow
