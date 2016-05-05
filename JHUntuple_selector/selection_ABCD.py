@@ -516,6 +516,7 @@ class selector():
         weight_norm[0] = self.norm_w
         if self.xsec > 0 : # aka data sample
             weight_tmp[0] = -1.0*self.norm_w
+        print 'weight_tmp = %.3f'%weight_tmp[0]
 
         for evt in events:
             # progrss reporting
