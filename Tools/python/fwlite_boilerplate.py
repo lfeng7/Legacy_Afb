@@ -54,4 +54,10 @@ def check_daus( gen ):
         daus_status.append(gen.daughter(idau).status())
     print daus_pdgid
     print daus_status
+
+# integral over a histogram given x1 and x2 range
+def hist_integral(hist,x1,x2):
+    bin1 = hist.FindBin(x1)
+    bin2 = hist.FindBin(x2)
+    return hist.Integral(bin1,bin2)
        

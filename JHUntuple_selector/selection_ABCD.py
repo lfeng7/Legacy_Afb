@@ -371,7 +371,6 @@ class selector():
         el_j_delR = array('f',njets_cut*[-100.])
         el_j_mass = array('f',njets_cut*[-100.])
 
-
         lep_pt = array('f',[0.])
         lep_eta = array('f',[0.])
         lep_phi = array('f',[0.])
@@ -416,6 +415,9 @@ class selector():
         br_defs += [('lep_mass',lep_mass,'lep_mass/F')]
         br_defs += [('lep_charge',lep_charge,'lep_charge/I')]
         br_defs += [('lep_iso',lep_iso,'lep_iso/F')]
+        # ejets pair 
+        br_defs += [('el_j_delR',el_j_delR,'el_j_delR[%i]/F'%njets_cut)]
+        br_defs += [('el_j_mass',el_j_mass,'el_j_mass[%i]/F'%njets_cut)]
 
 
         br_defs += [('MVA',MVA,'MVA/F')]

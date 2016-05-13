@@ -5,6 +5,8 @@ import ROOT
 from ROOT import *
 import sys
 from optparse import OptionParser
+from plot_tools import *
+
 
 # print out usage info if no argument is given
 argv = sys.argv[1:]
@@ -88,10 +90,7 @@ parser.add_option('--config', action='store_true',
 
 (options, args) = parser.parse_args()
 
-# some plotting setup
-# Set root interactive or not
-ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
-if not plot: ROOT.gROOT.SetBatch(True)
+
 
 if options.config:
   file1 = ""
@@ -130,6 +129,11 @@ else:
   label2 = options.label2
   plot = options.plot
 
+# some plotting setup
+# Set root interactive or not
+ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
+if not plot: ROOT.gROOT.SetBatch(True)
+
 # Find the name of the ttree
 tf = ROOT.TFile(file1)
 keys = tf.GetListOfKeys()
@@ -145,11 +149,14 @@ chain = ROOT.TChain(treename)
 chain.Add(file1)
 newhist1 = ROOT.TH1F(name, name, bin, x, y) 
 chain.Draw(var+">>"+name,""+ cut, "goff")
+# newhist1 = overflow(newhist1)
 
 chain = ROOT.TChain(treename)
 chain.Add(file2)
 newhist2 = ROOT.TH1F(name+"_two", name+"_two", bin, x, y)   
 chain.Draw(var+">>"+name+"_two",""+ cut, "goff")
+# newhist2 = overflow(newhist2)
+
 
 newhist1.SetStats(0)
 newhist1.SetLineColor(ROOT.kRed)

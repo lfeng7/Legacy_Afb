@@ -37,10 +37,11 @@ if len(argv)< 1 or ('help' in argv):
 	sys.exit(1)
 
 argv = ' '.join(argv)
-if ',' in argv:
-	argv = argv.split(',')
-elif '--' in argv:
+
+if '--' in argv:
 	argv = argv.split('--')
+elif ',' in argv:
+	argv = argv.split(',')
 else:
 	print 'arguments should be seperated by either -- or ,'
 	sys.exit(1)
@@ -73,6 +74,7 @@ dir_path = ""
 plot = ""
 weight = ""
 yields = ""
+mode = ""
 
 # find the input arguments
 for i,item in enumerate(argv):
@@ -107,6 +109,7 @@ for i,item in enumerate(argv):
 	if word in ['plot']: plot = item[0]
 	if word in ['weight']: weight = item[0]
 	if word in ['yields']: yields = item[0]
+	if word in ['mode']: mode = item[0]
 
 # Determine what kind of plot to make
 plotting_code = ''
@@ -131,6 +134,9 @@ if dir_path != "":
 		plotting_code = 'stack_plotter.py'
 	else:
 		plotting_code = 'multi_sample_plotter_v2.py'
+# Overwrite plotter type by plotting mode parameter
+if mode == 'plotter':
+	plotting_code = 'plotter.py'
 
 # Make actual plotting cmd
 cmd = 'python %s/%s '%(dir_plotting_code,plotting_code)

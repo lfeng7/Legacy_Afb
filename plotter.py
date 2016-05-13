@@ -104,7 +104,7 @@ else:
   y = options.Max
   log = options.log
   bin = options.bin
-  file = options.file
+  files = options.file
   name = options.name
   title = options.title
   xaxis = options.xaxis
@@ -120,8 +120,11 @@ else:
 ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
 if not plot: ROOT.gROOT.SetBatch(True)
 
+# get all input files
+all_files = glob.glob(files)
+
 # Find the name of the ttree
-tf = ROOT.TFile(file)
+tf = ROOT.TFile(all_files[0])
 keys = tf.GetListOfKeys()
 for ikey in keys:
     if ikey.GetClassName() == 'TTree' : treename = ikey.GetName()
@@ -132,7 +135,28 @@ if name == 'blank': name = var
 if title == '': title=cut
 
 chain = ROOT.TChain(treename)
-chain.Add(file)
+print 'Getting these files'
+for ifile in all_files:
+  if 'QCD' in ifile: continue
+  print ifile
+  chain.Add(ifile)
+
+# save into a root file if needed
+plotdir = 'plots/'
+if not os.path.exists(plotdir):
+    os.mkdir(plotdir)
+    print 'Creating new dir '+plotdir
+
+if save.lower() in ['true','yes']:
+    rootdir = plotdir+'root/'
+    if not os.path.exists(rootdir):
+        os.mkdir(rootdir)
+        print 'Creating new dir '+rootdir  
+    fout_name = rootdir+name+ ".root"
+    fout = ROOT.TFile(fout_name,'recreate')
+    fout.cd()
+    print 'Save into rootfile %s'%fout_name
+
 # Making histograms
 if x!=y:
   newhist1 = ROOT.TH1F(name, name, bin, x, y)
@@ -204,6 +228,8 @@ newhist1.Draw('hist')
 # find stat box of hist1
 # lof = newhist1.GetListOfFunctions()
 # statbox1 = newhist1.FindObject("stats")
+gStyle.SetOptStat("emri");
+
 gPad.Update()
 statbox1 = newhist1.FindObject("stats")
 statbox1.SetTextColor(icolor[0])
@@ -244,19 +270,14 @@ if label != "" or len(all_cuts)>1:
         leg.AddEntry(newhist, label_, "l")
         ihist +=1
     leg.Draw("same")
-print "entries: " + str(newhist.GetEntries())
+print "entries: %i, integral %i "%(newhist.GetEntries(),newhist.Integral())
 
-plotdir = 'plots/'
-if not os.path.exists(plotdir):
-    os.mkdir(plotdir)
-    print 'Creating new dir '+plotdir
-
+# save into files
 c.SaveAs(plotdir+name + ".png")
 
 if save.lower() in ['true','yes']:
-    rootdir = plotdir+'root/'
-    if not os.path.exists(rootdir):
-        os.mkdir(rootdir)
-        print 'Creating new dir '+rootdir  
-    c.SaveAs(rootdir+name+ ".root")
+  c.Write()
+  for item in hists:
+    item.Write()
+  fout.Close()
 

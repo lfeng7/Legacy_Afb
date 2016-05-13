@@ -55,7 +55,7 @@ parser.add_option('--bin', metavar='F', type='int', action='store',
                   help='')
 
 parser.add_option('--weight', metavar='F', type='string', action='store',
-                  default='',
+                  default='1',
                   dest='weight',
                   help='which event weight to use for MC')
 
@@ -95,9 +95,10 @@ argv = []
 
 #canvas_title = 'CMS Private Work, 19.7 fb^{-1} at #sqrt{s} = 8 TeV'
 
+h_qcd = []
 
 def main():
-    global xaxis_name , fout , canvas_title
+    global xaxis_name , fout , canvas_title, h_qcd
     plot = options.plot
     cut = options.cut
     var = options.var
@@ -141,24 +142,40 @@ def main():
     dir_hists =rundir+'/'+dir_hists
     all_inputfiles = glob.glob(dir_hists+'*.root')
     # find data root file
+    data_path = []
     for ifile in all_inputfiles:
-        if 'data' in ifile or 'Run' in ifile : data_path = ifile    
-    fdata = ROOT.TFile(data_path)
+        if 'data' in ifile or 'Run' in ifile : 
+            data_path.append(ifile)
+    if not len(data_path)>0 :
+        print 'Cannot find any data root file! Will exit.'
+        sys.exit(1)   
+    fdata = ROOT.TFile(data_path[0])
     keys = fdata.GetListOfKeys()
     for ikey in keys:
         if ikey.GetClassName() == 'TTree' : treename = ikey.GetName()
     print 'Getting ttree',treename
-    ttree_data = fdata.Get(treename)
+    fdata.Close()
+    # put all data root files in a TChain
+    ttree_data = ROOT.TChain(treename)
+    for item in data_path:
+        ttree_data.Add(item)
+
     # Make histogram
     hname_data = hname+'_data'    
     if xmin != xmax:
         h_data = ROOT.TH1F(hname_data, hname_data, bin, xmin, xmax)        
     ttree_data.Draw(var+">>"+hname_data,""+ cut, "goff")
+    # Print out cut efficiency
+    total_data = ttree_data.GetEntries()
+    selected_data = ttree_data.GetEntries(cut)
+    data_cut_eff = selected_data*1.0/total_data
+    print 'Num Entries in data: %i, selected entries %i, cut efficiency %.3f'%(total_data,selected_data,data_cut_eff)
     # if we want overflow bin
     if plot_overflow == 'yes':
         h_data = overflow(h_data) 
 
     h_data.SetDirectory(0)
+    data_integral = h_data.Integral()
     fdata.Close()
 
     # Loop over all MC files to make MC stack and legend
@@ -168,6 +185,7 @@ def main():
     leg.SetName('legend')
     hlist_mc = []
     for i,isample in enumerate(mc_samples):
+        sample_type = isample[1]
         # find input root file
         mc_path = ''
         for ifile in all_inputfiles:
@@ -196,13 +214,18 @@ def main():
         cross_section_NLO = isample[3]
         nevts_gen = isample[2]
         w_scale = data_lumi*cross_section_NLO/nevts_gen 
+        # special normalization for QCD MC. Normalize to data integral
+        if sample_type == 'qcd':
+            w_scale = data_integral/h_mc.Integral()
         h_mc.Scale(w_scale)
-        print 'sample name %s norm_w = %.3f'%(hname_mc,w_scale)
+        print '%s, norm_w = %.3f'%(isample[0],w_scale)
 
         # Add into stack
-        sample_type = isample[1]
         icolor = GetSampleColor(sample_type)
         h_mc.SetFillColor(icolor)
+        if sample_type == 'qcd':
+            h_mc.SetFillColor(0)
+            h_qcd.append(h_mc)
         h_mc.SetLineColor(icolor)
         h_mc.SetMarkerStyle(0)
         h_mc.SetYTitle('events')
@@ -220,7 +243,7 @@ def main():
             sample_types.append(sample_type)
         tmpf.Close()
     # Add hists into stack in certain order
-    alltypes = ['qcd','bck','zjets','WJets','singletop','tt_bkg','gg','qq','signal']
+    alltypes = ['bck','zjets','WJets','singletop','tt_bkg','gg','qq','signal']
     for itype in alltypes :
         isamples = [item for item in mc_samples if item[1]==itype]
         if len(isamples)>0:
@@ -295,7 +318,7 @@ def GetSampleColor(itype):
     if itype in ['singletop','T+x','w4jet','z4jet']         : return 41
     if itype=='WJets'                       : return ROOT.kGreen-3
     if itype=='tt_bkg'                      : return ROOT.kMagenta
-    if itype=='qcd'                         : return ROOT.kYellow
+    if itype=='qcd'                         : return ROOT.kMagenta+2
     if itype in ['zjets','DY']              : return ROOT.kBlue
     return 0
 
@@ -412,6 +435,9 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'h',log
     mc_.GetXaxis().SetLabelOffset(999)   
     mc_.SetTitle(canvas_title)
     data_.Draw('SAME PE1X0'); 
+    # make style of QCD sample as points
+    for item in h_qcd:
+        item.Draw('SAME')
     # Draw data stat box
     ROOT.gStyle.SetOptStat("e");
     data_.SetStats(1)
