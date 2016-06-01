@@ -49,7 +49,9 @@ if len(argv) == 0:
 evt_to_run = -1 
 csv_cut = 0.679
 met_cut = 1500
-njets_cut = 2 # how many energetic jets to be selected
+njets_cut = 2 # at least how many energetic jets to be selected
+njets_max = 5 # at most how many jets 
+
 trigger_path='HLT_Ele27_WP80_v'
 lepiso_cut = 0
 xrootd = 'root://cmsxrootd.fnal.gov/'
@@ -84,7 +86,7 @@ parser.add_option('--txtfiles', metavar='F', type='string', action='store',
                   help='Input txt files')
 
 parser.add_option('--applyHLT', metavar='F', type='string', action='store',
-                  default = "no",
+                  default = "yes",
                   dest='applyHLT',
                   help='If apply HLT as first selection cut.')
 
@@ -361,15 +363,15 @@ class selector():
         # Data
 
         # set up vector containers
-        jets_pt = array('f',njets_cut*[-100.])
-        jets_eta = array('f',njets_cut*[-100.])
-        jets_phi = array('f',njets_cut*[-100.])
-        jets_mass = array('f',njets_cut*[-100.])
-        jets_csv_vec = array('f',njets_cut*[-100.])
+        jets_pt = array('f',njets_max*[-100.])
+        jets_eta = array('f',njets_max*[-100.])
+        jets_phi = array('f',njets_max*[-100.])
+        jets_mass = array('f',njets_max*[-100.])
+        jets_csv_vec = array('f',njets_max*[-100.])
 
         # electron-jet relations
-        el_j_delR = array('f',njets_cut*[-100.])
-        el_j_mass = array('f',njets_cut*[-100.])
+        el_j_delR = array('f',njets_max*[-100.])
+        el_j_mass = array('f',njets_max*[-100.])
 
         lep_pt = array('f',[0.])
         lep_eta = array('f',[0.])
@@ -398,16 +400,18 @@ class selector():
         n_looseEl = array('i',[-1])
         n_elCands = array('i',[-1])
         n_btags = array('i',[-1])
+        n_tightLep = array('i',[-1])
+        n_extraLep = array('i',[-1])
 
 
 
         br_defs = []
         # jets
-        br_defs += [('jets_pt',jets_pt,'jets_pt[%i]/F'%njets_cut)]
-        br_defs += [('jets_eta',jets_eta,'jets_eta[%i]/F'%njets_cut)]
-        br_defs += [('jets_phi',jets_phi,'jets_phi[%i]/F'%njets_cut)]
-        br_defs += [('jets_mass',jets_mass,'jets_mass[%i]/F'%njets_cut)]
-        br_defs += [('jets_csv_vec',jets_csv_vec,'jets_csv_vec[%i]/F'%njets_cut)]
+        br_defs += [('jets_pt',jets_pt,'jets_pt[%i]/F'%njets_max)]
+        br_defs += [('jets_eta',jets_eta,'jets_eta[%i]/F'%njets_max)]
+        br_defs += [('jets_phi',jets_phi,'jets_phi[%i]/F'%njets_max)]
+        br_defs += [('jets_mass',jets_mass,'jets_mass[%i]/F'%njets_max)]
+        br_defs += [('jets_csv_vec',jets_csv_vec,'jets_csv_vec[%i]/F'%njets_max)]
         #leptons
         br_defs += [('lep_pt',lep_pt,'lep_pt/F')]
         br_defs += [('lep_eta',lep_eta,'lep_eta/F')]
@@ -416,8 +420,8 @@ class selector():
         br_defs += [('lep_charge',lep_charge,'lep_charge/I')]
         br_defs += [('lep_iso',lep_iso,'lep_iso/F')]
         # ejets pair 
-        br_defs += [('el_j_delR',el_j_delR,'el_j_delR[%i]/F'%njets_cut)]
-        br_defs += [('el_j_mass',el_j_mass,'el_j_mass[%i]/F'%njets_cut)]
+        br_defs += [('el_j_delR',el_j_delR,'el_j_delR[%i]/F'%njets_max)]
+        br_defs += [('el_j_mass',el_j_mass,'el_j_mass[%i]/F'%njets_max)]
 
 
         br_defs += [('MVA',MVA,'MVA/F')]
@@ -440,6 +444,8 @@ class selector():
         br_defs += [('n_looseEl',n_looseEl,'n_looseEl/I')]
         br_defs += [('n_elCands',n_elCands,'n_elCands/I')]
         br_defs += [('n_btags',n_btags,'n_btags/I')]
+        br_defs += [('n_tightLep',n_tightLep,'n_tightLep/I')]
+        br_defs += [('n_extraLep',n_extraLep,'n_extraLep/I')]
 
 
         # Set up branches contains vectors
@@ -463,8 +469,8 @@ class selector():
             mc_vecs = []
             mc_branch_names = []
             # non vector containers
-            jets_flavor = array('i',njets_cut*[-100])
-            br_defs += [('jets_flavor',jets_flavor,'jets_flavor[%i]/I'%njets_cut)]
+            jets_flavor = array('i',njets_max*[-100])
+            br_defs += [('jets_flavor',jets_flavor,'jets_flavor[%i]/I'%njets_max)]
 
             if options.isSignal == 'yes' or options.sampletype == 'ttbar':
                 # The sequence of storage in each vector would be :
@@ -593,39 +599,37 @@ class selector():
 
             #### PF electrons ####
             el_loose,el_cand = [],[]
-            el_loose_index,el_cand_index = [],[]
+            el_loose_index,el_cand_index, el_tight_index = set(),set(),set()
             for i in range(len(el_p4)):
                 el = el_p4[i]
                 icharge = el_charge[i]
                 # PFelectrons passed loose selection
                 # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Veto
-                if el_isPseudoLoose[i] and el.pt()>20 and math.fabs(el.eta())<2.5 : 
+                if el_isPseudoLoose[i] and el.pt()>20 and math.fabs(el.eta())<2.5 and el_iso[i]<0.15 : 
                     el_loose.append((el,icharge,el_iso[i]))
-                    el_loose_index.append(i)
+                    el_loose_index.add(i)
 
                 # PFelectrons passed tight selection
                 # https://twiki.cern.ch/twiki/bin/view/CMS/TopEGMRun1#Signal
                 #signal region, with a tight and isolated electron
-                if options.selection_type == 'signal' and el_isTight[i] and not el_isModTight[i] and el.pt()>30 and abs(el.eta())<2.5 and el_iso[i]<0.1: 
-                    el_cand.append((el,icharge,el_iso[i]))
-                    el_cand_index.append(i)
+                if  el_isTight[i] and not el_isModTight[i] and el.pt()>30 and abs(el.eta())<2.5 and el_iso[i]<0.1: 
+                    el_tight_index.add(i)
                 # sideband region, with a tight but non-isolated electron
-                elif options.selection_type == 'sideband' and not el_isModTight[i] and el.pt()>30 and abs(el.eta())<2.5:
+                if not el_isModTight[i] and el.pt()>30 and abs(el.eta())<2.5:
                     el_cand.append((el,icharge,el_iso[i]))
-                    el_cand_index.append(i)
-                # qcd selection, with a tight electron, no cut on isolation yet here
-                elif options.selection_type == 'qcd' and el_isLoose[i] and not el_isModTight[i] and el_iso[i] < 0.1 and el.pt()>30 and abs(el.eta())<2.5:
-                    el_cand.append((el,icharge,el_iso[i]))
+                    el_cand_index.add(i)
 
             n_elCands[0] = len(el_cand_index)
             n_looseEl[0] = len(el_loose_index)
+            n_tightLep[0] = len(el_tight_index)
+            
             # Selection on ele cand 
-            # 1 and only 1 tight ele
-            if not len(el_cand)==1 : continue # Requires exactly one good el candidate
-            h_cutflow.Fill('1 el Cand',1)
+            if not len(el_cand)>=1 : continue # Requires exactly one good el candidate
+            h_cutflow.Fill('>=1 el Cand',1)
 
             # extra loose leptons
-            el_extra = list( ipar for ipar in el_loose_index if ipar not in el_cand_index)
+            el_extra = el_loose_index - el_tight_index
+            n_extraLep[0] = len(el_extra)
 
             #### PF muons ####
 
@@ -688,8 +692,12 @@ class selector():
      
             # Selection on jets
 
-            if not 2 == len(jets_cand) : continue
-            h_cutflow.Fill('two jets',1)
+            if not len(jets_cand)>=njets_cut : continue
+            h_cutflow.Fill('>= 2 jets',1)
+
+            if not len(jets_cand)<=njets_max : continue
+            h_cutflow.Fill('<= 5 jets',1) 
+
             njets[0] = len(jets_cand)
 
 
@@ -747,16 +755,17 @@ class selector():
                 el_j_mass[i] = (lep_p4+ijet_p4).mass()
                 el_j_delR[i] = DeltaR2(lep_p4,ijet_p4) # DeltaR2 = fwlite_boilerplate.DeltaR2
             # lep
-            for i,iel in enumerate(el_cand):
-                lepp4 = iel[0]
-                lepcharge = iel[1]
-                lepiso = iel[2]
-                lep_pt[0] = lepp4.pt() 
-                lep_eta[0] = lepp4.eta() 
-                lep_phi[0] = lepp4.phi() 
-                lep_mass[0] = lepp4.mass()
-                lep_charge[0] = lepcharge
-                lep_iso[0] = lepiso
+            # Only keep information of leading electron
+            iel = el_cand[0]
+            lepp4 = iel[0]
+            lepcharge = iel[1]
+            lepiso = iel[2]
+            lep_pt[0] = lepp4.pt() 
+            lep_eta[0] = lepp4.eta() 
+            lep_phi[0] = lepp4.phi() 
+            lep_mass[0] = lepp4.mass()
+            lep_charge[0] = lepcharge
+            lep_iso[0] = lepiso
 
 
             # MET
@@ -810,141 +819,141 @@ class selector():
             # Initialize all weights
             w_top_pT = 1.0
 
-            if options.mcordata == 'mc' :
+            if options.mcordata == 'mc' : pass
 
-                # GenParticles info for signal MC only
+                # # GenParticles info for signal MC only
 
-                # Look into genparticel info and get Gen Top, W's and initial particles (qqbar, gg etc)
-                if options.isSignal == 'yes' or options.sampletype == 'ttbar':
-                    is_ejets = 0
-                    # Determine if this event is e+jets event
-                    if len(gen_el) == 1 and len(gen_el)+len(gen_mu)+len(gen_tau) == 1 : 
-                        is_ejets = 1
-                    gen_is_ejets.push_back(is_ejets)
+                # # Look into genparticel info and get Gen Top, W's and initial particles (qqbar, gg etc)
+                # if options.isSignal == 'yes' or options.sampletype == 'ttbar':
+                #     is_ejets = 0
+                #     # Determine if this event is e+jets event
+                #     if len(gen_el) == 1 and len(gen_el)+len(gen_mu)+len(gen_tau) == 1 : 
+                #         is_ejets = 1
+                #     gen_is_ejets.push_back(is_ejets)
 
-                    # Another way to determine the status of this signal event  
-                    init_pars = []  
-                    gentops = []  
-                    genWs = []
-                    genBs = []
-                    w_daughters = []       
-                    for ig in genpars:
-                        # Get initial particles
-                        if ig.pt()<0: continue
-                        # Look through all the particles for protons; append their first daughters to the list
-                        if ig.pdgId() == 2212: init_pars.append(ig.daughter(0))
-                        # Look through particles for all ts
-                        if math.fabs(ig.pdgId()) == 6 and ig.status() == 3 :
-                            # By default t is in had side, unless the W from this t decays leptonically
-                            whichside = 'had'
-                            #look through all the daughters for top to find W.
-                            for i in range(ig.numberOfDaughters()) :
-                                dau = ig.daughter(i)
-                                if math.fabs(dau.pdgId()) == 24 :
-                                    # Look into daughters of this W
-                                    # if the W doesn't have two daughters, I don't know what the hell happened.
-                                    if dau.numberOfDaughters() != 2 :
-                                        info = 'W without two daughters. PARTICLE: ' + getId(ig.pdgId()) + ', DAUGHTERS : '
-                                        for j in range(ig.numberOfDaughters()) :
-                                            info = info + getId(ig.daughter(i)) + ' '
-                                        print info
-                                        continue  
-                                    # append all W daughters into the list and decide if it is leptonic or hadronic W
-                                    for j in range(dau.numberOfDaughters()):
-                                        w_daughters.append(dau.daughter(j))
-                                        if abs(dau.daughter(j).pdgId()) in pdg_leps: 
-                                            whichside = 'lep'
-                                    # append W
-                                    genWs.append((dau,whichside))
-                            # find b from top decay
-                                if math.fabs(dau.pdgId()) == 5 :
-                                    genBs.append((dau,whichside))
-                            # append to gentop 
-                            gentops.append((ig,whichside))
+                #     # Another way to determine the status of this signal event  
+                #     init_pars = []  
+                #     gentops = []  
+                #     genWs = []
+                #     genBs = []
+                #     w_daughters = []       
+                #     for ig in genpars:
+                #         # Get initial particles
+                #         if ig.pt()<0: continue
+                #         # Look through all the particles for protons; append their first daughters to the list
+                #         if ig.pdgId() == 2212: init_pars.append(ig.daughter(0))
+                #         # Look through particles for all ts
+                #         if math.fabs(ig.pdgId()) == 6 and ig.status() == 3 :
+                #             # By default t is in had side, unless the W from this t decays leptonically
+                #             whichside = 'had'
+                #             #look through all the daughters for top to find W.
+                #             for i in range(ig.numberOfDaughters()) :
+                #                 dau = ig.daughter(i)
+                #                 if math.fabs(dau.pdgId()) == 24 :
+                #                     # Look into daughters of this W
+                #                     # if the W doesn't have two daughters, I don't know what the hell happened.
+                #                     if dau.numberOfDaughters() != 2 :
+                #                         info = 'W without two daughters. PARTICLE: ' + getId(ig.pdgId()) + ', DAUGHTERS : '
+                #                         for j in range(ig.numberOfDaughters()) :
+                #                             info = info + getId(ig.daughter(i)) + ' '
+                #                         print info
+                #                         continue  
+                #                     # append all W daughters into the list and decide if it is leptonic or hadronic W
+                #                     for j in range(dau.numberOfDaughters()):
+                #                         w_daughters.append(dau.daughter(j))
+                #                         if abs(dau.daughter(j).pdgId()) in pdg_leps: 
+                #                             whichside = 'lep'
+                #                     # append W
+                #                     genWs.append((dau,whichside))
+                #             # find b from top decay
+                #                 if math.fabs(dau.pdgId()) == 5 :
+                #                     genBs.append((dau,whichside))
+                #             # append to gentop 
+                #             gentops.append((ig,whichside))
 
-                    # Analyse the selected gen particles, write into ttree
-                    # The sequence of storage in each vector would be :
-                    #   0      1     2     3     4     5
-                    # init1, init2, thad, tlep, whad, wlep  
+                #     # Analyse the selected gen particles, write into ttree
+                #     # The sequence of storage in each vector would be :
+                #     #   0      1     2     3     4     5
+                #     # init1, init2, thad, tlep, whad, wlep  
 
-                    # Initial particles
-                    if not len(init_pars) == 2:
-                        print 'Events with ',len(init_pars),'initial partons..'
-                        continue
-                    for i in range(2):
-                        ig = init_pars[i]
-                        gen_pt.push_back(ig.pt())
-                        gen_eta.push_back(ig.eta())
-                        gen_phi.push_back(ig.phi())
-                        gen_mass.push_back(ig.mass())
-                        gen_pdgid.push_back(ig.pdgId())
-                        gen_side.push_back('NA')
-                    # GenTops
-                    if not len(gentops) == 2 :
-                        print 'Events with ',len(gentops),'gen tops'
-                        continue
-                    for i in range(2):
-                        ig = gentops[i][0]
-                        iside = gentops[i][1]
-                        gen_pt.push_back(ig.pt())
-                        gen_eta.push_back(ig.eta())
-                        gen_phi.push_back(ig.phi())
-                        gen_mass.push_back(ig.mass())
-                        gen_pdgid.push_back(ig.pdgId())
-                        gen_side.push_back(iside)
-                    # GenWs
-                    if not (len(genWs) == 2 and len(genBs) == 2)  :
-                        print 'Events with ',len(genWs),'gen Ws',len(genBs),'gen Bs from top'
-                        continue
-                    for i in range(2):
-                        ig = genWs[i][0]
-                        iside = genWs[i][1]
-                        gen_pt.push_back(ig.pt())
-                        gen_eta.push_back(ig.eta())
-                        gen_phi.push_back(ig.phi())
-                        gen_mass.push_back(ig.mass())
-                        gen_pdgid.push_back(ig.pdgId())
-                        gen_side.push_back(iside)
-                    # Gen Bs
-                    for i in range(2):
-                        ig = genBs[i][0]
-                        iside = genBs[i][1]
-                        gen_pt.push_back(ig.pt())
-                        gen_eta.push_back(ig.eta())
-                        gen_phi.push_back(ig.phi())
-                        gen_mass.push_back(ig.mass())
-                        gen_pdgid.push_back(ig.pdgId())
-                        gen_side.push_back(iside)                 
+                #     # Initial particles
+                #     if not len(init_pars) == 2:
+                #         print 'Events with ',len(init_pars),'initial partons..'
+                #         continue
+                #     for i in range(2):
+                #         ig = init_pars[i]
+                #         gen_pt.push_back(ig.pt())
+                #         gen_eta.push_back(ig.eta())
+                #         gen_phi.push_back(ig.phi())
+                #         gen_mass.push_back(ig.mass())
+                #         gen_pdgid.push_back(ig.pdgId())
+                #         gen_side.push_back('NA')
+                #     # GenTops
+                #     if not len(gentops) == 2 :
+                #         print 'Events with ',len(gentops),'gen tops'
+                #         continue
+                #     for i in range(2):
+                #         ig = gentops[i][0]
+                #         iside = gentops[i][1]
+                #         gen_pt.push_back(ig.pt())
+                #         gen_eta.push_back(ig.eta())
+                #         gen_phi.push_back(ig.phi())
+                #         gen_mass.push_back(ig.mass())
+                #         gen_pdgid.push_back(ig.pdgId())
+                #         gen_side.push_back(iside)
+                #     # GenWs
+                #     if not (len(genWs) == 2 and len(genBs) == 2)  :
+                #         print 'Events with ',len(genWs),'gen Ws',len(genBs),'gen Bs from top'
+                #         continue
+                #     for i in range(2):
+                #         ig = genWs[i][0]
+                #         iside = genWs[i][1]
+                #         gen_pt.push_back(ig.pt())
+                #         gen_eta.push_back(ig.eta())
+                #         gen_phi.push_back(ig.phi())
+                #         gen_mass.push_back(ig.mass())
+                #         gen_pdgid.push_back(ig.pdgId())
+                #         gen_side.push_back(iside)
+                #     # Gen Bs
+                #     for i in range(2):
+                #         ig = genBs[i][0]
+                #         iside = genBs[i][1]
+                #         gen_pt.push_back(ig.pt())
+                #         gen_eta.push_back(ig.eta())
+                #         gen_phi.push_back(ig.phi())
+                #         gen_mass.push_back(ig.mass())
+                #         gen_pdgid.push_back(ig.pdgId())
+                #         gen_side.push_back(iside)                 
 
-                    # Find the decay type of the signal ttbar events
-                    if not len(w_daughters) == 4:
-                        print 'Events with ',len(w_daughters),'w daughters'
-                        continue
-                    genleps = []
-                    for ig in w_daughters:
-                        if abs(ig.pdgId()) in pdg_leps : genleps.append(ig.pdgId())
-                    if len(genleps) == 0 : gen_type.push_back('had')
-                    elif len(genleps) == 2  and 15 not in genleps and -15 not in genleps: gen_type.push_back('dilep') 
-                    elif len(genleps) == 2 and 15 in genleps or -15 in genleps : gen_type.push_back('tau_lep')
-                    elif len(genleps) == 1 :
-                        if abs(genleps[0]) == 11 : gen_type.push_back('e_jets')
-                        if abs(genleps[0]) == 13 : gen_type.push_back('mu_jets')
-                        if abs(genleps[0]) == 15 : gen_type.push_back('tau_jets')
-                    else:
-                        print 'This event has more than 2 leptons!'
-                        continue
-                        gen_type.push_back('Wrong gen info!')
+                #     # Find the decay type of the signal ttbar events
+                #     if not len(w_daughters) == 4:
+                #         print 'Events with ',len(w_daughters),'w daughters'
+                #         continue
+                #     genleps = []
+                #     for ig in w_daughters:
+                #         if abs(ig.pdgId()) in pdg_leps : genleps.append(ig.pdgId())
+                #     if len(genleps) == 0 : gen_type.push_back('had')
+                #     elif len(genleps) == 2  and 15 not in genleps and -15 not in genleps: gen_type.push_back('dilep') 
+                #     elif len(genleps) == 2 and 15 in genleps or -15 in genleps : gen_type.push_back('tau_lep')
+                #     elif len(genleps) == 1 :
+                #         if abs(genleps[0]) == 11 : gen_type.push_back('e_jets')
+                #         if abs(genleps[0]) == 13 : gen_type.push_back('mu_jets')
+                #         if abs(genleps[0]) == 15 : gen_type.push_back('tau_jets')
+                #     else:
+                #         print 'This event has more than 2 leptons!'
+                #         continue
+                #         gen_type.push_back('Wrong gen info!')
 
-                    # Top pT reweighting
-                    if gen_type[0] in ['e_jets','mu_jets'] :
-                        a = 0.159; b = -0.00141;
-                    elif gen_type[0] in ['dilep'] :
-                        a = 0.148; b = -0.00129;
-                    else :  # for hadronic or weird situations...
-                        a = 0.156; b = -0.00137;
-                    w_top_pT = GetTopPtWeights(a,b,gen_pt[2],gen_pt[3])
+                #     # Top pT reweighting
+                #     if gen_type[0] in ['e_jets','mu_jets'] :
+                #         a = 0.159; b = -0.00141;
+                #     elif gen_type[0] in ['dilep'] :
+                #         a = 0.148; b = -0.00129;
+                #     else :  # for hadronic or weird situations...
+                #         a = 0.156; b = -0.00137;
+                #     w_top_pT = GetTopPtWeights(a,b,gen_pt[2],gen_pt[3])
 
-                weight_top_pT[0] =  w_top_pT 
+                # weight_top_pT[0] =  w_top_pT 
 
             # Fill all branches
             outputtree.Fill()         

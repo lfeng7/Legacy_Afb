@@ -90,7 +90,7 @@ y2 = options.Max2
 log = options.log
 bin = options.bin1
 bin2 = options.bin2
-file = options.file
+files = options.file
 name = options.name
 save = options.save
 
@@ -104,8 +104,18 @@ if not plot: ROOT.gROOT.SetBatch(True)
 c = TCanvas()
 c.cd()
 
+# Open all input files
+files = files.split()
+if len(files)>1:
+  all_files = files
+elif len(files)==1:
+  all_files = glob.glob(files[0])
+else:
+  print 'zero files!'
+  sys.exit(1)
+
 # Find the name of the ttree
-tf = ROOT.TFile(file)
+tf = ROOT.TFile(all_files[0])
 keys = tf.GetListOfKeys()
 for ikey in keys:
     if ikey.GetClassName() == 'TTree' : treename = ikey.GetName()
@@ -113,7 +123,9 @@ print 'Getting ttree',treename
 tf.Close()
 
 chain = ROOT.TChain(treename)
-chain.Add(file)
+for ifile in all_files:
+  chain.Add(ifile)
+
 newhist = ROOT.TH2F(name, name, bin, x, y, bin2, x2, y2)	
 chain.Draw(var2+":"+var1+">>"+name,""+ cut, "Colz")
 if scale:
