@@ -1,0 +1,1 @@
+thetaFitter.py is the main theta fitting code. Need to be put in the dir of theta/utils2/test , and executed via ./theta-auto.py
