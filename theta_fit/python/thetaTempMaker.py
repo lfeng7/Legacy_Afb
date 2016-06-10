@@ -18,14 +18,15 @@ class thetaTemp(object):
 		super(thetaTemp, self).__init__()
 		self.process = {}
 		self.outputName = outputName
-		self.outfile = ROOT.TFile('thetaTemplate_%s.root'%outputName,'recreate')
+		self.outfile = ROOT.TFile('templates/thetaTemplates_%s.root'%outputName,'recreate')
 		self.thetaHistList = []
 		self.template_file = inputFile
-		self.outfile_aux = ROOT.TFile('thetaTemplates_%s_aux.root'%self.outputName,'recreate')
+		self.outfile_aux = ROOT.TFile('templates/thetaTemplates_%s_aux.root'%self.outputName,'recreate')
 		self.outfile_aux.mkdir('hists/')
 		self.outfile_aux.mkdir('plots/')
 		self.isTTree = isTTree
 		self.weight = weight
+		self.QCD_SF = 0.2
 
 	def main(self):
 		self.define_process()
@@ -112,6 +113,10 @@ class thetaTemp(object):
 				if not tmp_hist:
 					print 'histogram %s not found in %s!'%(i_oldkey,tfile)
 				else:
+					# rescale Data-driven QCD templates using extrapolation factors get from ABCD
+					if 'qcd' in i_newkey:
+						print 'QCD templates rescaling to %.3f'%self.QCD_SF
+						tmp_hist.Scale(self.QCD_SF)
 					# use template class to convert the TH3D to TH1D
 					# 	def __init__(self,name,formatted_name,bin_type='fixed') :
 					template_obj = template.template(i_newkey,i_newkey)
