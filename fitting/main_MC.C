@@ -27,6 +27,7 @@ double HIGHMASS = 1750.0;
 double XFLOW = 0.0;
 double XFHIGH = 0.6;
 int pdf_member = -1; // pdf weight: Default pdf member
+const char* SF_sys_global = "nominal";
 
 //sample file struct declaration
 struct sample_file {			//Holds all the necessary attributes of a sample file
@@ -50,8 +51,8 @@ char dir_angles[400] = "/uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/
 
 //Function declarations
 //Add pdf_index as a parameter
-int main_MC(int analyze, int onGrid, char* r, char* input_filename, int index);
-int main_MC(int analyze, int onGrid, char* r, char* input_filename, int index, int xbins, int ybins, int zbins, double lowmass, double highmass, double xflow, double xfhigh);
+int main_MC(int analyze, int onGrid, char* r, char* input_filename, int index, const char* sys_type);
+int main_MC(int analyze, int onGrid, char* r, char* input_filename, int index, const char* sys_type, int xbins, int ybins, int zbins, double lowmass, double highmass, double xflow, double xfhigh);
 void handle_input(char* filename);
 void makeAnglesFiles();
 void makeHistosFiles(int xBins,int yBins,int zBins,double mass_lower,double mass_upper, double xflow, double xfhigh);
@@ -61,15 +62,16 @@ void move_stuff(char* runname);
 
 
 //MAIN FUNCTION
-int main_MC(int analyze, int onGrid, char* r, char* input_filename, int index)
+int main_MC(int analyze, int onGrid, char* r, char* input_filename, int index,const char* sys_type)
 {
-	return main_MC(analyze,onGrid,r,input_filename,index,XBINS,YBINS,ZBINS,LOWMASS,HIGHMASS,XFLOW,XFHIGH);
+	return main_MC(analyze,onGrid,r,input_filename,index,sys_type,XBINS,YBINS,ZBINS,LOWMASS,HIGHMASS,XFLOW,XFHIGH);
 }
-int main_MC(int analyze, int onGrid, char* r, char* input_filename, int index, int xbins, int ybins, int zbins, double lowmass, double highmass, double xflow, double xfhigh)
+int main_MC(int analyze, int onGrid, char* r, char* input_filename, int index,const char* sys_type, int xbins, int ybins, int zbins, double lowmass, double highmass, double xflow, double xfhigh)
 {
 
 	// For systematics evaluation only. To remind that we are using the modified reweighting factor indeed.
-	cout<<"\n"<<detector_tune<<"\n"<<endl;
+	cout<<"\n MC correction is "<<sys_type<<"\n"<<endl;
+	SF_sys_global = sys_type;
 
 	char* runname;
 	runname=r;
@@ -77,6 +79,7 @@ int main_MC(int analyze, int onGrid, char* r, char* input_filename, int index, i
 	//pdf weight: take input of pdf_index and asign it to the global var pdf_member. The pdf_member will be used later on 
 	//in angles::SetPdfMembers(int pdf_member)
 	pdf_member = index;
+
 
 	//take in the input file and make the linked list of sample file structs
 	printf("Handling input file %s :\n",input_filename);
@@ -247,6 +250,8 @@ void makeHistosFiles(int xBins, int yBins, int zBins, double lowmass, double hig
 		a->SetxFLimits(xflow,xfhigh);
 		// Set PDF member
 		a->SetPdfMembers(pdf_member);
+		// Set MC correction sys version
+		a->Set_SF_sys(SF_sys_global);
 		a->Loop(iter->is_for_distribution,iter->nEventsGenerated,iter->cross_section);
 		free(a);
 		i=i+1;

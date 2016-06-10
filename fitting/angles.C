@@ -46,6 +46,10 @@ int num_of_temp = 5;
 int temp_num = 5;
 // signal events number scale.
 float signal_scale = 1;
+// Integrated Luminosity of Data
+float total_Lumi = 19700;
+// Implement MC correction SF usage
+const char* SF_sys = "nominal"; // 0 means nominal
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -295,6 +299,21 @@ void angles::Loop(int is_for_dist, int neventsgenerated, double crosssection)
 
 		//set the event weight
 		// Comment: Here, the detector modeling sys can be evaluated
+		// vary SFs
+		// btag_eff_reweight_low, tracking_reweight_low, lepID_reweight_low, lepIso_reweight_low, trigger_reweight_low;
+		if ( strcmp(SF_sys , "btag_eff_up")==0 ) btag_eff_reweight = btag_eff_reweight_hi;
+		if ( strcmp(SF_sys , "tracking_up")==0 ) tracking_reweight = tracking_reweight_hi;
+		if ( strcmp(SF_sys , "lepID_up")==0 ) lepID_reweight = lepID_reweight_hi;
+		if ( strcmp(SF_sys , "lepIso_up")==0 ) lepIso_reweight = lepIso_reweight_hi;
+		if ( strcmp(SF_sys , "trigger_up")==0 ) trigger_reweight = trigger_reweight_hi;
+
+		if ( strcmp(SF_sys , "btag_eff_down")==0 ) btag_eff_reweight = btag_eff_reweight_low;
+		if ( strcmp(SF_sys , "tracking_down")==0 ) tracking_reweight = tracking_reweight_low;
+		if ( strcmp(SF_sys , "lepID_down")==0 ) lepID_reweight = lepID_reweight_low;
+		if ( strcmp(SF_sys , "lepIso_down")==0 ) lepIso_reweight = lepIso_reweight_low;
+		if ( strcmp(SF_sys , "trigger_down")==0 ) trigger_reweight = trigger_reweight_low;
+
+		// calculate final weight
 		float event_weight = pileup_reweight*btag_eff_reweight*tracking_reweight*lepID_reweight*lepIso_reweight*trigger_reweight*top_pT_reweight*PDF_reweight;
 		float event_weight_no_top_pT_reweight = pileup_reweight*btag_eff_reweight*tracking_reweight*lepID_reweight*lepIso_reweight*trigger_reweight*PDF_reweight;
 
@@ -311,8 +330,8 @@ void angles::Loop(int is_for_dist, int neventsgenerated, double crosssection)
 		//rescale the event weight by the cross section over the number of events
 		
 		// //For Powheg sample
-		event_weight = event_weight * (crosssection/neventsgenerated) * (25523595./245.8)*signal_scale;
-		event_weight_no_top_pT_reweight = event_weight_no_top_pT_reweight * (crosssection/neventsgenerated) * (25523595./245.8)*signal_scale;
+		event_weight = event_weight * (crosssection/neventsgenerated) * total_Lumi *signal_scale;
+		event_weight_no_top_pT_reweight = event_weight_no_top_pT_reweight * (crosssection/neventsgenerated) * total_Lumi *signal_scale;
 
 		// For MG sample
 		//event_weight = event_weight * (crosssection/neventsgenerated) * (25273288./108.0)*signal_scale;
@@ -538,4 +557,9 @@ void angles::SetxFLimits(double xfLow, double xfHigh) {
 
 void angles::SetPdfMembers(int pdf_member){
 	pdf_index = pdf_member;
+}
+
+void angles::Set_SF_sys(const char* SF_sys_type){
+	SF_sys = SF_sys_type;
+	printf("SF_sys set as %s\n",SF_sys );
 }

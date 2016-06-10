@@ -24,6 +24,7 @@ class angles {
 	void SetMassLimits(double lowmass, double highmass);
 	void SetxFLimits(double xfLow, double xfHigh);
 	void SetPdfMembers(int pdf_member);
+	void Set_SF_sys(const char* SF_sys_type);
 
 };
 
