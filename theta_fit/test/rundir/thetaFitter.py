@@ -7,7 +7,7 @@ execfile("common.py")
 theta fitting code
 """
 
-epsilon = 1E-10 
+epsilon = 1E-4
 
 def get_model(template):
     """
@@ -25,7 +25,10 @@ def get_model(template):
     # Specifying all uncertainties. Internally, this adds a factor exp(lambda * p)
     # where p is the parameter specified as first argument and lambda is the constant
     # in the second argument:
-    model.add_lognormal_uncertainty('vjets_rate', 0.05, 'wjets')
+    model.add_lognormal_uncertainty('wjets_rate', 0.05, 'wjets')
+    model.add_lognormal_uncertainty('other_bkg_rate', 0.05, 'other')
+    model.add_lognormal_uncertainty('qqs_rate', 0.05, 'qqs')
+    model.add_lognormal_uncertainty('gg_rate', 0.05, 'gg')
 
     
     # the qcd is derived from data, so do not apply a lumi uncertainty on that:
@@ -55,9 +58,8 @@ template_file = argv.pop(0)
 # Define model
 model = get_model(template_file)
 # Report the model in an html file
-# model_summary(model)
-# report.write_html('htmlout')
-# print 'Done get_summary.'
+model_summary(model)
+print 'Done get_summary.'
 
 #maximum likelihood fit on data without signal (background-only).
 # mleFit(model)
@@ -65,7 +67,7 @@ model = get_model(template_file)
 
 # Do mle fit here
 """
-Here's the testing code of mle fit to understand how theta works
+MLE fit and output postfit templates to a root file
 """
 parVals = mle_print(model, 'data', 1, signal_process_groups = {'': [] })
 parameter_values = {}
@@ -80,7 +82,8 @@ for o in model.get_observables():
 # Output to root file
 write_histograms_to_rootfile(histos,'postfit_histos_'+template_file.split('/')[-1])
 
-# print 'parameter_values: ',parameter_values
+# Write as html
+report.write_html('htmlout')
 
 
 

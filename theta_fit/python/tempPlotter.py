@@ -6,6 +6,8 @@ import ROOT
 import template
 import helper
 import os
+import numpy as np
+from collections import OrderedDict
 
 class plotter(object):
     """docstring for plotter"""
@@ -14,13 +16,15 @@ class plotter(object):
         self.input_file = template_file
         self.template_file = ROOT.TFile(template_file)
         self.all_hist = []
-        self.projections = {} # {'wjets_plus':[hist_cs,hist_xf,hist_mass],,,}
-        self.process = {}
+        self.projections = OrderedDict() # {'wjets_plus':[hist_cs,hist_xf,hist_mass],,,}
+        self.process = OrderedDict()
         self.observables = ['plus','minus']
         self.stack_lists = ['x','y','z']
         self.stack_xaxis = ['cos#theta*','|x_{F}|','M_{tt}(GeV)']
         self.stacks = {} # keys: 'plus_x','minus_y' etc
         self.DATA_proj = {} # contains data projection th1 with same key as self.stacks
+        self.process_counts = OrderedDict() # for total number of events given the 1D templates , for R_process calculation
+
 
     def main(self):
         """
@@ -31,20 +35,26 @@ class plotter(object):
         self.makeControlPlots() # make 3 projections for each 1D templates
         self.stackMaker() # add projections into proper stacks
         self.make_data_mc_comparison()
+        self.write_counts_to_file()
 
 
 
     def define_process(self):
         """
-        define template processes in a dict. [0] is string correspond to legacy template th3f name, [1] is 
-        more detailed describtion of what's in there.
+        define template processes in a dict. 
+        Order of entries adding will decide the order of stack fill process.
         """
         self.process['wjets'] ='WJets'
+        self.process['qcd']   ='QCD'
         self.process['other'] ='s_t/tt_other'
         self.process['gg']    ='gg/qg_ttbar'
         self.process['qqs']   ='qqs_ttbar'
-        self.process['qcd']   ='QCD'
         self.process['DATA']   ='DATA'
+        # initiate a process count table
+        for ikey in self.process:
+            self.process_counts[ikey]=0
+        print '(INFO) Done define_process.'
+
 
 
     def stackMaker(self):
@@ -83,22 +93,33 @@ class plotter(object):
                     self.DATA_proj[stack_key] = ihist
                 # add to legend
                 if stack_key=='plus_x':
+                    print '(info) Adding %s into stack'%iprocess_title
                     self.legend.AddEntry(ihist,iprocess_title,"F")
+                # add total integral of hists into a list for later calculation of R_process
+                if 'x' in stack_key:
+                    self.process_counts[iprocess] += ihist.Integral()
+                    # print '(info) Add counts of process %s from hist %s into count table'%(iprocess,stack_key)
         self.write_stack_to_auxfile(hist_list=self.stacks.values(),legend=self.legend)
-        print 'Done stackMaker.'
+        print '(info) Done stackMaker.'
+
 
     def defineIO(self):
         input_name = self.input_file.split('/')[-1]
-        self.output_dir = input_name.split('.root')[0]+'_plots'
+        input_name = input_name.split('.root')[0]
+        self.input_name = input_name
+        self.output_dir = input_name+'_plots'
         # make sure output dir exists
         if not os.path.exists(self.output_dir):
             os.mkdir(self.output_dir)
-            print 'Making new dir %s'%self.output_dir
-        output_rootfile = '%s/control_%s'%(self.output_dir,input_name)
+            print '(info) Making new dir %s'%self.output_dir
+        output_rootfile = '%s/control_%s.root'%(self.output_dir,input_name)
         self.outfile_aux = ROOT.TFile(output_rootfile,'recreate')
         self.outfile_aux.mkdir('hists/')
         self.outfile_aux.mkdir('plots/')
-        print 'Making aux output file %s.'%output_rootfile
+        print '(info) Making aux output file %s.'%output_rootfile
+        # Create a txt file for counts
+        self.txt_file = open('%s/counts_%s.txt'%(self.output_dir,input_name),'w')
+
 
     def makeControlPlots(self):
         """
@@ -110,6 +131,7 @@ class plotter(object):
         for name in all_templates_names:
             self.all_templates.append(self.template_file.Get(name))
         # for every 1D templates, get 3D original and 3 1D projection histograms
+        tmp_projections = {}
         for ihist in self.all_templates:
             # get 3 projections from 1D templates and write in aux file
             hname = ihist.GetName()+'_proj'
@@ -127,9 +149,14 @@ class plotter(object):
                 for iobs in self.observables:
                     newkey = '%s_%s'%(key,iobs) # wjets_plus etc
                     if key in hname and iobs in hname:
-                        self.projections[newkey] = hist_proj[1:]
+                        tmp_projections[newkey] = hist_proj[1:]
+        # re-arrange projections with the same order or self.process
+        for iprocess in self.process:
+            for key,value in tmp_projections.iteritems():
+                if iprocess in key:
+                    self.projections[key]=value
 
-        print 'Done makeControlPlots.'
+        print '(info) Done makeControlPlots.'
 
     def write_stack_to_auxfile(self,hist_list,legend):
         """
@@ -190,9 +217,27 @@ class plotter(object):
             self.outfile_aux.cd('plots')
             c.Write()
 
+    def write_counts_to_file(self):
+        """
+        Write counts of processes into a txt file
+        """
+        towrite = '%15s,%15s,%15s\n'%('process','Nevts','R_process')
+        # Calculate total number of events in post fit templates
+        temp_counts = [self.process_counts[key] for key in self.process_counts if key!='DATA']
+        total_temp_counts = np.sum(temp_counts)
+        self.process_counts['Total']=total_temp_counts
+        # Loop over process to write into txt file
+        for key,value in self.process_counts.iteritems():
+            towrite += '%15s,%15i,%15.1f%%\n'%(key,value,value*1.0/total_temp_counts*100)
+        # write into file
+        self.txt_file.write(towrite)
+        print '(info) Done write_counts_to_file .'
+
+
     def __del__(self):
         self.template_file.Close()
         self.outfile_aux.Close()
+        self.txt_file.close()
         print 'Closeup output file.'
 
 
