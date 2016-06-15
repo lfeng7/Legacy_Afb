@@ -11,9 +11,10 @@ from collections import OrderedDict
 
 class plotter(object):
     """docstring for plotter"""
-    def __init__(self, template_file):
+    def __init__(self, template_file , verbose = False):
         super(plotter, self).__init__()
         self.input_file = template_file
+        self.verbose = verbose
         self.template_file = ROOT.TFile(template_file)
         self.all_hist = []
         self.projections = OrderedDict() # {'wjets_plus':[hist_cs,hist_xf,hist_mass],,,}
@@ -36,8 +37,7 @@ class plotter(object):
         self.stackMaker() # add projections into proper stacks
         self.make_data_mc_comparison()
         self.write_counts_to_file()
-
-
+        self.makeQualityPlots()
 
     def define_process(self):
         """
@@ -53,8 +53,7 @@ class plotter(object):
         # initiate a process count table
         for ikey in self.process:
             self.process_counts[ikey]=0
-        print '(INFO) Done define_process.'
-
+        print '(info) Done define_process.'
 
 
     def stackMaker(self):
@@ -140,16 +139,15 @@ class plotter(object):
             hist_proj = template_obj.getTemplateProjections(ihist)
             self.write_templates_to_auxfile(hist_list=hist_proj)
             del(template_obj)
-
             # write 1D templates into aux file
             self.write_templates_to_auxfile([ihist])
-
             # assign projections to corresponding MC processes
             for key,value in self.process.iteritems():
                 for iobs in self.observables:
                     newkey = '%s_%s'%(key,iobs) # wjets_plus etc
                     if key in hname and iobs in hname:
                         tmp_projections[newkey] = hist_proj[1:]
+
         # re-arrange projections with the same order or self.process
         for iprocess in self.process:
             for key,value in tmp_projections.iteritems():
@@ -157,6 +155,92 @@ class plotter(object):
                     self.projections[key]=value
 
         print '(info) Done makeControlPlots.'
+
+    def GetQualityPlots(self,hist):
+        """
+        input: a TH1D 
+        output: a new TH1D contains the distribution of BinContents for spotting empty bins 
+        """
+        hname = hist.GetName()
+        N_neg_bin = 0
+        hist_quality = ROOT.TH1D('quality_%s'%hname,'quality_%s'%hname,61,-1,60)
+        for k in range(hist.GetSize()):
+            if not hist.IsBinUnderflow(k) and not hist.IsBinOverflow(k) :
+                binCounts = hist.GetBinContent(k)
+                if binCounts<0:
+                    N_neg_bin += 1
+                hist_quality.Fill(hist.GetBinContent(k))
+        hist_quality.SetDirectory(0)
+        if self.verbose:
+            print '(verbose) %s has %i negative bins.'%(hname,N_neg_bin)
+        return hist_quality
+
+
+    def makeQualityPlots(self):
+        """
+        take the 1D templates and make a 1D hist with number of events in each bin
+        input: self.all_templates
+        output: add hists h_quality_plus and h_quality_minus to aux file
+        """
+        # Get all MC templates
+        template_quality_hists = []
+        data_quality_hists = []
+
+        # loop over plus or minus templates
+        for iobs in self.observables:
+            total_temp = None
+            # Loop over all templates
+            for ihist in self.all_templates:
+                hname = ihist.GetName()
+                # pick exactly the process and observable from the templates
+                if iobs not in hname: continue
+                # make quality hists for Data
+                if 'DATA' in hname:
+                    hist_quality = self.GetQualityPlots(ihist) 
+                    hist_quality.SetLineColor(ROOT.kRed)                    
+                    data_quality_hists.append(hist_quality)
+                else:
+                    # if it's not data, start to build up total templates
+                    # if no total template available already, initiate it by clone it.
+                    if total_temp is None:
+                        total_temp = ihist.Clone('%s_total_template'%iobs)
+                        if self.verbose:
+                            print '(info) Create a new total_template hist %s'%total_temp.GetName()
+                    # if existed, add directly on it
+                    else:
+                        total_temp.Add(ihist)
+                        if self.verbose:
+                            print '(info) Add %s in %s'%(hname,total_temp.GetName())
+            # Get template_quality_hists
+            quality_total_temp = self.GetQualityPlots(total_temp)
+            quality_total_temp.SetLineColor(ROOT.kBlue)
+            template_quality_hists.append(quality_total_temp)
+
+        # legends
+        tmp_legend = ROOT.TLegend(0.7,0.7,0.9,0.9)
+        tmp_legend.AddEntry(template_quality_hists[0],'templates','LP')
+        tmp_legend.AddEntry(data_quality_hists[0],'DATA','LP')
+        # write to aux file
+        for i,item in enumerate(template_quality_hists):
+            self.outfile_aux.cd('hists/')
+            item.Write()
+            if len(data_quality_hists)>0:
+                data_quality_hists[i].Write()                
+            # make nicer plots and write into another dir
+            self.outfile_aux.cd('plots')
+            c = ROOT.TCanvas()
+            c.SetLogy()
+            c.SetName(item.GetName())
+            item.Draw('hist')
+            # set xaxis title
+            item.GetXaxis().SetTitle('sum of weights')
+            c.Update()
+            if len(data_quality_hists)>0:
+                data_quality_hists[i].Draw('same hist')
+            tmp_legend.Draw('Same')
+            c.Write()
+        print '(info) Done makeQualityPlots.'
+
 
     def write_stack_to_auxfile(self,hist_list,legend):
         """
@@ -187,7 +271,7 @@ class plotter(object):
         if self.DATA_proj is not empty, then make Data_MC comparison plots
         """
         if len(self.DATA_proj)==0:
-            print 'Data is not available. Will not make Data/MC comparison plots!'
+            print '(info) Data is not available. Will not make Data/MC comparison plots!'
             pass
         # Loop over data projections and make plots
         for key,value in self.DATA_proj.iteritems():
@@ -197,7 +281,7 @@ class plotter(object):
             c_compare = helper.comparison_plot_v1(mc_=istack,data_=data_hist,legend=self.legend,event_type='%s/%s'%(self.output_dir,key))
             self.outfile_aux.cd('plots')
             c_compare.Write()
-        print 'Done making data/mc comparison plots.'
+        print '(info) Done making data/mc comparison plots.'
 
 
     def write_templates_to_auxfile(self,hist_list):
@@ -238,7 +322,7 @@ class plotter(object):
         self.template_file.Close()
         self.outfile_aux.Close()
         self.txt_file.close()
-        print 'Closeup output file.'
+        print '(info) Closeup output file.'
 
 
 
