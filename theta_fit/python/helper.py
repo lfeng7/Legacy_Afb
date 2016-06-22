@@ -11,6 +11,13 @@ def GetTTreeName(tfile):
     print 'Getting ttree',treename
     return treename
 
+def multiply(_list):
+    """
+    input: list
+    output: multiply all elements in the list
+    """
+    return reduce(lambda x,y:x*y,_list)
+
 def GetListTH1D(tfile):
     # Find the names of all TH1D
     all_th1d = []

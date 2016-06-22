@@ -1,13 +1,14 @@
 #imports
 from ROOT import *
 from array import array
+import numpy
 
 #global variables
 #histogram limits
 # x is c*, y is xf, z is mtt
-XBINS = array('d',[-1.0,-0.8,-0.6,-0.4,-0.2,0.,0.2,0.4,0.6,0.8,1.0])
+XBINS = numpy.arange(-1,1.1,0.1)
 YBINS = array('d',[0.,0.05,0.15,0.3,0.7])
-ZBINS = array('d',[700.,900.,1100.,1300.,1500.,2500.])
+ZBINS = array('d',[350.,400,450,500,550,600,700,800,1000,1750])
 
 binx = [20,-1,1]
 biny = [30,0,0.6]
@@ -31,7 +32,7 @@ class template :
 		self.createHists()
 
 	def createHists(self):
-		if self.bin_type=='variable':
+		if self.bin_type !='fixed':
 			self.histo_3D = TH3D(self.name     ,self.formatted_name+'; c*; |x_{F}|; M (GeV)',len(XBINS)-1,XBINS,len(YBINS)-1,YBINS,len(ZBINS)-1,ZBINS)
 			self.histo_x  = TH1D(self.name+'_x',self.formatted_name+' X Projection; c*',len(XBINS)-1,XBINS)
 			self.histo_y  = TH1D(self.name+'_y',self.formatted_name+' Y Projection; |x_{F}|',len(YBINS)-1,YBINS)
@@ -64,7 +65,7 @@ class template :
 
 	def Fill(self,c,x,m,w) :
 		# determine if this event is in the range of all three variables
-		if self.bin_type=='variable':
+		if self.bin_type != 'fixed':
 			inxbounds = c>=XBINS[0] and c<XBINS[len(XBINS)-1]
 			inybounds = x>=YBINS[0] and x<YBINS[len(YBINS)-1]
 			inzbounds = m>=ZBINS[0] and m<ZBINS[len(ZBINS)-1]

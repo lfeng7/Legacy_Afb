@@ -70,6 +70,8 @@ class counter():
 			weight = self.weight
 		h1 = ROOT.TH1D('h1','h1',10,-1,5)
 		tchain.Draw('n_btags>>h1','(%s)*(%s)'%(cuts,weight))
+		if self.verbose:
+			print 'cuts and weights: %s | %s'%(cuts,weight)
 		return int(h1.Integral())
 
 
@@ -172,7 +174,7 @@ class counter():
 			proj_print += '\n'
 			proj_print += 'QCD projection in Signal region\n'
 			proj_print += '%15s %15s %15s %17s %17s\n'%('Type','QCD counts,','counts err,','R_qcd,','err R_qcd')
-		proj_type = 'QCD in %s=%s/%s*%s|'%(regD,regB,regA,regC)
+		proj_type = 'QCD in %s=%s/%s*%s'%(regD,regB,regA,regC)
 		count_qcd_sig,err_count_qcd_sig,R_qcd_sig,err_R_qcd_sig = self.QCDprojection(regA=regA,regB=regB,regC=regC,regD=regD)
 		proj_print += '%15s %15i %15i %17.3f %% %17.3f %%\n'%(proj_type,count_qcd_sig,err_count_qcd_sig,R_qcd_sig*100,err_R_qcd_sig*100)
 
@@ -181,10 +183,20 @@ class counter():
 		self.printQCDcounts +=1
 
 	def makeControlPlots(self,cut,cutNum):
+		# RelIso 
 		cmd = './masterplot.py --var lep_iso --Min 0 --Max 1.2 --xaxis RelIso --yaxis Events'
-		cmd+= ' --title "%s && %s" --dir %s --stack yes --plotname %s_%s'%(self.basecuts,cut,self.inputdir,self.outname,cutNum)
-		cmd+= ' --cut "%s && %s"'%(self.basecuts,cut)
+		cmd+= ' --title "%s && %s" --dir %s --stack yes --plotname %s_iso_%s'%(self.basecuts,cutNum,self.inputdir,self.outname,cutNum)
+		cmd+= ' --cut "%s && %s"\n'%(self.basecuts,cut)
+		# MET
+		cmd+= './masterplot.py --var met_pt_vec --Min 0 --Max 150 --xaxis "MET(GeV)" --yaxis Events'
+		cmd+= ' --title "%s && %s" --dir %s --stack yes --plotname %s_met_%s'%(self.basecuts,cutNum,self.inputdir,self.outname,cutNum)
+		cmd+= ' --cut "%s && %s"\n'%(self.basecuts,cut)
+		# lep_pT
+		cmd+= './masterplot.py --var lep_pt --Min 25 --Max 150 --xaxis "ele pT(GeV)" --yaxis Events'
+		cmd+= ' --title "%s && %s" --dir %s --stack yes --plotname %s_ele_pT_%s'%(self.basecuts,cutNum,self.inputdir,self.outname,cutNum)
+		cmd+= ' --cut "%s && %s"\n'%(self.basecuts,cut)
 		os.system(cmd)
+		print cmd
 
 
 	def show_progress(self, freq=2):

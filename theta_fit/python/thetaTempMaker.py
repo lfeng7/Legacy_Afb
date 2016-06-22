@@ -2,6 +2,9 @@
 import ROOT
 import template
 import helper
+import samples
+import copy
+from array import array
 
 ROOT.gROOT.SetBatch(True)
 
@@ -10,9 +13,9 @@ class thetaTemp(object):
 	Take a root file w/ ttree (for Data) or smoothed 3D templates (for MC) 
 	and create a single root file with all templates 
 	"""
-	def __init__(self, outputName, inputFile, isTTree=False, weight=1):
+	def __init__(self, outputName, inputFile, isTTree=False, txtfile=None, verbose = False, bin_type = 'fixed'):
 		"""
-		inputFile is the path of input template root file
+		inputFile is a list of path of input template root files (for ttree) or a single file for MC
 		outputName is the name for output thetaTemp.root file
 		"""
 		super(thetaTemp, self).__init__()
@@ -25,19 +28,63 @@ class thetaTemp(object):
 		self.outfile_aux.mkdir('hists/')
 		self.outfile_aux.mkdir('plots/')
 		self.isTTree = isTTree
-		self.weight = weight
 		self.QCD_SF = 0.2
+		self.verbose = verbose
+		self.bin_type = bin_type
+		if txtfile is None:
+			txtfile = 'MC_input_with_bkg.txt'
+		self.samples_obj = samples.samples(txtfile)
 
 	def main(self):
 		self.define_process()
+		self.define_sys()
 		if self.isTTree:
-			print '#### Process template file w/ TTree. ####'
-			self.TTtreeToTemplates(ttree_file=self.template_file,weight=self.weight)
+			print '(info) Process template file w/ TTree.'
+			self.assignFiles()
+                        self.GetWeights()
+			# Loop over all processes, e.g., wjets, gg etc
+			for key,value in self.process_files.iteritems():
+				print '(info) Begin process %s samples.'%key
+				self.TTtreeToTemplates(ttree_file=value, process_name=key)
 		else:
-			print '#### Process template file w/ TH3D. ####'
+			print '(info) Process template file w/ TH3D. '
 			self.importTemp(self.template_file)
 		self.makeControlPlots()
-		print 'Done thetaTemp.main()'
+		print '(info) Done thetaTemp.main()'
+
+	def assignFiles(self):
+		"""
+		Assign the files into a hashtable of processes
+		Input: a list of root files as self.template_file
+		output: a hashtable of files belong to which process
+		"""
+		process_files = {}
+		for ifile in self.template_file:
+			# if it's data , hard code it
+			if 'Run' in ifile :
+				if process_files.get('DATA',1):
+					process_files['DATA'] = [ifile]
+				else:
+					process_files['DATA'].append(ifile)
+			# if not, it's an MC and will look up it's process type and add into hashtable	
+			else:					
+				# load info about samples from txt file
+				sample_info_obj = self.samples_obj.get_sample_info(ifile)
+				# if cannot find info just skip this file for good
+                                if sample_info_obj is None: continue
+				sample_type = sample_info_obj.type
+				# Add file path to dictionary
+				if process_files.get(sample_type,0)==0:
+					process_files[sample_type] = [ifile]
+		#			if self.verbose: print 'Add type %s and file %s'%(sample_type,ifile)
+				else:
+					process_files[sample_type].append(ifile)
+		#			if self.verbose: print 'Add sample %s'%ifile
+		self.process_files = process_files
+		if self.verbose:
+			print '(DEBUG) %s'%process_files
+		print '(info) Done assignFiles.'
+
 
 	def define_process(self):
 		"""
@@ -49,6 +96,20 @@ class thetaTemp(object):
 		self.process['gg']   =['gg','gg/qg_ttbar']
 		self.process['qqs']   =['qqs','symetric qq_ttbar']
 		self.process['qcd'] =['ntmj','qcd']
+		print '(info) Done define_process'
+
+
+	def define_sys(self):
+		"""
+		define types of systematic variation
+		"""
+		self.systematics_vary = ['btag_eff_reweight','lepID_reweight','trigger_reweight']
+		self.systematics_fixed = ['top_pT_reweight','tracking_reweight','lepIso_reweight','pileup_reweight']
+		self.systematics_all = self.systematics_fixed+self.systematics_vary
+		self.sys_versions = ['plus','minus'] # naming conventions for theta
+		self.sys_names =['up','down'] # naming coventions for legacy ttree
+		print '(info) Done define_sys'
+
 
 	def getTempKeys(self,old_key_string,new_key_string,title):
 		# old_keys are original name of th3f in templates.root, new_keys are names of TH1D in thetaTemp.root
@@ -111,67 +172,208 @@ class thetaTemp(object):
 				i_newtitle = new_titles[i]
 				tmp_hist = tfile.Get(i_oldkey)
 				if not tmp_hist:
-					print 'histogram %s not found in %s!'%(i_oldkey,tfile)
+					print '(debug) histogram %s not found in %s!'%(i_oldkey,tfile)
 				else:
 					# rescale Data-driven QCD templates using extrapolation factors get from ABCD
 					if 'qcd' in i_newkey:
-						print 'QCD templates rescaling to %.3f'%self.QCD_SF
+						print '(info) QCD templates rescaling to %.3f'%self.QCD_SF
 						tmp_hist.Scale(self.QCD_SF)
 					# use template class to convert the TH3D to TH1D
 					# 	def __init__(self,name,formatted_name,bin_type='fixed') :
-					template_obj = template.template(i_newkey,i_newkey)
+					template_obj = template.template(i_newkey,i_newkey,self.bin_type)
 					template_obj.histo_3D = tmp_hist
 					self.Add_1D_temp(template=template_obj,tempName=i_newkey,tempTitle=i_newtitle)
 					# also include original template TH3D and projections in aux file for later cross check
 					# original_temps
 					# self.write_templates_to_auxfile()
-		print 'Done importTemp'
+		print '(info) Done importTemp'
 		tfile.Close()
 
-	def TTtreeToTemplates(self,ttree_file,weight=1,isData=True):
+	def TTtreeToTemplates(self,ttree_file,process_name = None):
 		"""
 		Input: a root with ttree
 		Output: add 1D templates into template file, and control plots to aux file
+		for data, just one template
+		for MC, will include nominal, and sys_up and down templates for each sys
 		"""
-		print 'Process TTtreeToTemplates with file %s, weight %s, isData=%s'%(ttree_file,weight,isData)
+		print '(info) Process TTtreeToTemplates with file %s'%(ttree_file)
+		# set up template name and weight
+		if process_name=='DATA':
+			weight = [1.0]
+			self.makeTemplates(file_list=ttree_file,process_name=process_name)
+			print '(info) Done TTtreeToTemplates for Data.'
+		else:
+			# Loop over files in the list
+			weight_lists = {} # e.g. wjets__btag_eff_reweight__up:[w1,w2,..w_up]
+			norm_weights = []
+			# Get normalization weights for each file in the list
+			for ifile in ttree_file:					
+				# load info about samples from txt file
+				sample_info_obj = self.samples_obj.get_sample_info(ifile)
+				norm_weight = sample_info_obj.weight
+				norm_weights.append(norm_weight)
+			# prepare for sys weights of each variation 
+			# first make the nominal templates
+			weight = []
+			weight += self.fixed_weight+self.varied_weight_nominal
+			template_name = process_name # e.g. wjets
+			weight_lists[template_name] = weight
+			# then make up and down templates for each sys
+			for i,isys in enumerate(self.systematics_vary):
+				for j,jversion in enumerate(self.sys_versions): # ['plus','minus']
+					weight = []
+					# append fixed weights
+					weight += self.fixed_weight
+					# add a variant of isys weight
+					weight.append(self.varied_weight[jversion][i])
+					# add the rest of variable sys using the nominal values
+					nominal_weights = copy.copy(self.varied_weight_nominal)
+					nominal_weights.pop(i)
+					weight += nominal_weights
+					# set up names for this variant template: e.g. wjets__btag_eff_reweight__up
+					template_name = '%s__%s__%s'%(process_name,isys,jversion)
+					# finally, add a new template
+					weight_lists[template_name]=weight
+			# finally make a template for each version of weight list
+			for key,value in weight_lists.iteritems():
+				self.makeTemplates(file_list=ttree_file,process_name=key,weight_list=value,norm_weights=norm_weights)
+			print '(info) Done making all templates for MC.'
+	
+	# def __loadDataTreeBranches__(self) :
+	# 	"""
+	# 	get branches from data ttree, which not include weights
+	# 	"""
+	# 	#lepton charge
+	# 	self.Q_l = array('i',[0]); self.ttree.SetBranchAddress('Q_l',self.Q_l)
+	# 	#kinematic fit chi2
+	# 	self.chi2 = array('f',[0.0]); self.ttree.SetBranchAddress('lnL',self.chi2)
+	# 	#cosine(theta)
+	# 	self.cstar = array('f',[100.0]); self.ttree.SetBranchAddress('cos_theta_cs',self.cstar)
+	# 	#Feynman x
+	# 	self.x_F = array('f',[100.0]); self.ttree.SetBranchAddress('Feynman_x',self.x_F)
+	# 	#ttbar invariant mass
+	# 	self.M = array('f',[-1.0]); self.ttree.SetBranchAddress('ttbar_mass',self.M)
 
-		tfile = ROOT.TFile(ttree_file)
-		self.outfile.cd()
-		tree_name = helper.GetTTreeName(tfile)
-		ttree = tfile.Get(tree_name)
-		# set up template name
-		if isData:
-			tmpProcess='DATA'
+	# def __loadMCTreeBranches__(self) :
+	# 	"""
+	# 	get branches from MC ttree, which are just weights
+	# 	define the following list of pointers to array that stores the reweight info
+	# 	self.fixed_weight = []
+	# 	self.varied_weight_nominal = []
+	# 	self.varied_weight = {}
+	# 	"""
+	# 	# initiate
+	# 	self.fixed_weight = []
+	# 	self.varied_weight_nominal = []
+	# 	self.varied_weight = {'plus':[],'minus':[]}
+	# 	# set up fixed sys reweight 
+	# 	for iweight in self.systematics_fixed:
+	# 		tmp_weight = array('f',[0.0]); self.ttree.SetBranchAddress(iweight,tmp_weight)
+	# 		self.fixed_weight.append(tmp_weight)
+	# 	# set up varying weight
+	# 	for iweight in self.systematics_vary:
+	# 		# first set nominal ones
+	# 		tmp_weight = array('f',[0.0]); self.ttree.SetBranchAddress(iweight,tmp_weight)
+	# 		self.varied_weight_nominal.append(tmp_weight)
+	# 		# set up high version
+	# 		weight_key_up = '%s_hi'%iweight # like btag_eff_reweight_high
+	# 		tmp_weight = array('f',[0.0]); self.ttree.SetBranchAddress(weight_key_up,tmp_weight)
+	# 		self.varied_weight['plus'].append(tmp_weight)
+	# 		# set up low version
+	# 		weight_key_down = '%s_low'%iweight
+	# 		tmp_weight = array('f',[0.0]); self.ttree.SetBranchAddress(weight_key_down,tmp_weight)
+	# 		self.varied_weight['minus'].append(tmp_weight)
+	# 	print '(info) Done __loadMCTreeBranches__'
+
+	def GetWeights(self) :
+		"""
+		Make lists contains strings of the names of the weights in the ttree
+		self.fixed_weight = []
+		self.varied_weight_nominal = []
+		self.varied_weight = {}
+		"""
+		# initiate
+		self.fixed_weight = []
+		self.varied_weight_nominal = []
+		self.varied_weight = {'plus':[],'minus':[]}
+		# set up fixed sys reweight 
+		for iweight in self.systematics_fixed:
+			self.fixed_weight.append(iweight)
+		# set up varying weight
+		for iweight in self.systematics_vary:
+			# first set nominal ones
+			self.varied_weight_nominal.append(iweight)
+			# set up high version
+			weight_key_up = '%s_hi'%iweight # like btag_eff_reweight_high
+			self.varied_weight['plus'].append(weight_key_up)
+			# set up low version
+			weight_key_down = '%s_low'%iweight
+			self.varied_weight['minus'].append(weight_key_down)
+		print '(info) Done GetWeights'
+
+	def makeTemplates(self,file_list,process_name,weight_list=[1.0],norm_weights = [1.0]):
+		"""
+		input: list of ttree, list of weight ( a list of 1D arrays ), tmp_name
+		output: a 1D template and control plots of 3d projections
+		"""
+		if self.verbose:
+			print '(DEBUG) makeTemplates process %s'%process_name
+
 		tmpNames=[]
-		tmpNames.append('f_plus__%s'%tmpProcess)
-		tmpNames.append('f_minus__%s'%tmpProcess)
+		tmpNames.append('f_plus__%s'%process_name)
+		tmpNames.append('f_minus__%s'%process_name)
 		# create template objects
 		tmp_objects=[]
 		for item in tmpNames:
-			tmp_objects.append(template.template(name=item,formatted_name=item))
-		# Loop over entries in 'data' ttree and fill templates
-		n_entries = ttree.GetEntries()
-		for iev in range(n_entries):
-			ttree.GetEntry(iev)
-			# load observables
-			cs = ttree.cos_theta_cs
-			xf = ttree.Feynman_x
-			mtt = ttree.ttbar_mass
-			lep_charge = ttree.Q_l
-			# fill templates
-			if lep_charge>0:
-				tmp_objects[0].Fill(cs,abs(xf),mtt,weight)
-			elif lep_charge<0:
-				tmp_objects[1].Fill(cs,abs(xf),mtt,weight)
-			else:
-				print 'lep_charge==0. Something is wrong!'
-				sys.exit(1)
+			tmp_objects.append(template.template(name=item,formatted_name=item,bin_type=self.bin_type))
+		if self.verbose: print '(DEBUG) all weights ',weight_list
+		# Loop over ttree in list of ttrees
+		for i,ifile in enumerate(file_list):
+			# loading ttree and load branches
+			tfile = ROOT.TFile(ifile)
+			self.outfile.cd()
+			tree_name = helper.GetTTreeName(tfile)
+			ttree = tfile.Get(tree_name)
+			weights = weight_list
+			# check if norm weight is loaded correctly
+			if self.verbose:
+				print '(DEBUG) %s norm weight = %.3f'%(ifile,norm_weights[i])
+			# Loop over entries in ttree and fill templates
+			n_entries = ttree.GetEntries()
+			for iev in range(n_entries):
+				ttree.GetEntry(iev)
+				# load observables
+				cs = ttree.cos_theta_cs
+				xf = ttree.Feynman_x
+				mtt = ttree.ttbar_mass
+				lep_charge = ttree.Q_l
+				# get the weight right by looping over a list of arrays(or float)
+				if process_name=='DATA': # for data, with no weights
+					total_weight = 1
+				else:
+					norm_weight = norm_weights[i]
+					total_weight = [getattr(ttree,item) for item in weights]
+					total_weight.append(norm_weight)
+					if self.verbose and iev<3: print '(DEBUG) total_weight=',total_weight
+					total_weight = helper.multiply(total_weight)
+					if self.verbose and iev<3: print '(DEBUG) total_weight=%.3f'%total_weight
+				# fill templates
+				if lep_charge>0:
+					tmp_objects[0].Fill(cs,abs(xf),mtt,total_weight)
+				elif lep_charge<0:
+					tmp_objects[1].Fill(cs,abs(xf),mtt,total_weight)
+				else:
+					print '(debug) lep_charge==0. Something is wrong!'
+					sys.exit(1)
+				if self.verbose:
+					# print 'cs %.2f,xf %.2f,mtt %.2f,lep_charge %i,total_weight %.2f'%(cs,xf,mtt,lep_charge,total_weight)
+					pass
 		# Write proper unrolled 1D templates into thetaTemp file
 		for i,itemp in enumerate(tmp_objects):
 			self.Add_1D_temp(template=tmp_objects[i],tempName=tmpNames[i],tempTitle=tmpNames[i])
 			# further, write original projections into aux file for later conparisons
 			self.output_original_templates(template=tmp_objects[i])
-		print 'Done TTtreeToTemplates.'
+
 
 
 	def makeControlPlots(self):
@@ -182,12 +384,12 @@ class thetaTemp(object):
 		# for every 1D templates, get 3D original and 3 1D projection histograms
 		for ihist in self.thetaHistList:
 			hname = ihist.GetName()+'_proj'
-			template_obj =  template.template(hname,hname+' projected back from 1D hist')
+			template_obj =  template.template(hname,hname+' projected back from 1D hist', self.bin_type)
 			# 	getTemplateProjections	return [self.histo_3D,self.histo_x,self.histo_y,self.histo_z]
 			hist_proj = template_obj.getTemplateProjections(ihist)
 			self.write_templates_to_auxfile(hist_list=hist_proj)
 			del(template_obj)
-		print 'Done makeControlPlots.'
+		print '(info) Done makeControlPlots.'
 
 
 	def write_templates_to_auxfile(self,hist_list):
@@ -210,7 +412,7 @@ class thetaTemp(object):
 	def __del__(self):
 		self.outfile.Close()
 		self.outfile_aux.Close()
-		print 'Closeup thetaTemp object.'
+		print '(info) Closeup thetaTemp object.'
 
 
 
