@@ -8,6 +8,10 @@ theta fitting code
 """
 
 epsilon = 1E-4
+AFB_sigma = 0.05
+AFB_CENTRAL_VALUE = 0
+
+shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight']
 
 def get_model(template):
     """
@@ -25,11 +29,24 @@ def get_model(template):
     # Specifying all uncertainties. Internally, this adds a factor exp(lambda * p)
     # where p is the parameter specified as first argument and lambda is the constant
     # in the second argument:
-    model.add_lognormal_uncertainty('wjets_rate', 0.05, 'wjets')
-    model.add_lognormal_uncertainty('other_bkg_rate', 0.05, 'other')
-    model.add_lognormal_uncertainty('qqs_rate', 0.05, 'qqs')
+    model.add_lognormal_uncertainty('wjets_rate', 0.05, 'WJets')
+    model.add_lognormal_uncertainty('singleT_rate', 0.05, 'singleT')
+    model.add_lognormal_uncertainty('zjets_rate', 0.05, 'zjets')
+    model.add_lognormal_uncertainty('qq_rate', 0.05, 'qq')
     model.add_lognormal_uncertainty('gg_rate', 0.05, 'gg')
 
+    # Set shape based morphine parameters
+    for p in model.distribution.get_parameters() :
+        if p=='AFB' :
+            low_afb = (-0.7-AFB_CENTRAL_VALUE)/AFB_sigma
+            hi_afb  = (0.7-AFB_CENTRAL_VALUE)/AFB_sigma
+            model.distribution.set_distribution_parameters(p,typ='flat_distribution',range=[low_afb,hi_afb])
+        elif p=='qq_rate' :
+            model.distribution.set_distribution_parameters(p,typ='flat_distribution',range=[-5.0,5.0])
+        else :
+            d = model.distribution.get_distribution(p)
+            if d['typ'] == 'gauss' :
+                model.distribution.set_distribution_parameters(p, range = [-5.0, 5.0])        
     
     # the qcd is derived from data, so do not apply a lumi uncertainty on that:
     for p in model.processes:
@@ -41,6 +58,12 @@ def mleFit(theta_model):
     """
     Definition
     """
+    # Set some options
+    options = Options()
+    options.set('global','debug','True')
+    options.set('minimizer','strategy','robust')
+    options.set('minimizer','minuit_tolerance_factor','10')
+    # MLE Fit
     parVals = mle(theta_model, 'data', 1, signal_process_groups = {'': [] })
     parameter_values = {}
     for p in theta_model.get_parameters([]):

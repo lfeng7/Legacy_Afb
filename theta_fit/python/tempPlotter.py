@@ -11,7 +11,7 @@ from collections import OrderedDict
 
 class plotter(object):
     """docstring for plotter"""
-    def __init__(self, template_file , verbose = False):
+    def __init__(self, template_file , verbose = False,bin_type='fixed'):
         super(plotter, self).__init__()
         self.input_file = template_file
         self.verbose = verbose
@@ -25,7 +25,7 @@ class plotter(object):
         self.stacks = {} # keys: 'plus_x','minus_y' etc
         self.DATA_proj = {} # contains data projection th1 with same key as self.stacks
         self.process_counts = OrderedDict() # for total number of events given the 1D templates , for R_process calculation
-
+        self.bin_type = bin_type
 
     def main(self):
         """
@@ -44,11 +44,13 @@ class plotter(object):
         define template processes in a dict. 
         Order of entries adding will decide the order of stack fill process.
         """
-        self.process['wjets'] ='WJets'
+        self.process['zjets'] ='DY+Jets'
         self.process['qcd']   ='QCD'
-        self.process['other'] ='s_t/tt_other'
-        self.process['gg']    ='gg/qg_ttbar'
-        self.process['qqs']   ='qqs_ttbar'
+        self.process['WJets'] ='W+Jets'
+        self.process['singleT'] ='Single Top'
+        self.process['tt_bkg'] ='None-semilep TT'
+        self.process['gg']    ='gg/qg TT'
+        self.process['qq']   ='qq TT'
         self.process['DATA']   ='DATA'
         # initiate a process count table
         for ikey in self.process:
@@ -74,9 +76,9 @@ class plotter(object):
         # Loop over projections of processes and add proper hist into stacks
         for key,value in self.projections.iteritems():
             # key is wjets_plus
-            iprocess = key.split('_')[0] #wjets
+            iprocess = key.split('__')[0] #wjets
             iprocess_title = self.process[iprocess]
-            iobs = key.split('_')[1] #plus
+            iobs = key.split('__')[1] #plus
             icolor = helper.getColors(iprocess)
             # Loop over x,y,z projected hists
             for i in range(len(self.stack_lists)):
@@ -127,14 +129,18 @@ class plotter(object):
         """ 
         all_templates_names = helper.GetListTH1D(self.template_file)
         self.all_templates = []
+        print '(info) Keeping these hists.'
         for name in all_templates_names:
+            # only keep nominal templates for simplicity
+            if len(name.split('__'))>2: continue
             self.all_templates.append(self.template_file.Get(name))
+            print name
         # for every 1D templates, get 3D original and 3 1D projection histograms
         tmp_projections = {}
         for ihist in self.all_templates:
             # get 3 projections from 1D templates and write in aux file
             hname = ihist.GetName()+'_proj'
-            template_obj =  template.template(hname,hname+' projected back from 1D hist')
+            template_obj =  template.template(name=hname,formatted_name=hname+' projected back from 1D hist',bin_type=self.bin_type)
             #   getTemplateProjections  return [self.histo_3D,self.histo_x,self.histo_y,self.histo_z]
             hist_proj = template_obj.getTemplateProjections(ihist)
             self.write_templates_to_auxfile(hist_list=hist_proj)
@@ -144,7 +150,7 @@ class plotter(object):
             # assign projections to corresponding MC processes
             for key,value in self.process.iteritems():
                 for iobs in self.observables:
-                    newkey = '%s_%s'%(key,iobs) # wjets_plus etc
+                    newkey = '%s__%s'%(key,iobs) # wjets_plus etc
                     if key in hname and iobs in hname:
                         tmp_projections[newkey] = hist_proj[1:]
 
@@ -278,7 +284,7 @@ class plotter(object):
             istack = self.stacks[key]
             data_hist = value
             # def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'h',logy=False):
-            c_compare = helper.comparison_plot_v1(mc_=istack,data_=data_hist,legend=self.legend,event_type='%s/%s'%(self.output_dir,key))
+            c_compare = helper.comparison_plot_v1(mc_=istack,data_=data_hist,legend=self.legend,event_type='%s/%s'%(self.output_dir,key),bin_type = self.bin_type)
             self.outfile_aux.cd('plots')
             c_compare.Write()
         print '(info) Done making data/mc comparison plots.'

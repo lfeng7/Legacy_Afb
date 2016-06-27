@@ -1,7 +1,13 @@
 import ROOT
+import sys
+import numpy
+from array import array
 """
 common helper functions
 """
+XBINS = numpy.arange(-1,1.1,0.1)
+YBINS = array('d',[0.,0.05,0.15,0.3,0.7])
+ZBINS = array('d',[350.,400,450,500,550,600,700,800,1000,1750])
 
 def GetTTreeName(tfile):
     # Find the name of the ttree
@@ -32,13 +38,13 @@ def GetListTH1D(tfile):
     return all_th1d
 
 def getColors(name):
-    colors = {'qqs':ROOT.kRed+1,'gg':ROOT.kRed-7,'other':ROOT.kMagenta,'wjets':ROOT.kGreen-3,'qcd':ROOT.kYellow}
+    colors = {'qq':ROOT.kRed+1,'gg':ROOT.kRed-7,'tt_bkg':ROOT.kRed-3,'other':ROOT.kMagenta,'singleT':ROOT.kMagenta,'WJets':ROOT.kGreen-3,'qcd':ROOT.kYellow,'zjets':ROOT.kAzure-2 }
     icolor = colors.get(name,0)
     return icolor
     
 # This is specifically for comparing the stacked MC plots with data adding residule plots too
 import math
-def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'hist',logy=False):
+def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',logy=False,draw_option = 'hist'):
     # Def axis title
     xaxis_name = data_.GetXaxis().GetTitle()
     canvas_title = data_.GetTitle()
@@ -59,13 +65,28 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'hist',
     else : 
         h_stack = mc_
     # Make residual histogram
-    h_res = ROOT.TH1D(event_type+'_residuals',';; Data/MC',h_data.GetNbinsX(),h_data.GetXaxis().GetXmin(),h_data.GetXaxis().GetXmax())
+    if bin_type == 'fixed':
+        # print 'Making fixed bin res plot'
+        h_res = ROOT.TH1D(event_type+'_residuals',';; Data/MC',h_data.GetNbinsX(),h_data.GetXaxis().GetXmin(),h_data.GetXaxis().GetXmax())
+    else:
+        data_hname = data_.GetName()
+        # print 'Making variable bins res plot for %s'%data_hname
+        if '_x' in data_hname:
+            bins = XBINS
+        elif '_y' in data_hname:
+            bins = YBINS
+        elif '_z' in data_hname:
+            bins = ZBINS
+        else:
+            print 'cannot determin which projection!'
+            sys.exit(1)
+        h_res = ROOT.TH1D(event_type+'_residuals',';; Data/MC',len(bins)-1,bins)
     h_res.SetDirectory(0)
     # h_res.GetXaxis().SetName(h_data.GetXaxis().GetName())
     # h_res.SetXTitle(h_data.GetXaxis().GetName())
 
     maxxdeviations = 0.0
-    for ibin in range(h_data.GetNbinsX()):
+    for ibin in range(1,h_data.GetNbinsX()+1):
         databin = h_data.GetBinContent(ibin)
         mcbin = h_stack.GetBinContent(ibin)
         # Calculate residual
