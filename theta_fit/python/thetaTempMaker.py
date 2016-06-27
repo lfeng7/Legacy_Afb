@@ -31,6 +31,7 @@ class thetaTemp(object):
 		self.QCD_SF = 0.2
 		self.verbose = verbose
 		self.bin_type = bin_type
+		self.AFB_sigma=0.05 # one sigma deviation of AFB from zero
 		if txtfile is None:
 			txtfile = 'MC_input_with_bkg.txt'
 		self.samples_obj = samples.samples(txtfile)
@@ -239,51 +240,6 @@ class thetaTemp(object):
 				self.makeTemplates(file_list=ttree_file,process_name=key,weight_list=value,norm_weights=norm_weights)
 			print '(info) Done making all templates for MC.'
 	
-	# def __loadDataTreeBranches__(self) :
-	# 	"""
-	# 	get branches from data ttree, which not include weights
-	# 	"""
-	# 	#lepton charge
-	# 	self.Q_l = array('i',[0]); self.ttree.SetBranchAddress('Q_l',self.Q_l)
-	# 	#kinematic fit chi2
-	# 	self.chi2 = array('f',[0.0]); self.ttree.SetBranchAddress('lnL',self.chi2)
-	# 	#cosine(theta)
-	# 	self.cstar = array('f',[100.0]); self.ttree.SetBranchAddress('cos_theta_cs',self.cstar)
-	# 	#Feynman x
-	# 	self.x_F = array('f',[100.0]); self.ttree.SetBranchAddress('Feynman_x',self.x_F)
-	# 	#ttbar invariant mass
-	# 	self.M = array('f',[-1.0]); self.ttree.SetBranchAddress('ttbar_mass',self.M)
-
-	# def __loadMCTreeBranches__(self) :
-	# 	"""
-	# 	get branches from MC ttree, which are just weights
-	# 	define the following list of pointers to array that stores the reweight info
-	# 	self.fixed_weight = []
-	# 	self.varied_weight_nominal = []
-	# 	self.varied_weight = {}
-	# 	"""
-	# 	# initiate
-	# 	self.fixed_weight = []
-	# 	self.varied_weight_nominal = []
-	# 	self.varied_weight = {'plus':[],'minus':[]}
-	# 	# set up fixed sys reweight 
-	# 	for iweight in self.systematics_fixed:
-	# 		tmp_weight = array('f',[0.0]); self.ttree.SetBranchAddress(iweight,tmp_weight)
-	# 		self.fixed_weight.append(tmp_weight)
-	# 	# set up varying weight
-	# 	for iweight in self.systematics_vary:
-	# 		# first set nominal ones
-	# 		tmp_weight = array('f',[0.0]); self.ttree.SetBranchAddress(iweight,tmp_weight)
-	# 		self.varied_weight_nominal.append(tmp_weight)
-	# 		# set up high version
-	# 		weight_key_up = '%s_hi'%iweight # like btag_eff_reweight_high
-	# 		tmp_weight = array('f',[0.0]); self.ttree.SetBranchAddress(weight_key_up,tmp_weight)
-	# 		self.varied_weight['plus'].append(tmp_weight)
-	# 		# set up low version
-	# 		weight_key_down = '%s_low'%iweight
-	# 		tmp_weight = array('f',[0.0]); self.ttree.SetBranchAddress(weight_key_down,tmp_weight)
-	# 		self.varied_weight['minus'].append(tmp_weight)
-	# 	print '(info) Done __loadMCTreeBranches__'
 
 	def GetWeights(self) :
 		"""
@@ -322,6 +278,19 @@ class thetaTemp(object):
 		tmpNames=[]
 		tmpNames.append('f_plus__%s'%process_name)
 		tmpNames.append('f_minus__%s'%process_name)
+		# accomodate fqq,fgg specially
+		# Determing if it is gg/qq process, if so , need to addtwice
+		add_twice=False
+		if 'gg' in process_name or 'qq' in process_name:
+			add_twice = True
+		# Add two additional templates for qq, qq__AFB__plus and qq__AFB__minus, but do this only during making nominal qq templates
+		is_qq = False
+		if process_name == 'qq':
+			tmpNames.append('f_plus__%s__AFB__plus'%process_name)
+			tmpNames.append('f_plus__%s__AFB__minus'%process_name)
+			tmpNames.append('f_minus__%s__AFB__plus'%process_name)			
+			tmpNames.append('f_minus__%s__AFB__minus'%process_name)	
+			is_qq = True		
 		# create template objects
 		tmp_objects=[]
 		for item in tmpNames:
@@ -354,14 +323,35 @@ class thetaTemp(object):
 					norm_weight = norm_weights[i]
 					total_weight = [getattr(ttree,item) for item in weights]
 					total_weight.append(norm_weight)
-					if self.verbose and iev<3: print '(DEBUG) total_weight=',total_weight
+					if self.verbose and iev<1: print '(DEBUG) total_weight=',total_weight
 					total_weight = helper.multiply(total_weight)
-					if self.verbose and iev<3: print '(DEBUG) total_weight=%.3f'%total_weight
+					if self.verbose and iev<1: print '(DEBUG) total_weight=%.3f'%total_weight
+					# for added twice case:
+					if add_twice:
+						motherPIDs = ttree.motherPIDs
+						if 21 in motherPIDs or -21 in motherPIDs : add_twice=False
+						else: total_weight *= 0.5
+						w_a = ttree.w_a
 				# fill templates
+				# special note for qq sample: tmp_obj[2,3,4,5] are f_plus_up,down, f_minus_up,down
 				if lep_charge>0:
 					tmp_objects[0].Fill(cs,abs(xf),mtt,total_weight)
+					if add_twice:
+						tmp_objects[1].Fill(-cs,abs(xf),mtt,total_weight)
+					if is_qq:
+						tmp_objects[2].Fill(cs,abs(xf),mtt,total_weight*(1+self.AFB_sigma*w_a)) # Q>0, fwd
+						tmp_objects[3].Fill(cs,abs(xf),mtt,total_weight*(1-self.AFB_sigma*w_a)) # Q>0, bwd
+						tmp_objects[4].Fill(-cs,abs(xf),mtt,total_weight*(1-self.AFB_sigma*w_a)) # Q<0, fwd
+						tmp_objects[5].Fill(-cs,abs(xf),mtt,total_weight*(1+self.AFB_sigma*w_a)) # Q<0, bwd
 				elif lep_charge<0:
 					tmp_objects[1].Fill(cs,abs(xf),mtt,total_weight)
+					if add_twice:
+						tmp_objects[0].Fill(-cs,abs(xf),mtt,total_weight)
+					if is_qq:
+						tmp_objects[4].Fill(cs,abs(xf),mtt,total_weight*(1+self.AFB_sigma*w_a)) # Q<0, fwd
+						tmp_objects[5].Fill(cs,abs(xf),mtt,total_weight*(1-self.AFB_sigma*w_a)) # Q<0, bwd
+						tmp_objects[2].Fill(-cs,abs(xf),mtt,total_weight*(1-self.AFB_sigma*w_a)) # Q>0, fwd
+						tmp_objects[3].Fill(-cs,abs(xf),mtt,total_weight*(1+self.AFB_sigma*w_a)) # Q>0, bwd
 				else:
 					print '(debug) lep_charge==0. Something is wrong!'
 					sys.exit(1)
