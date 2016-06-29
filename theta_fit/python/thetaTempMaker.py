@@ -31,7 +31,7 @@ class thetaTemp(object):
 		self.QCD_SF = 0.2
 		self.verbose = verbose
 		self.bin_type = bin_type
-		self.AFB_sigma=0.05 # one sigma deviation of AFB from zero
+		self.AFB_sigma=1.0 # one sigma deviation of AFB from zero
 		if txtfile is None:
 			txtfile = 'MC_input_with_bkg.txt'
 		self.samples_obj = samples.samples(txtfile)
@@ -320,7 +320,11 @@ class thetaTemp(object):
 				if process_name=='DATA': # for data, with no weights
 					total_weight = 1
 				else:
-					norm_weight = norm_weights[i]
+					# QCD ttree is a sum of data and MC events in sideband, with MC events having negative weights for substraction purpose
+					if process_name=='qcd':
+						norm_weight = ttree.normalization_weight*self.QCD_SF
+					else:
+						norm_weight = norm_weights[i]
 					total_weight = [getattr(ttree,item) for item in weights]
 					total_weight.append(norm_weight)
 					if self.verbose and iev<1: print '(DEBUG) total_weight=',total_weight
