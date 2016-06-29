@@ -42,7 +42,7 @@ class thetaTemp(object):
 		if self.isTTree:
 			print '(info) Process template file w/ TTree.'
 			self.assignFiles()
-                        self.GetWeights()
+			self.GetWeights()
 			# Loop over all processes, e.g., wjets, gg etc
 			for key,value in self.process_files.iteritems():
 				print '(info) Begin process %s samples.'%key
@@ -200,9 +200,8 @@ class thetaTemp(object):
 		print '(info) Process TTtreeToTemplates with file %s'%(ttree_file)
 		# set up template name and weight
 		if process_name=='DATA':
-			weight = [1.0]
 			self.makeTemplates(file_list=ttree_file,process_name=process_name)
-			print '(info) Done TTtreeToTemplates for Data.'
+			print '(info) Done TTtreeToTemplates for %s.'%process_name
 		else:
 			# Loop over files in the list
 			weight_lists = {} # e.g. wjets__btag_eff_reweight__up:[w1,w2,..w_up]
@@ -219,22 +218,23 @@ class thetaTemp(object):
 			weight += self.fixed_weight+self.varied_weight_nominal
 			template_name = process_name # e.g. wjets
 			weight_lists[template_name] = weight
-			# then make up and down templates for each sys
-			for i,isys in enumerate(self.systematics_vary):
-				for j,jversion in enumerate(self.sys_versions): # ['plus','minus']
-					weight = []
-					# append fixed weights
-					weight += self.fixed_weight
-					# add a variant of isys weight
-					weight.append(self.varied_weight[jversion][i])
-					# add the rest of variable sys using the nominal values
-					nominal_weights = copy.copy(self.varied_weight_nominal)
-					nominal_weights.pop(i)
-					weight += nominal_weights
-					# set up names for this variant template: e.g. wjets__btag_eff_reweight__up
-					template_name = '%s__%s__%s'%(process_name,isys,jversion)
-					# finally, add a new template
-					weight_lists[template_name]=weight
+			# then make up and down templates for each sys for all MC templates BUT QCD
+			if process_name != 'qcd':
+				for i,isys in enumerate(self.systematics_vary):
+					for j,jversion in enumerate(self.sys_versions): # ['plus','minus']
+						weight = []
+						# append fixed weights
+						weight += self.fixed_weight
+						# add a variant of isys weight
+						weight.append(self.varied_weight[jversion][i])
+						# add the rest of variable sys using the nominal values
+						nominal_weights = copy.copy(self.varied_weight_nominal)
+						nominal_weights.pop(i)
+						weight += nominal_weights
+						# set up names for this variant template: e.g. wjets__btag_eff_reweight__up
+						template_name = '%s__%s__%s'%(process_name,isys,jversion)
+						# finally, add a new template
+						weight_lists[template_name]=weight
 			# finally make a template for each version of weight list
 			for key,value in weight_lists.iteritems():
 				self.makeTemplates(file_list=ttree_file,process_name=key,weight_list=value,norm_weights=norm_weights)
@@ -319,23 +319,23 @@ class thetaTemp(object):
 				# get the weight right by looping over a list of arrays(or float)
 				if process_name=='DATA': # for data, with no weights
 					total_weight = 1
-				else:
+				elif process_name=='qcd':
 					# QCD ttree is a sum of data and MC events in sideband, with MC events having negative weights for substraction purpose
-					if process_name=='qcd':
-						norm_weight = ttree.normalization_weight*self.QCD_SF
-					else:
-						norm_weight = norm_weights[i]
+					norm_weight = ttree.normalization_weight*self.QCD_SF
+					total_weight = norm_weight
+				else:
+					norm_weight = norm_weights[i]
 					total_weight = [getattr(ttree,item) for item in weights]
 					total_weight.append(norm_weight)
 					if self.verbose and iev<1: print '(DEBUG) total_weight=',total_weight
 					total_weight = helper.multiply(total_weight)
 					if self.verbose and iev<1: print '(DEBUG) total_weight=%.3f'%total_weight
-					# for added twice case:
-					if add_twice:
-						motherPIDs = ttree.motherPIDs
-						if 21 in motherPIDs or -21 in motherPIDs : add_twice=False
-						else: total_weight *= 0.5
-						w_a = ttree.w_a
+				# for added twice case:
+				if add_twice:
+					motherPIDs = ttree.motherPIDs
+					if 21 in motherPIDs or -21 in motherPIDs : add_twice=False
+					else: total_weight *= 0.5
+					w_a = ttree.w_a
 				# fill templates
 				# special note for qq sample: tmp_obj[2,3,4,5] are f_plus_up,down, f_minus_up,down
 				if lep_charge>0:

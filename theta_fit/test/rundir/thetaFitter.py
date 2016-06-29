@@ -41,7 +41,7 @@ def get_model(template):
         if p=='AFB' :
             low_afb = (-0.7-AFB_CENTRAL_VALUE)/AFB_sigma
             hi_afb  = (0.7-AFB_CENTRAL_VALUE)/AFB_sigma
-            model.distribution.set_distribution_parameters(p,typ='flat_distribution',range=[-1,1])
+            model.distribution.set_distribution_parameters(p,typ='flat_distribution',range=[-1.0,1.0])
         elif p=='qq_rate' or p=='wjets_rate' :
             model.distribution.set_distribution_parameters(p,typ='flat_distribution',range=[-5.0,10.0])
             model.distribution.set_distribution_parameters(p,typ='flat_distribution',range=[-5.0,10.0])
