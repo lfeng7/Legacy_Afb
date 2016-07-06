@@ -43,6 +43,8 @@ csv_cut = 0.679
 trigger_path='HLT_Ele27_WP80_v'
 lepiso_cut = 0.2
 xrootd = 'root://cmsxrootd.fnal.gov/'
+eosdir = '/eos/uscms/'
+
 
 #event_type = 'Powheg_TT_btag'
 events_passed = -1
@@ -72,7 +74,7 @@ parser.add_option('--txtfiles', metavar='F', type='string', action='store',
                   help='Input txt files')
 
 parser.add_option('--applyHLT', metavar='F', type='string', action='store',
-                  default = "no",
+                  default = "yes",
                   dest='applyHLT',
                   help='If apply HLT as first selection cut.')
 
@@ -92,7 +94,7 @@ parser.add_option('--grid', metavar='F', type='string', action='store',
                   help='If will run on grid using condor')
 
 parser.add_option('--maxfiles', metavar='F', type='int', action='store',
-                  default = -1,
+                  default = 1,
                   dest='maxfiles',
                   help='max number of input ntuple files')
 
@@ -136,12 +138,13 @@ def main():
     if options.inputFiles != '':
         allfiles = glob.glob( options.inputFiles )
     elif options.txtfiles:
-        allfiles = []
+        # input txt looks like ['/store/user/lfeng7/ntuples/jhu_diffmo_v3/QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6/crab_QCD_Pt-15to3000/151118_062313/0000/*.root\n',
+        # 'jhutester_numEvent1000_1.root\n']
         with open(options.txtfiles, 'r') as input_:
-            for line in input_:
-                print 'Getting files from this dir '+line.strip()
-                somefiles =  glob.glob(line.strip())
-                allfiles.extend(somefiles)
+            allfiles = input_.readlines()
+            input_dir = allfiles.pop(0).strip().split('*.root')[0]
+            for i,item in enumerate(allfiles):
+                allfiles[i] = input_dir+item.strip()    
     else:
         allfiles = []
 
@@ -196,7 +199,7 @@ def findTrigIndex(evt):
 def selection(rootfiles):
 
     if options.selection_type == 'sideband': 
-        btag_cut = 1
+        btag_cut = 2
         el_postfix = 'Loose'
     elif options.selection_type == 'signal' : 
         btag_cut = 2
@@ -206,7 +209,12 @@ def selection(rootfiles):
         el_postfix = 'Loose'
 
     # Get input files
-    files = xrootd + rootfiles.split('/eos/uscms')[-1]
+    if options.grid in ['yes']:
+        files = xrootd + rootfiles.split('/eos/uscms')[-1]
+    else:
+        files = rootfiles
+    print 'openning file: %s'%files
+
     events = Events(files)
     print 'Getting',events.size(),'events'    
 
@@ -479,7 +487,7 @@ def selection(rootfiles):
             if options.selection_type == 'signal' and el_isTight[i] and not el_isModTight[i] and el.pt()>30 and abs(el.eta())<2.5 and el_iso[i]<0.1: 
                 el_cand.append((el,icharge,el_iso[i]))
             # sideband region, with a tight but non-isolated electron
-            elif options.selection_type == 'sideband' and el_isPseudoTight[i] and not el_isModTight[i] and lepiso_cut < el_iso[i] < 1.2 and el.pt()>30 and abs(el.eta())<2.5:
+            elif options.selection_type == 'sideband' and not el_isPseudoTight[i] and not el_isModTight[i] and lepiso_cut < el_iso[i] < 1.2 and el.pt()>30 and abs(el.eta())<2.5:
                 el_cand.append((el,icharge,el_iso[i]))
             # qcd selection, with a tight electron, no cut on isolation yet here
             elif options.selection_type == 'qcd' and el_isLoose[i] and not el_isModTight[i] and el_iso[i] < 0.1 and el.pt()>30 and abs(el.eta())<2.5:
