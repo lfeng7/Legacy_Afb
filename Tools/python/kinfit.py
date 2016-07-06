@@ -299,7 +299,7 @@ def DoReco(jetCands,jetCandCSVs,lep_p4,metPt,metPhi,lep_type,mcordata):
                 minuit.mnparm(j,parNames[j],1.0,1.0,0.2,1.8,ierflag)
             #Fix the scale 
             for j in range(1,6) :
-                minuit.FixParameter(j)
+                # minuit.FixParameter(j)
                 pass
             #minimize
             minf = 1000000000.
