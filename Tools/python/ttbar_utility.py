@@ -40,8 +40,8 @@ def GetBinEntry(hist) :
 
 # PU weights
 def LoadPUfiles() :
-    data_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/data_pileup_distribution.root')
-    mc_pufile = ROOT.TFile('/uscms_data/d3/eminizer/CMSSW_5_3_11/src/Analysis/EDSHyFT/test/tagging/dumped_Powheg_TT.root') 
+    data_pufile = ROOT.TFile('/uscms_data/d3/lfeng7/Payloads/run1/kinfit/data_pileup_distribution.root')
+    mc_pufile = ROOT.TFile('/uscms_data/d3/lfeng7/Payloads/run1/kinfit/dumped_Powheg_TT.root') 
     data_pu_dist = data_pufile.Get('pileup').Clone('npv_data')
     MC_pu_dist   = mc_pufile.Get('pileup').Clone('npv_mc')
     data_pu_dist.Scale(1.0/data_pu_dist.Integral())

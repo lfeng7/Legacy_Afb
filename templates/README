@@ -2,4 +2,6 @@ This dir contains all angles files needed for fitting code.
 The dir path of angles files are in temp_angles which is hard coded in fitting/main_MC.C and fitting/main_data.C
 run_tmps_sideband.sh etc would run makeTemp.py to make angles (templates) using ../reco/angles_files/*.root 
 makeTemp.py basically convert the format of angles files in reco into compatible ttree format that is used in fitting code
+# to run, do:
+./run_tmps_signal.sh or ./run_tmps_sideband_new.sh
 

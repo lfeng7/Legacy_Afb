@@ -4,7 +4,16 @@ Do reconstruction. Output is *_reco.root
 condorjobs is the grid run dir for top_reco.py
 # makeAngles.py
 Calculate cos_theta* from reco p4 of top pairs. Input is *_reco.root. Output *_angle.root
+to run, do :
+./run_makeAngles_sideband.sh for sideband
+./run_makeAngles_signal.sh for signal
+Need to edit the .sh file with the correct reco file path
+
+# aux plotting scripts:
 # reco_stacker.py
 Plotter of cos_theta*,mtt and xf. Input is *_angle.root
 # stack_angles.sh
 Plot MC/data comparison of model vars and some reconstructed vars, ie, reco_mass_thad
+
+# to-do list for future improvement
+Merge reco and cs angle calculation and template formatting into a single step for convinience

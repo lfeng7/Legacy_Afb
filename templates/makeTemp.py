@@ -107,6 +107,11 @@ timer.Start()
 
 # create a template class object
 new_template = template()
+# load MC.txt info
+if options.MCinfo=='':
+    MCinfo_txt='/uscms_data/d3/lfeng7/Payloads/run1/MC_input_with_bkg.txt'
+else:
+    MCinfo_txt= options.MCinfo
 
 # Job splitting is done here
 for ifile in allfiles:
@@ -125,7 +130,7 @@ for ifile in allfiles:
     new_template.input_file = tfile
     new_template.ttbar_type = options.ttbar_type
     new_template.isSideband = str_to_bool(options.sideband)
-    new_template.set_MCinfo(options.MCinfo)
+    new_template.set_MCinfo(MCinfo_txt)
     # Make template
     reco_message = new_template.makeTemps()   
     print reco_message
