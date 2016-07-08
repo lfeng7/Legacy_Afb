@@ -28,7 +28,7 @@ class thetaTemp(object):
 		self.outfile_aux.mkdir('hists/')
 		self.outfile_aux.mkdir('plots/')
 		self.isTTree = isTTree
-		self.QCD_SF = 0.2
+		self.QCD_SF = 0.06 # this number is from the ABCD method estimation
 		self.verbose = verbose
 		self.bin_type = bin_type
 		self.AFB_sigma=1.0 # one sigma deviation of AFB from zero

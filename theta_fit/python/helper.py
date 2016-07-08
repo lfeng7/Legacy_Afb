@@ -2,12 +2,13 @@ import ROOT
 import sys
 import numpy
 from array import array
+import template
 """
 common helper functions
 """
-XBINS = numpy.arange(-1,1.1,0.1)
-YBINS = array('d',[0.,0.05,0.15,0.3,0.7])
-ZBINS = array('d',[350.,400,450,500,550,600,700,800,1000,1750])
+XBINS = template.XBINS
+YBINS = template.YBINS
+ZBINS = template.ZBINS
 
 def GetTTreeName(tfile):
     # Find the name of the ttree
@@ -38,7 +39,7 @@ def GetListTH1D(tfile):
     return all_th1d
 
 def getColors(name):
-    colors = {'qq':ROOT.kRed+1,'gg':ROOT.kRed-7,'tt_bkg':ROOT.kRed-3,'other':ROOT.kMagenta,'singleT':ROOT.kMagenta,'WJets':ROOT.kGreen-3,'qcd':ROOT.kYellow,'zjets':ROOT.kAzure-2 }
+    colors = {'qq':ROOT.kRed+1,'gg':ROOT.kRed-7,'tt_bkg':ROOT.kBlue+3,'other_bkg':ROOT.kMagenta,'singleT':ROOT.kMagenta,'WJets':ROOT.kGreen-3,'qcd':ROOT.kYellow,'zjets':ROOT.kAzure-2 }
     icolor = colors.get(name,0)
     return icolor
     
@@ -148,6 +149,14 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
     mc_.GetYaxis().SetTitleOffset(1.0)
     mc_.GetXaxis().SetLabelOffset(999)   
     mc_.SetTitle(canvas_title)
+    # Draw mc stack error 
+    final_hist = mc_.GetStack().Last().Clone()
+    final_hist.SetName('%s_err'%event_type)
+    final_hist.SetFillColor(ROOT.kBlue)
+    final_hist.SetMarkerColor(final_hist.GetFillColor())
+    final_hist.SetFillStyle(3002)
+    final_hist.Draw('SAMEs E2')
+    # Draw data points 
     data_.Draw('SAME PE1X0'); 
 
     # Draw data stat box
@@ -171,4 +180,4 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
     obj_title.SetLineColor(0)
     c1.Update()    
     c1.SaveAs('%s.png'%event_type)
-    return c1
+    return c1,final_hist

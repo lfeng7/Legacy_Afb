@@ -49,6 +49,7 @@ class plotter(object):
         self.process['WJets'] ='W+Jets'
         self.process['singleT'] ='Single Top'
         self.process['tt_bkg'] ='None-semilep TT'
+        self.process['other_bkg'] ='TT/SingleT/DY'
         self.process['gg']    ='gg/qg TT'
         self.process['qq']   ='qq TT'
         self.process['DATA']   ='DATA'
@@ -284,8 +285,10 @@ class plotter(object):
             istack = self.stacks[key]
             data_hist = value
             # def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'h',logy=False):
-            c_compare = helper.comparison_plot_v1(mc_=istack,data_=data_hist,legend=self.legend,event_type='%s/%s'%(self.output_dir,key),bin_type = self.bin_type)
-            self.outfile_aux.cd('plots')
+            c_compare,h_err = helper.comparison_plot_v1(mc_=istack,data_=data_hist,legend=self.legend,event_type='%s/%s'%(self.output_dir,key),bin_type = self.bin_type)
+            self.outfile_aux.cd('hists/')
+            h_err.Write()
+            self.outfile_aux.cd('plots/')
             c_compare.Write()
         print '(info) Done making data/mc comparison plots.'
 
@@ -318,6 +321,7 @@ class plotter(object):
         self.process_counts['Total']=total_temp_counts
         # Loop over process to write into txt file
         for key,value in self.process_counts.iteritems():
+            if value==0:continue
             towrite += '%15s,%15i,%15.1f%%\n'%(key,value,value*1.0/total_temp_counts*100)
         # write into file
         self.txt_file.write(towrite)

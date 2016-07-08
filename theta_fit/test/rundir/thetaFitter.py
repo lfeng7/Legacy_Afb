@@ -29,22 +29,22 @@ def get_model(template):
     # Specifying all uncertainties. Internally, this adds a factor exp(lambda * p)
     # where p is the parameter specified as first argument and lambda is the constant
     # in the second argument:
-    model.add_lognormal_uncertainty('wjets_rate', 0.2, 'WJets')
-    model.add_lognormal_uncertainty('singleT_rate', 0.05, 'singleT')
-    model.add_lognormal_uncertainty('zjets_rate', 0.05, 'zjets')
-    model.add_lognormal_uncertainty('qq_rate', 0.2, 'qq')
-    model.add_lognormal_uncertainty('qcd_rate', 0.2, 'qcd')
-    model.add_lognormal_uncertainty('gg_rate', 0.05, 'gg')
+    model.add_lognormal_uncertainty('wjets_rate', 0.2, 'WJets') # flat
+    # model.add_lognormal_uncertainty('singleT_rate', 0.05, 'singleT')
+    # model.add_lognormal_uncertainty('zjets_rate', 0.05, 'zjets')
+    model.add_lognormal_uncertainty('other_bkg_rate', 0.05, 'other_bkg') # gauss, sigma=5%
+    model.add_lognormal_uncertainty('qq_rate', 0.2, 'qq') # flat
+    model.add_lognormal_uncertainty('qcd_rate', 0.5, 'qcd') # gauss, sigma=50%
+    model.add_lognormal_uncertainty('gg_rate', 0.2, 'gg') # flat
 
-    # Set shape based morphine parameters
+    # Set parameter ranges
     for p in model.distribution.get_parameters() :
         if p=='AFB' :
-            low_afb = (-0.7-AFB_CENTRAL_VALUE)/AFB_sigma
-            hi_afb  = (0.7-AFB_CENTRAL_VALUE)/AFB_sigma
             model.distribution.set_distribution_parameters(p,typ='flat_distribution',range=[-1.0,1.0])
-        elif p=='qq_rate' or p=='wjets_rate' :
-            model.distribution.set_distribution_parameters(p,typ='flat_distribution',range=[-5.0,10.0])
-            model.distribution.set_distribution_parameters(p,typ='flat_distribution',range=[-5.0,10.0])
+        elif p=='qq_rate' or p=='wjets_rate' or p=='gg_rate' :
+            model.distribution.set_distribution_parameters(p,typ='flat_distribution',range=[-5.0,5.0])
+        elif p=='qcd_rate':
+            model.distribution.set_distribution_parameters(p, range = [-2.0, 2.0]) 
         else :
             d = model.distribution.get_distribution(p)
             if d['typ'] == 'gauss' :
