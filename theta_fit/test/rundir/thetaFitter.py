@@ -2,6 +2,7 @@
 execfile("extras.py")
 import sys
 import math
+import os
 execfile("common.py")
 
 """
@@ -25,6 +26,16 @@ def histogram_filter(hname):
         if item in hname:
             toReturn = False
     return toReturn
+
+def report_model(_model,txt_output):
+    dist = _model.distribution.distributions
+    str_out = ''
+    for key in dist:
+        str_out += '%s:%s\n'%(key,str(dist[key]))
+    print str_out
+    txt_output.write(str_out)
+    print '(info) Done report_model.'
+    
 
 def get_model(template):
     """
@@ -67,8 +78,9 @@ def get_model(template):
     
     # the qcd is derived from data, so do not apply a lumi uncertainty on that:
     for p in model.processes:
-#        if p == 'qcd': continue
+        if p == 'qcd': continue
         model.add_lognormal_uncertainty('lumi', 0.045, p)
+    print '(info) Done getmodel.'
     return model
 
 def arrayToStr(m):
@@ -78,7 +90,7 @@ def arrayToStr(m):
     str_rep = ''
     for row in m:
         for item in row:
-            str_rep += '%10.5f,'%item
+            str_rep += '%15.3f,'%item
         str_rep += '\n'
     return str_rep
 
@@ -94,29 +106,59 @@ def setRange():
     for p in model.distribution.get_parameters():
         d = model.distribution.get_distribution(p)
         if d['typ'] == 'gauss' and d['mean'] == 0.0 and d['width'] == 1.0:
-            print p
             model.distribution.set_distribution_parameters(p, range = [-inf, inf])
     print '(info) Done setRange.'
 
 def mle_result_print(result,sp='',n=None):
     str_result = ''
-    for p in parVals[sp]:
+    n = len(result[sp]['__nll'])
+    # fit parameters
+    for p in result[sp]:
+        if '__' in p: continue
         # n is number of toys to print
         if n is None: n = len(result[sp][p])
         str_result += "%20s =" % p
         # for parameter results
         for i in range(min([n, 10])):
-            if '__' not in p:
-                str_result +=  " %5.2f +- %5.2f \n" % (result[sp][p][i][0], result[sp][p][i][1])
-            elif 'cov' not in p:
-                str_result += " %5.2f\n"%result[sp][p][i][0]
+            str_result +=  " %5.2f +- %5.2f \n" % (result[sp][p][i][0], result[sp][p][i][1])
+    # stdev of pars for each experiment
+    sigmas = []
+    for i in range(min([n, 10])):
+        isigma = []
+        for par in model_pars:
+            isigma.append(result[sp][par][i][1])
+        sigmas.append(isigma)
+    # get Sigma_ij = sigma_i*sigma_j
+    sig_matrices = []
+    for isigma in sigmas:
+        sig_arr = np.array(isigma)
+        isig_matrix = np.outer(sig_arr,sig_arr)
+        sig_matrices.append(isig_matrix)
+    # chi2,nll and cov
+    str_result += '-------------------------\n'
+    for p in ('__nll','__chi2','__cov'):
+        if not p in result[sp]: continue      
+        if n is None: n = len(result[sp][p])
+        str_result += "%20s =" % p
+        for i in range(min([n, 10])):
+            if 'cov' not in p:
+                str_result += " %5.2f\n"%result[sp][p][i]
             else:
                 # This is the cov matrix
-                cov_matrix = result[sp][p][i][0]
+                cov_matrix = result[sp][p][i]
+                str_result += '\nCovariant matrix\n'
+                for item in model_pars:
+                    str_result += '%15s,'%item
                 str_result += '\n%s\n'%arrayToStr(cov_matrix)
+                # Add correlation matrix, rho_matrix
+                rho_matrix = cov_matrix/sig_matrices[i]
+                str_result += 'Correlation matrix\n'
+                for item in model_pars:
+                    str_result += '%15s,'%item
+                str_result += '\n%s\n'%arrayToStr(rho_matrix)                
+    # save result to txt
     print str_result
-    with open('results.txt','w') as txtfile:
-        txtfile.write(str_result)
+    txtfile.write(str_result)
     print '(info) Done mle_result_print'
 
 def mleFit(theta_model):
@@ -133,23 +175,30 @@ def mleFit(theta_model):
     parVals = mle(model, 'data', 1,with_covariance=True, signal_process_groups = {'': [] },chi2=True,options = options)
     mle_LL = parVals['']['__nll'][0] 
     mle_chi2 = parVals['']['__chi2'][0]
-    #mle_cov = parVals['']['__cov'][0]
-    # print 'NLL=%.3f'%mle_LL
-    # print 'chi2=%.1f'%mle_chi2
-    # print parVals
 
     # Get 1sigma and 2 sigma interval of AFB
     afb_interval = pl_interval(model, 'data', 1,signal_process_groups = {'': [] }, parameter='AFB')
     afb_interval = afb_interval['']
-    print afb_interval
+    str_write = 'profile likelihood AFB significance interval:\n'
+    for key,value in afb_interval.iteritems():
+        str_write += 'confidence level = %.3f\n'%key 
+        for item in value: 
+            if key==0.0:
+                str_write += '[%.3f]\n'%item
+            else:
+                str_write += '[%.3f,%.3f]\n'%(item[0],item[1])
+
+    txtfile.write(str_write)
+    print str_write
 
     # NLL scan for AFB
     mle_nllscan = nll_scan(model, 'data', 1, npoints=100, range=[-1.0, 1.0], signal_process_groups = {'': [] }, parameter='AFB',adaptive_startvalues=False)
     mle_nllscan = mle_nllscan[''][0]
     # print mle_nllscan 
     # plot nll_scan result
-    plotutil.plot(mle_nllscan,'AFB','NLL','AFB_nll.png')
+    plotutil.plot(mle_nllscan,'AFB','NLL','%s/AFB_nll.png'%outdir)
 
+    print '(info) Done mleFit.' 
     return parVals
 
 def savePostFit(parVals):
@@ -163,32 +212,40 @@ def savePostFit(parVals):
     for o in model.get_observables():
         histos[o]['DATA'] = model.get_data_histogram(o)
     # Output to root file
-    write_histograms_to_rootfile(histos,'postfit_histos_'+template_file.split('/')[-1])
+    write_histograms_to_rootfile(histos,'%s/postfit_histos_%s'%(outdir,template_file.split('/')[-1]))
+    print '(info) Done savePostFit'
 
 # main function starts here
 
 # Input
 argv = sys.argv[2:]
 template_file = argv.pop(0)
+if len(argv)==0:
+    outdir = 'runs/test'
+else:
+    outdir = 'runs/%s'%argv.pop(0)    
+# output
+if not os.path.exists(outdir):
+    os.mkdir(outdir)
+    print '(info) Creating new dir %s.'%outdir
+txtfile = open('%s/results.txt'%outdir,'w')
 # Define model
 model = get_model(template_file)
+model_pars =  model.get_parameters('')
 setRange()
+# add model info into results
+report_model(model,txtfile)
 # Report the model in an html file
 par_summary = model_summary(model)
-print 'Done get_summary.'
 #maximum likelihood fit on data without signal (background-only).
 parVals = mleFit(model)
-print 'Done mle_fitter.'
 # print fit result
 mle_result_print(parVals)
 # Save post fit hists to root file
-savePostFit()
+savePostFit(parVals)
 
 # Write as html
-report.write_html('htmlout')
-
-
-
-    
-
+report.write_html('%s/htmlout'%outdir)
+# close files
+txtfile.close()
 
