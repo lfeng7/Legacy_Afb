@@ -10,7 +10,6 @@ theta fitting code
 """
 
 epsilon = 1E-4
-AFB_sigma = 0.05
 AFB_CENTRAL_VALUE = 0
 
 shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight']
@@ -101,6 +100,8 @@ def setRange():
     for p in ('qq_rate','wjets_rate','gg_rate'):
         model.distribution.set_distribution_parameters(p,range=[-inf,inf])
     model.distribution.set_distribution_parameters('qcd_rate',range=[-inf,inf]) 
+    model.distribution.set_distribution_parameters('AFB',range=[-inf,inf])
+
     # for sys
     print '(info) reset range for sys.'
     for p in model.distribution.get_parameters():
@@ -192,11 +193,11 @@ def mleFit(theta_model):
     print str_write
 
     # NLL scan for AFB
-    mle_nllscan = nll_scan(model, 'data', 1, npoints=100, range=[-1.0, 1.0], signal_process_groups = {'': [] }, parameter='AFB',adaptive_startvalues=False)
+    mle_nllscan = nll_scan(model, 'data', 1, npoints=100, range=[-2.0/AFB_sigma, 2.0/AFB_sigma], signal_process_groups = {'': [] }, parameter='AFB',adaptive_startvalues=False)
     mle_nllscan = mle_nllscan[''][0]
     # print mle_nllscan 
     # plot nll_scan result
-    plotutil.plot(mle_nllscan,'AFB','NLL','%s/AFB_nll.png'%outdir)
+    plotutil.plot(mle_nllscan,'AFB(sigma=%.1f)'%AFB_sigma,'NLL','%s/AFB_nll.png'%outdir)
 
     print '(info) Done mleFit.' 
     return parVals
@@ -220,10 +221,16 @@ def savePostFit(parVals):
 # Input
 argv = sys.argv[2:]
 template_file = argv.pop(0)
+# output dir name
 if len(argv)==0:
     outdir = 'runs/test'
 else:
     outdir = 'runs/%s'%argv.pop(0)    
+# AFB_signma def
+if len(argv)==0:
+    AFB_sigma=0.5
+else:
+    AFB_sigma=float(argv.pop(0))
 # output
 if not os.path.exists(outdir):
     os.mkdir(outdir)

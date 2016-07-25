@@ -9,15 +9,16 @@ argv=sys.argv[1:]
 if len(argv)==0:
 	print """
 	Usage: 
-	python python make_thetaTemplates.py temp_angles/angles_data_SingleEl_Run2012ABCD.root  (ttree) (variable) (verbose)
+	python python make_thetaTemplates.py temp_angles/angles_data_SingleEl_Run2012ABCD.root outputname  (ttree) (variable) (verbose)
 	or
 	python make_thetaTemplates.py combined_tempMerge/templates.root 
 	"""
 	sys.exit(1)
 
 inputfile = argv.pop(0)
-output_name = inputfile.split('/')[-1]
-output_name = 'thetaTemp_%s'%output_name
+output_name = argv.pop(0)
+#output_name = inputfile.split('/')[-1]
+#output_name = 'thetaTemp_%s'%output_name
 
 # some other options
 isTTree = False

@@ -21,10 +21,10 @@ class thetaTemp(object):
 		super(thetaTemp, self).__init__()
 		self.process = {}
 		self.outputName = outputName
-		self.outfile = ROOT.TFile('templates/thetaTemplates_%s.root'%outputName,'recreate')
+		self.outfile = ROOT.TFile('templates/%s_template.root'%outputName,'recreate')
 		self.thetaHistList = []
 		self.template_file = inputFile
-		self.outfile_aux = ROOT.TFile('templates/thetaTemplates_%s_aux.root'%self.outputName,'recreate')
+		self.outfile_aux = ROOT.TFile('templates/%s_template_aux.root'%self.outputName,'recreate')
 		self.outfile_aux.mkdir('hists/')
 		self.outfile_aux.mkdir('plots/')
 		self.isTTree = isTTree
