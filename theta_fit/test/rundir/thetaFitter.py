@@ -1,4 +1,3 @@
-
 execfile("extras.py")
 import sys
 import math
@@ -19,7 +18,7 @@ AFB_CENTRAL_VALUE = 0
 shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight']
 obs = 'f_minus'
 
-ntoys = 10000
+ntoys = 5000
 Toys_per_thread = 100
 AFB_toy_step = 0.2
 AFB_list = []
@@ -27,7 +26,9 @@ afb_tmp = -1.0
 while afb_tmp<1.01:
     AFB_list.append(afb_tmp)
     afb_tmp += AFB_toy_step
-#AFB_list = [-0.7,-0.5]#,0,0.3,0.7]
+#AFB_list=[-1.0,-0.5,-0.2,0,0.2,0.5,1.0]
+AFB_list = [-0.4,0,0.4]
+#AFB_list = [-50,-20,-10,0,10,20,50]#-5,-2,-0.5,0,0.5,2,5,10]#,0,0.3,0.7]
 
 
 def histogram_filter(hname):
@@ -79,9 +80,11 @@ def get_model(template):
     # Set parameter ranges
     for p in model.distribution.get_parameters() :
         if p=='AFB' :
-            model.distribution.set_distribution_parameters(p,typ='flat_distribution',range=[-1.0,1.0])
+            pass
+#            model.distribution.set_distribution_parameters(p,typ='flat_distribution',range=[-1.0,1.0])
         elif p=='qq_rate' or p=='wjets_rate' or p=='gg_rate' :
-            model.distribution.set_distribution_parameters(p,typ='flat_distribution',range=[-5.0,inf])
+            pass
+#            model.distribution.set_distribution_parameters(p,typ='flat_distribution',range=[-5.0,inf])
         elif p=='qcd_rate':
 #	    pass
             model.distribution.set_distribution_parameters(p, range = [-1.0, 1.0]) 
@@ -116,7 +119,24 @@ def setRange():
     for p in ('qq_rate','wjets_rate','gg_rate'):
         model.distribution.set_distribution_parameters(p,range=[-inf,inf])
     model.distribution.set_distribution_parameters('qcd_rate',range=[-inf,inf]) 
-    model.distribution.set_distribution_parameters('AFB',range=[-inf,inf])
+    model.distribution.set_distribution_parameters('AFB',range=[-AFB_range,AFB_range])
+
+    # for sys
+    print '(info) reset range for sys.'
+    for p in model.distribution.get_parameters():
+        d = model.distribution.get_distribution(p)
+        if d['typ'] == 'gauss' and d['mean'] == 0.0 and d['width'] == 1.0:
+            model.distribution.set_distribution_parameters(p, range = [-inf, inf])
+    print '(info) Done setRange.'
+
+def resetModel():
+    """
+    partially reset some prior distribution for debugging purpose
+    """
+    for p in ('qq_rate','wjets_rate','gg_rate'):
+        model.distribution.set_distribution_parameters(p,width=inf,range=[-100.0,100.0])
+    model.distribution.set_distribution_parameters('qcd_rate',range=[-inf,inf]) 
+    model.distribution.set_distribution_parameters('AFB',width=inf,range=[-100.0,100.0])
 
     # for sys
     print '(info) reset range for sys.'
@@ -209,7 +229,7 @@ def mleFit(theta_model):
     print str_write
 
     # NLL scan for AFB
-    mle_nllscan = nll_scan(model, 'data', 1, npoints=100, range=[-2.0/AFB_sigma, 2.0/AFB_sigma], signal_process_groups = {'': [] }, parameter='AFB',adaptive_startvalues=False)
+    mle_nllscan = nll_scan(model, 'data', 1, npoints=100, range=[-AFB_range, AFB_range], signal_process_groups = {'': [] }, parameter='AFB',adaptive_startvalues=False)
     mle_nllscan = mle_nllscan[''][0]
     # print mle_nllscan 
     # plot nll_scan result
@@ -218,20 +238,31 @@ def mleFit(theta_model):
     print '(info) Done mleFit.' 
     return parVals,options
 
+def reject_outliers(data, m = 10.):
+    data=np.array(data)
+    d = np.abs(data - np.median(data))
+    mdev = np.median(d)
+    s = d/mdev if mdev else 0.
+    #print 'mdev=%.2f,median=%.2f'%(mdev,np.median(data))
+    return data[s<m]
+
 def plot_hist(data,name='test',xtitle='x',ytitle='Events',title='Histogram'):
     """
     input: a list of data
     output: a canvas
     """
     print '(info) plot_hist for %s'%name
-    data.sort()
+    # first exclude outliers
+    data = reject_outliers(data)
+    data = np.array(data)
+    data_mean = data.mean()
+    data_std = data.std()
     #print data
-    xmin = data[0]
-    xmin = xmin - abs(xmin)*0.1
-    xmax = data[-1]
-    xmax = xmax + abs(xmax)*0.1
+    xmin = data_mean-6*data_std
+    xmax = data_mean+6*data_std 
     nbins = 50
     hist = ROOT.TH1D(name,'%s;%s;%s'%(title,xtitle,ytitle),nbins,xmin,xmax)
+    print "name=%s,mean=%.1f,stdev=%.2f,min=%.1f,max=%.1f"%(name,data_mean,data_std,xmin,xmax)
     for item in data:
         hist.Fill(item)
     # fit with gaussian
@@ -256,7 +287,7 @@ def getToyDist():
     """
     toy_dist =  model.distribution.copy()
     for p in toy_dist.get_parameters() :
-        toy_dist.set_distribution(p,typ='gauss',mean=0.0,width=epsilon,range=[-1,1])
+        toy_dist.set_distribution(p,typ='gauss',mean=0.0,width=0.0,range=[0.0,0.0])
     return toy_dist
     
 
@@ -267,7 +298,7 @@ def fitToys(AFB_toy):
     #toy_dist =  model.distribution.copy()
     # calculate the AFB input in terms of AFB_sigma of templates. e.g, if template is AFB_sigma=0.1, AFB_input=-0.6 => new_input = -7
     new_mean = AFB_toy/AFB_sigma
-    toy_dist.set_distribution('AFB',typ='gauss',mean=new_mean,width=epsilon,range=[-2.0/AFB_sigma,2.0/AFB_sigma])
+    toy_dist.set_distribution_parameters('AFB',mean=new_mean,width=0.0,range=[new_mean,new_mean])
     toy_fit = mle(model, 'toys:0.0', ntoys,with_covariance=False, signal_process_groups = {'': [] },chi2=True,options = toy_options,nuisance_prior_toys=toy_dist)
     fit_AFB,fit_chi2 = [],[]
     # ntoys = len(fit_AFB)
@@ -304,7 +335,7 @@ def plotPull(tfile):
     hist_sets = set()
     for ikey in keys:
         if 'TH1' in  ikey.GetClassName() : histname = ikey.GetName()
-        if histname in hist_sets:
+        if histname in hist_sets or 'afb' not in histname:
             continue
         else:
             hist_sets.add(histname)
@@ -312,7 +343,7 @@ def plotPull(tfile):
         ihist = tfile.Get(histname)
         canv = ROOT.TCanvas()
         ihist.Draw()
-        canv.SaveAs('%s/pul_%s.png'%(outdir,histname))
+        canv.SaveAs('%s/pull_%s.png'%(outdir,histname))
     print '(info) Done plotPull.'
 
 def savePostFit(parVals):
@@ -344,6 +375,12 @@ if len(argv)==0:
     AFB_sigma=0.5
 else:
     AFB_sigma=float(argv.pop(0))
+AFB_range = 2.0/AFB_sigma
+argv = ' '.join(argv)
+if 'toy' in argv:
+    useToys = True
+else:
+    useToys = False
 
 # output
 if not os.path.exists(outdir):
@@ -358,6 +395,8 @@ model = get_model(template_file)
 model_pars =  model.get_parameters('')
 model_bins = model.get_range_nbins(obs)[-1]
 setRange()
+# debug
+resetModel()
 # add model info into results
 report_model(model,txtfile)
 # Report the model in an html file
@@ -371,33 +410,37 @@ toy_options = theta_options.copy()
 mle_result_print(parVals)
 
 # Toy experiments for determination of error of POI
-print '(info) Begin toy experiments on AFB.'
-nthreads = str(ntoys/Toys_per_thread)
-toy_options.set('main','n_threads',nthreads)
-#toy_dist =  model.distribution.copy()
-toy_dist = getToyDist() 
-fit_hists=[]
-toy_AFB_input,toy_AFB_fit_mean,toy_AFB_fit_sigma = [],[],[]
-for AFB in AFB_list:
-    fit_hist, fit_results = fitToys(AFB)
-    # fit_results=[fit_mean,fit_sigma]
-    toy_AFB_input.append(AFB)
-    toy_AFB_fit_mean.append(fit_results[0])
-    toy_AFB_fit_sigma.append(fit_results[1])
-    fit_hists.append(fit_hist)
-# plot Neyman bands
-# from helper.py
-# def makeTGraphErrors(x,y,y_err,x_err=None,x_title='x',y_title='y',title='TGraph'):
-neyman_plot = makeTGraphErrors(x=toy_AFB_input,y=toy_AFB_fit_mean,y_err=toy_AFB_fit_sigma,x_title='AFB_input',y_title='AFB_fit',title='Based on %i toy experiments'%ntoys)
-canv_neyman = ROOT.TCanvas()
-canv_neyman.SetName('AFB_neyman')
-fout.cd()
-neyman_plot.Draw()
-canv_neyman.SaveAs('%s/AFB_neyman.png'%outdir)
-canv_neyman.Write()
-# plot pull plots
-plotPull(fout)
-print '(info) Done all toy experiments!'
+if useToys:
+    print '(info) Begin toy experiments on AFB.'
+    nthreads = str(ntoys/Toys_per_thread)
+    toy_options.set('main','n_threads',nthreads)
+    #toy_dist =  model.distribution.copy()
+    toy_dist = getToyDist() 
+    fit_hists=[]
+    toy_AFB_input,toy_AFB_fit_mean,toy_AFB_fit_sigma = [],[],[]
+    for AFB in AFB_list:
+        fit_hist, fit_results = fitToys(AFB)
+        # fit_results=[fit_mean,fit_sigma]
+        toy_AFB_input.append(AFB)
+        toy_AFB_fit_mean.append(fit_results[0])
+        toy_AFB_fit_sigma.append(fit_results[1])
+        fit_hists.append(fit_hist)
+    # plot Neyman bands
+    # from helper.py
+    # def makeTGraphErrors(x,y,y_err,x_err=None,x_title='x',y_title='y',title='TGraph'):
+    neyman_plot = makeTGraphErrors(x=toy_AFB_input,y=toy_AFB_fit_mean,y_err=toy_AFB_fit_sigma,x_title='AFB_input',y_title='AFB_fit',title='Based on %i toy experiments'%ntoys)
+    neyman_plot.Fit("pol1")
+    canv_neyman = ROOT.TCanvas()
+    canv_neyman.SetName('AFB_neyman')
+    fout.cd()
+    neyman_plot.Draw()
+    canv_neyman.SaveAs('%s/AFB_neyman.png'%outdir)
+    canv_neyman.Write()
+    neyman_plot.Write()
+    # plot pull plots
+    plotPull(fout)
+    print '(info) Done all toy experiments!'
+
 # Save post fit hists to root file
 savePostFit(parVals)
 
