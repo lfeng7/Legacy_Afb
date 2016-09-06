@@ -27,7 +27,7 @@ while afb_tmp<1.01:
     AFB_list.append(afb_tmp)
     afb_tmp += AFB_toy_step
 #AFB_list=[-1.0,-0.5,-0.2,0,0.2,0.5,1.0]
-AFB_list = [-0.4,0,0.4]
+#AFB_list = [-0.4,0,0.4]
 #AFB_list = [-50,-20,-10,0,10,20,50]#-5,-2,-0.5,0,0.5,2,5,10]#,0,0.3,0.7]
 
 
@@ -364,6 +364,12 @@ def savePostFit(parVals):
 
 # Input
 argv = sys.argv[2:]
+if len(argv)==0:
+    print """
+    Usage:
+    python ../../theta-auto.py thetaFitter.py templates/afb_one.root linear_interpolate_AFB_one 1.0 toy
+    """
+    sys.exit(1)
 template_file = argv.pop(0)
 # output dir name
 if len(argv)==0:
