@@ -16,14 +16,25 @@ epsilon = 1E-8
 AFB_CENTRAL_VALUE = 0
 
 shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight']
+flat_param = ['AFB','qq_rate','wjets_rate','gg_rate']
 obs = 'f_minus'
 
-ntoys = 5000
+ntoys = 1000
 Toys_per_thread = 100
+
+# define AFB toy params
+toy_param = 'AFB'
+range_toy_param = [-1,1.01]
 AFB_toy_step = 0.2
+
+# define Rqq toy params
+toy_param = 'Rate_qq'
+range_toy_param = [-4.0,4.01]
+AFB_toy_step = 2.0
+
 AFB_list = []
-afb_tmp = -1.0
-while afb_tmp<1.01:
+afb_tmp = range_toy_param[0]
+while afb_tmp<range_toy_param[1]:
     AFB_list.append(afb_tmp)
     afb_tmp += AFB_toy_step
 #AFB_list=[-1.0,-0.5,-0.2,0,0.2,0.5,1.0]
@@ -131,20 +142,18 @@ def setRange():
 
 def resetModel():
     """
-    partially reset some prior distribution for debugging purpose
+    partially reset some prior distribution for later use
     """
-    for p in ('qq_rate','wjets_rate','gg_rate'):
+    # set flat prior for some parameters
+    for p in flat_param:
         model.distribution.set_distribution_parameters(p,width=inf,range=[-100.0,100.0])
-    model.distribution.set_distribution_parameters('qcd_rate',range=[-inf,inf]) 
-    model.distribution.set_distribution_parameters('AFB',width=inf,range=[-100.0,100.0])
 
-    # for sys
-    print '(info) reset range for sys.'
+    # for Gaussian prior params, set the range to inf
     for p in model.distribution.get_parameters():
         d = model.distribution.get_distribution(p)
-        if d['typ'] == 'gauss' and d['mean'] == 0.0 and d['width'] == 1.0:
+        if d['width'] == 1.0:
             model.distribution.set_distribution_parameters(p, range = [-inf, inf])
-    print '(info) Done setRange.'
+    print '(info) Done resetModel for finer control of model parameter priors.'
 
 def mle_result_print(result,sp='',n=None):
     str_result = ''
@@ -325,7 +334,7 @@ def fitToys(AFB_toy):
 #    canv_chi2.SaveAs('%s/chi2_toys_%s.png'%(outdir,postfix))
     return [hist_AFB,hist_chi2],fit_results_AFB
 
-    print '(info) Done fitToys for AFB=%.2f'%AFB_toy
+    print '(info) Done fitToys for Param=%.2f'%AFB_toy
 
 def plotPull(tfile):
     """
@@ -400,7 +409,6 @@ print '(info) Begin defining model.'
 model = get_model(template_file)
 model_pars =  model.get_parameters('')
 model_bins = model.get_range_nbins(obs)[-1]
-setRange()
 # debug
 resetModel()
 # add model info into results
@@ -434,13 +442,13 @@ if useToys:
     # plot Neyman bands
     # from helper.py
     # def makeTGraphErrors(x,y,y_err,x_err=None,x_title='x',y_title='y',title='TGraph'):
-    neyman_plot = makeTGraphErrors(x=toy_AFB_input,y=toy_AFB_fit_mean,y_err=toy_AFB_fit_sigma,x_title='AFB_input',y_title='AFB_fit',title='Based on %i toy experiments'%ntoys)
+    neyman_plot = makeTGraphErrors(x=toy_AFB_input,y=toy_AFB_fit_mean,y_err=toy_AFB_fit_sigma,x_title='param_input',y_title='param_fit',title='%s Based on %i toy experiments'%(toy_param,ntoys))
     neyman_plot.Fit("pol1")
     canv_neyman = ROOT.TCanvas()
-    canv_neyman.SetName('AFB_neyman')
+    canv_neyman.SetName('%s_neyman'%toy_param)
     fout.cd()
     neyman_plot.Draw()
-    canv_neyman.SaveAs('%s/AFB_neyman.png'%outdir)
+    canv_neyman.SaveAs('%s/%s_neyman.png'%(outdir,toy_param))
     canv_neyman.Write()
     neyman_plot.Write()
     # plot pull plots
