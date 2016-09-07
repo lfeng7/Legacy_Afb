@@ -19,7 +19,7 @@ shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight']
 flat_param = ['AFB','qq_rate','wjets_rate','gg_rate']
 obs = 'f_minus'
 
-ntoys = 1000
+ntoys = 2000
 Toys_per_thread = 100
 
 # define AFB toy params
@@ -28,7 +28,7 @@ range_toy_param = [-1,1.01]
 AFB_toy_step = 0.2
 
 # define Rqq toy params
-toy_param = 'Rate_qq'
+toy_param = 'qq_rate'
 range_toy_param = [-4.0,4.01]
 AFB_toy_step = 2.0
 
@@ -307,11 +307,11 @@ def fitToys(AFB_toy):
     #toy_dist =  model.distribution.copy()
     # calculate the AFB input in terms of AFB_sigma of templates. e.g, if template is AFB_sigma=0.1, AFB_input=-0.6 => new_input = -7
     new_mean = AFB_toy/AFB_sigma
-    toy_dist.set_distribution_parameters('AFB',mean=new_mean,width=0.0,range=[new_mean,new_mean])
+    toy_dist.set_distribution_parameters(toy_param,mean=new_mean,width=0.0,range=[new_mean,new_mean])
     toy_fit = mle(model, 'toys:0.0', ntoys,with_covariance=False, signal_process_groups = {'': [] },chi2=True,options = toy_options,nuisance_prior_toys=toy_dist)
     fit_AFB,fit_chi2 = [],[]
     # ntoys = len(fit_AFB)
-    all_AFB = toy_fit['']['AFB']
+    all_AFB = toy_fit[''][toy_param]
     all_chi2 = toy_fit['']['__chi2']
     # all_AFB is in the form of [(-0.9563586273699287, 0.8486084490392977), (-0.8390765758997597, 0.89665414376131)]
     # which is ntoys number of tuples with first as central, second as error
@@ -326,15 +326,15 @@ def fitToys(AFB_toy):
         postfix = 'minus%ipct'%(abs(AFB_toy)*100)
     else:
         postfix = 'plus%ipct'%(AFB_toy*100)
-    hist_AFB,canv_AFB,fit_results_AFB = plot_hist(data=fit_AFB,name='afb_%s'%postfix,xtitle='AFB(fit)',title='AFB for %i toys, AFB_input = %.2f'%(ntoys,new_mean))
+    hist_AFB,canv_AFB,fit_results_AFB = plot_hist(data=fit_AFB,name='%s_%s'%(toy_param,postfix),xtitle='%s(fit)'%toy_param,title='%s for %i toys, input = %.2f'%(toy_param,ntoys,new_mean))
     hist_chi2,canv_chi2,fit_results_chi2 = plot_hist(data=fit_chi2,name='chi2_%s'%postfix,xtitle='chi2/%i'%model_bins,title='chi2 for %i toys, AFB_input = %.2f'%(ntoys,new_mean))
+
     # finish
-    
+    print '(info) Done fitToys for Param %s = %.2f'%(toy_param,AFB_toy)
 #    canv_AFB.SaveAs('%s/AFB_toys_%s.png'%(outdir,postfix))
 #    canv_chi2.SaveAs('%s/chi2_toys_%s.png'%(outdir,postfix))
     return [hist_AFB,hist_chi2],fit_results_AFB
 
-    print '(info) Done fitToys for Param=%.2f'%AFB_toy
 
 def plotPull(tfile):
     """
@@ -344,7 +344,7 @@ def plotPull(tfile):
     hist_sets = set()
     for ikey in keys:
         if 'TH1' in  ikey.GetClassName() : histname = ikey.GetName()
-        if histname in hist_sets or 'afb' not in histname:
+        if histname in hist_sets or toy_param not in histname:
             continue
         else:
             hist_sets.add(histname)
