@@ -5,6 +5,7 @@ import helper
 import samples
 import copy
 from array import array
+import sys
 
 ROOT.gROOT.SetBatch(True)
 
@@ -35,6 +36,11 @@ class thetaTemp(object):
 		if txtfile is None:
 			txtfile = 'MC_input_with_bkg.txt'
 		self.samples_obj = samples.samples(txtfile)
+		# Added features
+		# rate_change of each process in terms of 1sigma deviation of SF from 1.
+		self.rate_change = (('WJets',0.2),('other_bkg',0.2),('qq',0.2))
+		###### very special ######
+		ROOT.TH1.SetDefaultSumw2(True)
 
 	def main(self):
 		self.define_process()
@@ -47,6 +53,7 @@ class thetaTemp(object):
 			for key,value in self.process_files.iteritems():
 				print '(info) Begin process %s samples.'%key
 				self.TTtreeToTemplates(ttree_file=value, process_name=key)
+			self.get_rate_templates()
 		else:
 			print '(info) Process template file w/ TH3D. '
 			self.importTemp(self.template_file)
@@ -368,6 +375,104 @@ class thetaTemp(object):
 			# further, write original projections into aux file for later conparisons
 			self.output_original_templates(template=tmp_objects[i])
 
+	def get_rate_templates(self):
+		"""
+		input: self.thetaHistList contains all 1D unrolled templates for theta
+		output: build, on top of nominal templates, a rate up and down templates for each bkg as well fqq
+		"""
+		# case1: SF_bkgs, in this case other bkg remains the same, only Fqq and Fgg changes
+		# case2: change SFqq, in this case all bkgs remains the same and only Fqq and Fgg changes
+
+		# case1
+		# rate_change = (('Wjets',0.2),('other_bkg',0.2),('qq',0.2))
+
+		self.outfile.cd()
+		# First get Ntt,Nbkg,Nqq
+		self.nominal_hist_map={}
+		self.nominal_hist_map['qq'] = ('f_plus__qq','f_minus__qq')
+		self.nominal_hist_map['gg'] = ('f_plus__gg','f_minus__gg')
+		self.nominal_hist_map['WJets'] = ('f_plus__WJets','f_minus__WJets')
+		self.nominal_hist_map['other_bkg'] = ('f_plus__other_bkg','f_minus__other_bkg')
+		hist_map = self.nominal_hist_map
+
+		Nqq = 0
+		Ngg = 0
+		# calculate Ntt etc and also make a new hashmap for 1D templates for quick look up using hist.GetName() as key
+		self.thetaHistList_map={}
+		for hist in self.thetaHistList:
+			iname = hist.GetName()
+			self.thetaHistList_map[iname] = hist
+			if iname in hist_map['qq']:
+				Nqq += hist.Integral()
+			elif iname in hist_map['gg']:
+				Ngg += hist.Integral()
+		Ntt = Nqq+Ngg
+
+		for item in self.rate_change:
+			process_name = item[0]
+			SF_sigma_up = item[1]
+			SF_sigma_down = -item[1]
+			new_templates=[]
+			# calculate SF for each process in R_process templates making
+			# case 1
+			if 'process_name' == 'qq':
+				SF_qq_up = 1+SF_sigma_up
+				SF_gg_up = 1-SF_sigma_up*Nqq/Ngg
+				SF_qq_down = 1+SF_sigma_down
+				SF_gg_down = 1-SF_sigma_down*Nqq/Ngg
+				new_templates+=[[hist_map['qq'],SF_qq_up,SF_qq_down],[hist_map['gg'],SF_gg_up,SF_gg_down]]
+			#case 2
+			else:
+				# get Nbkg_i
+				Nbkg_i=0
+				for iname in hist_map[process_name]:
+					ihist = self.thetaHistList_map.get(iname,0)
+					if ihist==0:
+						print '(Error) No %s 1D temp found!'%iname
+						sys.exit(1)
+					else:
+						Nbkg_i += ihist.Integral()
+				# calculate SFs
+				# SF_bkg = 1+sigma_bkg
+				# SF_tt = 1-sigma_bkg*N_bkg/N_tt
+				SF_bkg_up = 1+SF_sigma_up
+				SF_bkg_down = 1+SF_sigma_down
+				SF_qq_up = 1-SF_sigma_up*Nbkg_i/Ntt
+				SF_qq_down = 1-SF_sigma_down*Nbkg_i/Ntt
+				SF_gg_up = SF_qq_up
+				SF_gg_down = SF_qq_down
+				new_templates += [[hist_map['qq'],SF_qq_up,SF_qq_down],[hist_map['gg'],SF_gg_up,SF_gg_down],[hist_map[process_name],SF_bkg_up,SF_bkg_down]]
+
+			# Apply SFs on nominal templates and add the new ones into template.root files
+			# Loop over all templates that are affected by R_process
+			for item in new_templates:
+				itemplate_names = item[0] # e.g. ('f_plus__qq','f_minus__qq')
+				iSF_plus = item[1]
+				iSF_minus = item[2]
+				# loop over all subversions of templates and create scaled ones
+				for iname in itemplate_names:
+					ihist_nominal = self.thetaHistList_map.get(iname,0)
+					if ihist_nominal==0:
+						print '(Error) No %s 1D temp found!'%iname
+						sys.exit(1)
+					new_plus_name = '%s__R%s__plus'%(iname,process_name)
+					new_minus_name = '%s__R%s__minus'%(iname,process_name)
+					ihist_scaled_plus = ihist_nominal.Clone(new_plus_name)
+					ihist_scaled_minus = ihist_nominal.Clone(new_minus_name)
+					ihist_scaled_plus.Scale(iSF_plus)
+					ihist_scaled_minus.Scale(iSF_minus)
+					# Add into all thetaTemp list
+					self.thetaHistList.append(ihist_scaled_plus)
+					self.thetaHistList.append(ihist_scaled_minus)
+					# also write new templates into temp root file
+					ihist_scaled_plus.Write()
+					ihist_scaled_minus.Wrtie()
+					# print out info message
+					print '				Adding template with name %s'%new_plus_name
+					print '				Adding template with name %s'%new_minus_name
+
+		# finish making all new templates
+		print '(info) Finish get_rate_templates.'
 
 
 	def makeControlPlots(self):
