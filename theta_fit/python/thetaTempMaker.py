@@ -415,7 +415,7 @@ class thetaTemp(object):
 			new_templates=[]
 			# calculate SF for each process in R_process templates making
 			# case 1
-			if 'process_name' == 'qq':
+			if process_name == 'qq':
 				SF_qq_up = 1+SF_sigma_up
 				SF_gg_up = 1-SF_sigma_up*Nqq/Ngg
 				SF_qq_down = 1+SF_sigma_down
@@ -455,8 +455,8 @@ class thetaTemp(object):
 					if ihist_nominal==0:
 						print '(Error) No %s 1D temp found!'%iname
 						sys.exit(1)
-					new_plus_name = '%s__R%s__plus'%(iname,process_name)
-					new_minus_name = '%s__R%s__minus'%(iname,process_name)
+					new_plus_name = '%s__R_%s__plus'%(iname,process_name)
+					new_minus_name = '%s__R_%s__minus'%(iname,process_name)
 					ihist_scaled_plus = ihist_nominal.Clone(new_plus_name)
 					ihist_scaled_minus = ihist_nominal.Clone(new_minus_name)
 					ihist_scaled_plus.Scale(iSF_plus)
@@ -466,7 +466,7 @@ class thetaTemp(object):
 					self.thetaHistList.append(ihist_scaled_minus)
 					# also write new templates into temp root file
 					ihist_scaled_plus.Write()
-					ihist_scaled_minus.Wrtie()
+					ihist_scaled_minus.Write()
 					# print out info message
 					print '				Adding template with name %s'%new_plus_name
 					print '				Adding template with name %s'%new_minus_name
