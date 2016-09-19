@@ -28,9 +28,9 @@ range_toy_param = [-1,1.01]
 AFB_toy_step = 0.2
 
 # define Rqq toy params
-toy_param = 'R_qq'
-range_toy_param = [-4.0,4.01]
-AFB_toy_step = 2.0
+#toy_param = 'R_qq'
+#range_toy_param = [-4.0,4.01]
+#AFB_toy_step = 2.0
 
 AFB_list = []
 afb_tmp = range_toy_param[0]

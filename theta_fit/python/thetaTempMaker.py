@@ -8,6 +8,7 @@ from array import array
 import sys
 
 ROOT.gROOT.SetBatch(True)
+rate_sigma=0.8
 
 class thetaTemp(object):
 	"""
@@ -38,7 +39,7 @@ class thetaTemp(object):
 		self.samples_obj = samples.samples(txtfile)
 		# Added features
 		# rate_change of each process in terms of 1sigma deviation of SF from 1.
-		self.rate_change = (('WJets',0.2),('other_bkg',0.2),('qq',0.2))
+		self.rate_change = (('WJets',rate_sigma),('other_bkg',rate_sigma),('qq',rate_sigma))
 		###### very special ######
 		ROOT.TH1.SetDefaultSumw2(True)
 

@@ -7,8 +7,6 @@ import numpy
 import template
 import helper
 
-
-
 class tempMaker(object):
     """
     take in a ttree in legacy format
@@ -178,7 +176,7 @@ if __name__=='__main__':
     if len(argv)==0:
         print """
         Usage: 
-
+        python -i template_maker.py aggregated_distributions.root template -1 (verbose)
         """
         sys.exit(1)
     infile = argv.pop(0)
