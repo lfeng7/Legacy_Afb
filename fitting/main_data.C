@@ -946,14 +946,16 @@ void fitCombined(char* runName) {
 	minimizer->SetParameter(4,"delta",  0.00, 0.50, -1.0, 1.0);
 	minimizer->SetParameter(5,"Afb",    0.00, 0.10, -1.0, 1.0);
 
-	minimizer->SetParameter(6,"Rntmj", 0.03, 0.05,0.0,1.0); //fixed
+	minimizer->SetParameter(6,"Rntmj", 0.017, 0.05,0.0,0.04); //fixed
 
-	//minimizer->FixParameter(0);
+	//minimizer->FixParameter(0);	//Rqqbar
 	//minimizer->FixParameter(1);	//Rbck
 	//minimizer->FixParameter(2);	//RWjets
-	minimizer->FixParameter(3);
-	minimizer->FixParameter(4);
-	//minimizer->FixParameter(5);
+	minimizer->FixParameter(3);	//xi
+	minimizer->FixParameter(4);	//delta
+//	minimizer->FixParameter(5);    //AFB
+        minimizer->FixParameter(6);    //Rqcd
+
 	//set up arguments and minimize
 	double arg[2];
 	arg[0] = 5000; //maximum number of iterations

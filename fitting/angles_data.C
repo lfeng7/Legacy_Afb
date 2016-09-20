@@ -8,6 +8,8 @@
 #include <TLegend.h>
 #include <THStack.h>
 #include <float.h> //needed for DBL_EPSILON
+#include <set>
+using std::set;
 
 /////////////////////////////////////////////////////////////////////////
 //     This file used during fitting to loop over all data events      //
@@ -52,6 +54,7 @@ int nbinsx, nbinsy, nbinsz, nbins_lnL;
 int iterations = 0;
 double x_low, x_high, y_low, y_high, z_low, z_high, lnL_low, lnL_high;
 double xbinwidth, ybinwidth, zbinwidth;
+//Double_t* xbinlist, Double_t* ybinlist, Double_t* zbinlist; //for variable bins
 //F constants
 double F_xi_comb = 0.0;
 double F_delta_comb = 0.0;
@@ -264,9 +267,10 @@ void angles_data::LoadHistogramsCombined() {
 	x_low = fqqs_plus->GetXaxis()->GetXmin(); x_high = fqqs_plus->GetXaxis()->GetXmax();
 	y_low = fqqs_plus->GetYaxis()->GetXmin(); y_high = fqqs_plus->GetYaxis()->GetXmax();
 	z_low = fqqs_plus->GetZaxis()->GetXmin(); z_high = fqqs_plus->GetZaxis()->GetXmax();
-	xbinwidth = fqqs_plus->GetXaxis()->GetBinWidth(1);
-	ybinwidth = fqqs_plus->GetYaxis()->GetBinWidth(1);
-	zbinwidth = fqqs_plus->GetZaxis()->GetBinWidth(1);
+	xbinwidth = fqqs_plus->GetXaxis()->GetBinWidth(1)/10.0;
+	ybinwidth = fqqs_plus->GetYaxis()->GetBinWidth(1)/10.0;
+	zbinwidth = fqqs_plus->GetZaxis()->GetBinWidth(1)/10.0;
+
 	//load up the background distributions
 	fbck_plus  = (TH3D*)f->Get("f_bck_plus");
 	fbck_minus = (TH3D*)f->Get("f_bck_minus");
@@ -337,28 +341,33 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 	Long64_t nentries = fChain->GetEntriesFast();
 	Long64_t nbytes = 0, nb = 0;
 	
+        // Get xbinlist again
+        Double_t* xbinlist = (Double_t*)fqqs_plus->GetXaxis()->GetXbins()->GetArray();
+        Double_t* ybinlist = (Double_t*)fqqs_plus->GetYaxis()->GetXbins()->GetArray();
+        Double_t* zbinlist = (Double_t*)fqqs_plus->GetZaxis()->GetXbins()->GetArray();
+
 	//make histograms to hold the data and the fit and their projections
 	TH3D* data_hist = new TH3D("data_hist","Data Distribution; cos(#theta *); Feynman x (x_{F}); M_{t #bar{t}} (GeV)",
-							   nbinsx,x_low,x_high,nbinsy,y_low,y_high,nbinsz,z_low,z_high);
-	TH1D* data_x = new TH1D("data_x","Data x Projection",nbinsx,x_low,x_high);
-	TH1D* data_y = new TH1D("data_y","Data y Projection",nbinsy,y_low,y_high);
-	TH1D* data_z = new TH1D("data_z","Data z Projection",nbinsz,z_low,z_high);
-	TH1D* gg_x = new TH1D("gg_x","gg x Projection",nbinsx,x_low,x_high);
-	TH1D* gg_y = new TH1D("gg_y","gg y Projection",nbinsy,y_low,y_high);
-	TH1D* gg_z = new TH1D("gg_z","gg z Projection",nbinsz,z_low,z_high);
-	TH1D* qq_x = new TH1D("qq_x","qqbar x Projection",nbinsx,x_low,x_high);
-	TH1D* qq_y = new TH1D("qq_y","qqbar y Projection",nbinsy,y_low,y_high);
-	TH1D* qq_z = new TH1D("qq_z","qqbar z Projection",nbinsz,z_low,z_high);
-	TH1D* bg_x = new TH1D("bg_x","background x Projection",nbinsx,x_low,x_high);
-	TH1D* bg_y = new TH1D("bg_y","background y Projection",nbinsy,y_low,y_high);
-	TH1D* bg_z = new TH1D("bg_z","background z Projection",nbinsz,z_low,z_high);
-	TH1D* wj_x = new TH1D("wj_x","WJets x Projection",nbinsx,x_low,x_high);
-	TH1D* wj_y = new TH1D("wj_y","WJets y Projection",nbinsy,y_low,y_high);
-	TH1D* wj_z = new TH1D("wj_z","WJets z Projection",nbinsz,z_low,z_high);
+							   nbinsx,xbinlist,nbinsy,ybinlist,nbinsz,zbinlist);
+	TH1D* data_x = new TH1D("data_x","Data x Projection",nbinsx,xbinlist);
+	TH1D* data_y = new TH1D("data_y","Data y Projection",nbinsy,ybinlist);
+	TH1D* data_z = new TH1D("data_z","Data z Projection",nbinsz,zbinlist);
+	TH1D* gg_x = new TH1D("gg_x","gg x Projection",nbinsx,xbinlist);
+	TH1D* gg_y = new TH1D("gg_y","gg y Projection",nbinsy,ybinlist);
+	TH1D* gg_z = new TH1D("gg_z","gg z Projection",nbinsz,zbinlist);
+	TH1D* qq_x = new TH1D("qq_x","qqbar x Projection",nbinsx,xbinlist);
+	TH1D* qq_y = new TH1D("qq_y","qqbar y Projection",nbinsy,ybinlist);
+	TH1D* qq_z = new TH1D("qq_z","qqbar z Projection",nbinsz,zbinlist);
+	TH1D* bg_x = new TH1D("bg_x","background x Projection",nbinsx,xbinlist);
+	TH1D* bg_y = new TH1D("bg_y","background y Projection",nbinsy,ybinlist);
+	TH1D* bg_z = new TH1D("bg_z","background z Projection",nbinsz,zbinlist);
+	TH1D* wj_x = new TH1D("wj_x","WJets x Projection",nbinsx,xbinlist);
+	TH1D* wj_y = new TH1D("wj_y","WJets y Projection",nbinsy,ybinlist);
+	TH1D* wj_z = new TH1D("wj_z","WJets z Projection",nbinsz,zbinlist);
 
-	TH1D* ntmj_x = new TH1D("ntmj_x","ntmj x Projection",nbinsx,x_low,x_high);
-	TH1D* ntmj_y = new TH1D("ntmj_y","ntmj y Projection",nbinsy,y_low,y_high);
-	TH1D* ntmj_z = new TH1D("ntmj_z","ntmj z Projection",nbinsz,z_low,z_high);
+	TH1D* ntmj_x = new TH1D("ntmj_x","ntmj x Projection",nbinsx,xbinlist);
+	TH1D* ntmj_y = new TH1D("ntmj_y","ntmj y Projection",nbinsy,ybinlist);
+	TH1D* ntmj_z = new TH1D("ntmj_z","ntmj z Projection",nbinsz,zbinlist);
 
 	TH1D* event_numbers_data = new TH1D("event_numbers_data","lepton charge and jet multiplicity in data",6,0.,6.);
 	TH1D* event_numbers_bck = new TH1D("event_numbers_bck","lepton charge and jet multiplicity in background",6,0.,6.);
@@ -377,7 +386,7 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 	event_numbers_gg->SetBarOffset(0.15);
 	event_numbers_qq->SetBarOffset(0.15);
 	TH3D* sideband = new TH3D("sideband","Sideband Distribution; cos(#theta *); Feynman x (x_{F}); M_{t #bar{t}} (GeV)",
-							   nbinsx,x_low,x_high,nbinsy,y_low,y_high,nbinsz,z_low,z_high);
+							   nbinsx,xbinlist,nbinsy,ybinlist,nbinsz,zbinlist);
 
 	int count_added=0;
 	//MAIN LOOP
@@ -444,9 +453,15 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 	TH3D *fWJets = (TH3D*)fqqs_plus->Clone("fWJets");
 	TH3D *fntmj = (TH3D*)fqqs_plus->Clone("fntmj");
 	
+	std::set<int> bin_nums;
 	for (double x = x_low+(0.5*xbinwidth); x<x_high; x=x+xbinwidth) {
 		for (double y = y_low+(0.5*ybinwidth); y<y_high; y=y+ybinwidth) {
 			for (double z = z_low+(0.5*zbinwidth); z<z_high; z=z+zbinwidth) {
+				// Need to check if current (x,y,z) correspond to a bin that has already been found before
+				int ibin = fgg_plus->FindFixBin(x,y,z);
+				if(bin_nums.find(ibin)!=bin_nums.end()) continue;
+				bin_nums.insert(ibin);
+				// Then fill the histograms in the new bin
 				double bck_events = fbck_plus->GetBinContent(fbck_plus->FindFixBin(x,y,z)) + fbck_minus->GetBinContent(fbck_minus->FindFixBin(x,y,z));
 				double WJets_events = WJets_plus->GetBinContent(WJets_plus->FindFixBin(x,y,z)) + WJets_minus->GetBinContent(WJets_minus->FindFixBin(x,y,z));
 				double ntmj_events = ntmj_plus->GetBinContent(ntmj_plus->FindFixBin(x,y,z)) + ntmj_minus->GetBinContent(ntmj_minus->FindFixBin(x,y,z));
@@ -490,7 +505,7 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 			}
 		}
 	}//end loops over bins
-	
+/*	
 	//and a few more loops over the histograms to set the errors on the projections for the data
 	for (double x = x_low+(0.5*xbinwidth); x<x_high; x=x+xbinwidth) {
 		double x_bin_var_data=0.0;
@@ -525,6 +540,7 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 		}
 		data_y->SetBinError(data_y->FindFixBin(y),TMath::Sqrt(y_bin_var_data));
 	}
+*/
 
 	//Build the event type distributions for the background, gg, and qq
 	double n_fit_bck_plus = (Rbck*fbck_plus->Integral());
@@ -718,12 +734,23 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 	stack_file->Close();
 
 	//finally, save the results of the fit to a text file.
+	double Rtt_abs = 1-(Rbck+RWJets+Rntmj);
+        double Rqq_abs = Rtt_abs*Rqqbar;
+        double Rgg_abs = Rtt_abs-Rqq_abs;
+        double sigma_Rtt_abs = TMath::Sqrt(sigma_Rbck*sigma_Rbck+sigma_RWJets*sigma_RWJets+sigma_Rntmj*sigma_Rntmj); 
+        double sigma_Rqq_abs = Rqqbar*TMath::Sqrt(sigma_Rtt_abs*sigma_Rtt_abs+Rtt_abs*Rtt_abs/(Rqqbar*Rqqbar)*sigma_Rqqbar*sigma_Rqqbar);
+	double sigma_Rgg_abs =TMath::Sqrt(sigma_Rqq_abs*sigma_Rqq_abs+sigma_Rtt_abs*sigma_Rtt_abs);
+
 	FILE* o = fopen("fit_results.txt","w");
 	fprintf(o,"*************		FIT       RESULTS		*************\n");
 	fprintf(o,"Rqqbar = %-.4f +/- %-.4f\n",Rqqbar,sigma_Rqqbar);
+
+        fprintf(o,"Rqq_abs = %-.4f +/- %-.4f\n",Rqq_abs,sigma_Rqq_abs);
+        fprintf(o,"Rgg_abs = %-.4f +/- %-.4f\n",Rgg_abs,sigma_Rgg_abs);
+
 	fprintf(o,"Rbck = %-.4f +/- %-.4f\n",Rbck,sigma_Rbck);
 	fprintf(o,"RWJets = %-.4f +/- %-.4f\n",RWJets,sigma_RWJets);
-	fprintf(o,"Rntmj = %-.4f +/- %-.4f\n",Rntmj,sigma_Rntmj);
+	fprintf(o,"Rqcd = %-.4f +/- %-.4f\n",Rntmj,sigma_Rntmj);
 	fprintf(o,"xi = %-.4f +/- %-.4f\n",xi,sigma_xi);
 	fprintf(o,"delta = %-.4f +/- %-.4f\n",delta,sigma_delta);
 	fprintf(o,"Afb    = %-.4f +/- %-.4f\n",Afb,sigma_Afb);
@@ -734,6 +761,20 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 	fprintf(o,"    %-.2f < costheta* < %-.2f in %d bins\n",x_low,x_high,nbinsx);
 	fprintf(o,"    %-.2f < Feynman x < %-.2f in %d bins\n",y_low,y_high,nbinsy);
 	fprintf(o,"    %-.2f < ttbarMass < %-.2f in %d bins\n",z_low,z_high,nbinsz);
+
+	fprintf(o,"\nxbins : ");
+	for (int i=0;i<(nbinsx+1);i++){
+			fprintf(o,"%-.2f, ",xbinlist[i]);
+	}
+	fprintf(o,"\nybins : ");
+	for (int i=0;i<(nbinsy+1);i++){
+			fprintf(o,"%-.2f, ",ybinlist[i]);
+	}
+	fprintf(o,"\nzbins : ");
+	for (int i=0;i<(nbinsz+1);i++){
+			fprintf(o,"%-.2f, ",zbinlist[i]);
+	}
+
 	fclose(o);
 	//and save an abridged version to the summary file
 	o = fopen("summary_combined.txt","a");
