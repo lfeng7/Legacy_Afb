@@ -38,6 +38,27 @@ def GetListTH1D(tfile):
         print item
     return all_th1d
 
+def GetQualityPlots(hist,verbose=False):
+    """
+    input: a TH1D 
+    output: a new TH1D contains the distribution of BinContents for spotting empty bins 
+    """
+    hname = hist.GetName()
+    N_neg_bin = 0
+    hist_quality = ROOT.TH1D('quality_%s'%hname,'quality_%s'%hname,61,-1,60)
+    hist_quality.SetXTitle("evts per bin")
+    hist_quality.SetYTitle("num of bins")
+    for k in range(hist.GetSize()):
+        if not hist.IsBinUnderflow(k) and not hist.IsBinOverflow(k) :
+            binCounts = hist.GetBinContent(k)
+            if binCounts<0:
+                N_neg_bin += 1
+            hist_quality.Fill(hist.GetBinContent(k))
+    hist_quality.SetDirectory(0)
+    if verbose:
+        print '(verbose) %s has %i negative bins.'%(hname,N_neg_bin)
+    return hist_quality
+
 def getColors(name):
     colors = {'qq':ROOT.kRed+1,'gg':ROOT.kRed-7,'tt_bkg':ROOT.kBlue+3,'other_bkg':ROOT.kMagenta,'singleT':ROOT.kMagenta,'WJets':ROOT.kGreen-3,'qcd':ROOT.kYellow,'zjets':ROOT.kAzure-2 }
     icolor = colors.get(name,0)

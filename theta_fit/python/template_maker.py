@@ -46,7 +46,7 @@ class tempMaker(object):
         Then organize these templates in the form of {'dist_type1':[[temp_obj1,w1],[temp_obj2,w2],...]],'dist_type2':[],...}
         """
         self.processes = []
-        self.processes.extend([['WJets',1],['bck',1],['gg',1],['ntmj',1],['qqa','wa'],['qqs',1]])
+        self.processes.extend([['total',1],['WJets',1],['bck',1],['gg',1],['ntmj',1],['qqa','wa'],['qqs',1]])
         self.processes.extend([['qqa_delta','wadelta'],['qqa_xi','waxi'],['qqs_delta','wsdelta'],['qqs_xi','wsxi']])
         prefix = 'f'
         all_templates = {}
@@ -75,6 +75,7 @@ class tempMaker(object):
         for key,value in self.all_templates.iteritems():
             for item in value:
                 itemp = item[0]
+                self.plot_quality(itemp)
                 self.outfile.cd()
                 itemp.histo_3D.Write()
                 self.outfile_aux.cd()
@@ -82,6 +83,22 @@ class tempMaker(object):
                 itemp.histo_y.Write()
                 itemp.histo_z.Write()
                 print '(info) Writing %s.'%itemp.name
+
+    def plot_quality(self,itemp):
+        """
+        plot quality plots, aka, hist of nevts per bin
+        input: a template object
+        output: th1(quality) and canvas into aux.root file
+        """
+        # first make th1 from template, then send to plotter class to make quality th1
+        itemp_3d = itemp.histo_3D
+        iquality_th1 = helper.GetQualityPlots(itemp_3d,self.verbose)
+        # write to file
+        self.outfile_aux.cd()
+        iquality_th1.Write()
+        if self.verbose:
+            print '(verbose) Done plot_quality for %s!'%iquality_th1.GetName()
+
 
     def makeTemplates(self,tree_file):
         """
@@ -126,6 +143,10 @@ class tempMaker(object):
                     proc_type = ['bck_plus']
                 elif dist_type==4:
                     proc_type = ['WJets_plus']
+                # fill total template
+                total_plus = self.all_templates.get('total_plus',0)
+                if total_plus!=0:
+                    total_plus[0][0].Fill(cs,abs(xf),mtt,1)
             elif lep_charge<0:
                 # is_for_distribution = (1,qq) (2,gg) (3,bkg) (4,WJets) (-1,sb)
                 if dist_type==-1:
@@ -138,6 +159,10 @@ class tempMaker(object):
                     proc_type = ['bck_minus']
                 elif dist_type==4:
                     proc_type = ['WJets_minus']
+                # fill total template
+                total_minus = self.all_templates.get('total_minus',0)
+                if total_minus!=0:
+                    total_minus[0][0].Fill(cs,abs(xf),mtt,1)
             else:
                 print '(error) lep_charge = 0. This event is corrupted! Will skip this.'
                 continue
@@ -162,6 +187,9 @@ class tempMaker(object):
                         itemp_obj.Fill(cs,abs(xf),mtt,new_w)
                         if self.verbose and iev%5000==1:
                             print '(debug) Filling into %s with weight %s.'%(itemp_obj.name,iweight)
+
+            # fill a total template for quality control
+
         print '(info) Finish loop over all entries!'
         tfile.Close()
 
