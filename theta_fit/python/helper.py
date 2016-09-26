@@ -10,6 +10,9 @@ XBINS = template.XBINS
 YBINS = template.YBINS
 ZBINS = template.ZBINS
 
+ROOT.TH1.SetDefaultSumw2(True)
+print '(info) ROOT.TH1.SetDefaultSumw2(True)'
+
 def GetTTreeName(tfile):
     # Find the name of the ttree
     keys = tfile.GetListOfKeys()
@@ -38,25 +41,89 @@ def GetListTH1D(tfile):
         print item
     return all_th1d
 
-def GetQualityPlots(hist,verbose=False):
+# def GetQualityPlots(hist,verbose=False):
+#     """
+#     input: a TH1D 
+#     output: a new TH1D contains the distribution of BinContents for spotting empty bins 
+#     """
+#     hname = hist.GetName()
+#     N_neg_bin = 0
+#     hist_quality = ROOT.TH1D('quality_%s'%hname,'quality_%s'%hname,61,-1,60)
+#     hist_quality.SetXTitle("evts per bin")
+#     hist_quality.SetYTitle("num of bins")
+#     for k in range(hist.GetSize()):
+#         if not hist.IsBinUnderflow(k) and not hist.IsBinOverflow(k) :
+#             binCounts = hist.GetBinContent(k)
+#             if binCounts<0:
+#                 N_neg_bin += 1
+#             hist_quality.Fill(hist.GetBinContent(k))
+#     hist_quality.SetDirectory(0)
+#     if verbose:
+#         print '(verbose) %s has %i negative bins.'%(hname,N_neg_bin)
+#     return hist_quality
+
+def GetQualityPlots_data(hist,verbose=True):
     """
     input: a TH1D 
-    output: a new TH1D contains the distribution of BinContents for spotting empty bins 
+    output: a new TH1D contains the distribution of fractional error for each bin
+    Asumming unweighted histogram
+    sigma_yi/yi = 1/sqrt(nentries_i)
     """
     hname = hist.GetName()
-    N_neg_bin = 0
-    hist_quality = ROOT.TH1D('quality_%s'%hname,'quality_%s'%hname,61,-1,60)
-    hist_quality.SetXTitle("evts per bin")
+    N_abnormal = 0
+    hist_quality = ROOT.TH1D('err_%s'%hname,'err_%s'%hname,40,-0.1,2)
+    hist_quality.SetXTitle("sigma_yi/yi")
     hist_quality.SetYTitle("num of bins")
+
     for k in range(hist.GetSize()):
         if not hist.IsBinUnderflow(k) and not hist.IsBinOverflow(k) :
-            binCounts = hist.GetBinContent(k)
-            if binCounts<0:
-                N_neg_bin += 1
-            hist_quality.Fill(hist.GetBinContent(k))
+            yi = hist.GetBinContent(k)
+            if yi>0:
+                frac_err = 1/numpy.sqrt(yi)
+            else:
+                    frac_err = 1.99
+            if frac_err>1 and frac_err!=1.99:
+                N_abnormal += 1
+            hist_quality.Fill(frac_err)
     hist_quality.SetDirectory(0)
     if verbose:
-        print '(verbose) %s has %i negative bins.'%(hname,N_neg_bin)
+        print '(verbose) %s has %i bins with sigma_i/yi>1.'%(hname,N_abnormal)
+    return hist_quality
+
+def GetQualityPlots_MC(hist,verbose=True):
+    """
+    input: a TH1D 
+    output: a new TH1D contains the distribution of fractional error for each bin
+    Assumming sum of weights are conserved
+    sigma_yi^2 = Sum_over(w_i^2) i=1,...,Number_of_entries in this bin
+    yi = Sum_over(w_i), which is number of events in the scaled hist
+    so sigma_yi/yi = sqrt(sumw2_i)/yi
+    """
+    hname = hist.GetName()
+    N_abnormal = 0
+    hist_quality = ROOT.TH1D('err_%s'%hname,'err_%s'%hname,40,-0.1,2)
+    hist_quality.SetXTitle("sigma_yi/yi")
+    hist_quality.SetYTitle("num of bins")
+    sumofw2 = hist.GetSumw2()
+
+    if sumofw2.GetSize()==0:
+        print '(error) No Sumw2 stored for %s. Will exit.'%hist.GetName()
+        sys.exit(1)
+
+    for k in range(hist.GetSize()):
+        if not hist.IsBinUnderflow(k) and not hist.IsBinOverflow(k) :
+            yi = hist.GetBinContent(k)
+            sigma_i = sumofw2.At(k)
+            if yi>0:
+                frac_err = numpy.sqrt(sigma_i)/yi
+            else:
+                frac_err = 1.99
+            if frac_err>1 and frac_err!=1.99:
+                N_abnormal += 1
+            hist_quality.Fill(frac_err)
+    hist_quality.SetDirectory(0)
+    if verbose:
+        print '(verbose) %s has %i bins with sigma_i/yi>1.'%(hname,N_abnormal)
     return hist_quality
 
 def getColors(name):

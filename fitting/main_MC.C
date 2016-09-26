@@ -12,6 +12,7 @@
 #include "angles.C"
 using namespace std;
 
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -68,6 +69,7 @@ int main_MC(int analyze, int onGrid, char* r, char* input_filename, int index,co
 }
 int main_MC(int analyze, int onGrid, char* r, char* input_filename, int index,const char* sys_type, int xbins, int ybins, int zbins, double lowmass, double highmass, double xflow, double xfhigh)
 {
+	TH1::SetDefaultSumw2(1);
 
 	// For systematics evaluation only. To remind that we are using the modified reweighting factor indeed.
 	cout<<"\n MC correction is "<<sys_type<<"\n"<<endl;

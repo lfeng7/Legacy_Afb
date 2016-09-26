@@ -15,6 +15,7 @@
 using namespace std;
 
 
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 //total data title and callname
@@ -89,6 +90,8 @@ void move_stuff(char* runname);
 //MAIN FUNCTION
 int main_data(int analyze, int onGrid, int comb_or_sep, char* r, char* mc_input_filename, char* data_input_filename)
 {
+	TH1::SetDefaultSumw2(1);
+
 	char* runname;
 	runname=r;
 	//Set up the prepend for the directory of all the MC histogram files

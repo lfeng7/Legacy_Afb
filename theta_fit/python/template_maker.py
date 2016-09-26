@@ -21,6 +21,7 @@ class tempMaker(object):
         self.versions = ['plus','minus'] # Ql=+/- version of templates
         self.binType = 'variable'
         self.all_templates = {} # a hash table with key=template_name, value=template.object
+	print '(info) TH::GetSumw2Default()=%i'%ROOT.TH1.GetDefaultSumw2()
 
     def main(self):
         """
@@ -92,7 +93,7 @@ class tempMaker(object):
         """
         # first make th1 from template, then send to plotter class to make quality th1
         itemp_3d = itemp.histo_3D
-        iquality_th1 = helper.GetQualityPlots(itemp_3d,self.verbose)
+        iquality_th1 = helper.GetQualityPlots_MC(itemp_3d,self.verbose)
         # write to file
         self.outfile_aux.cd()
         iquality_th1.Write()

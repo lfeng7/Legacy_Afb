@@ -23,10 +23,11 @@ class plotter(object):
         self.stack_lists = ['x','y','z']
         self.stack_xaxis = ['cos#theta*','|x_{F}|','M_{tt}(GeV)']
         self.stacks = {} # keys: 'plus_x','minus_y' etc
+        self.temp_shapes = {} # same key as self.stacks, to organize projections of all templates
         self.DATA_proj = {} # contains data projection th1 with same key as self.stacks
         self.process_counts = OrderedDict() # for total number of events given the 1D templates , for R_process calculation
         self.bin_type = bin_type
-
+        self.shapes_to_compare = ['qq','gg','WJets','other_bkg']
     def main(self):
         """
         Main function
@@ -38,6 +39,7 @@ class plotter(object):
         self.make_data_mc_comparison()
         self.write_counts_to_file()
         self.makeQualityPlots()
+        self.plotShapes()
 
     def define_process(self):
         """
@@ -71,6 +73,8 @@ class plotter(object):
                 istack = ROOT.THStack('stack_%s_%s'%(iobs,value),'%s %s projection comparison'%(iobs,value))
                 self.stacks[ikey] = istack
                 # keys of self.stack = plus_x
+                # also set up temp_shapes ={'plus_x':[h1,h2,...],...} for shape comparison control plots as well
+                self.temp_shapes[ikey] =[]
 
         self.legend = ROOT.TLegend(0.5,0.5,0.66,0.86)
         self.legend.SetName('legend')
@@ -90,6 +94,7 @@ class plotter(object):
                     # Add to proper THStack if it is not DATA
                     ihist.SetFillColor(icolor)
                     self.stacks[stack_key].Add(ihist)
+                    self.temp_shapes[stack_key].append(ihist)
                 else:
                     # Keep data projections in another hashtable
                     self.DATA_proj[stack_key] = ihist
@@ -163,24 +168,44 @@ class plotter(object):
 
         print '(info) Done makeControlPlots.'
 
-    def GetQualityPlots(self,hist):
+    def plotShapes(self):
         """
-        input: a TH1D 
-        output: a new TH1D contains the distribution of BinContents for spotting empty bins 
+        input: self.temp_shapes
+        output: plot hist and save in output dir
         """
-        hname = hist.GetName()
-        N_neg_bin = 0
-        hist_quality = ROOT.TH1D('quality_%s'%hname,'quality_%s'%hname,61,-1,60)
-        for k in range(hist.GetSize()):
-            if not hist.IsBinUnderflow(k) and not hist.IsBinOverflow(k) :
-                binCounts = hist.GetBinContent(k)
-                if binCounts<0:
-                    N_neg_bin += 1
-                hist_quality.Fill(hist.GetBinContent(k))
-        hist_quality.SetDirectory(0)
-        if self.verbose:
-            print '(verbose) %s has %i negative bins.'%(hname,N_neg_bin)
-        return hist_quality
+        tmp_legend = ROOT.TLegend(0.7,0.7,0.9,0.9)
+
+	has_leg = False
+        for key,hist_list in self.temp_shapes.iteritems():
+            c = ROOT.TCanvas()
+            isFirstHist=True
+            for i,ihist_0 in enumerate(hist_list):
+                if 'other_bkg' in ihist_0.GetName():
+                    continue
+		# Need to find correct color first....
+		# f_plus__qcd_proj_x 
+		print ihist_0.GetName()
+		proc_name = ihist_0.GetName().split('__')[-1].split('_proj')[0]
+		print proc_name
+		icolor = helper.getColors(proc_name)
+		ihist = ihist_0.Clone()
+		ihist.SetDirectory(0)
+		ihist.SetFillColor(0)
+		ihist.SetLineColor(icolor)
+		# normalize to 1
+		ihist.Scale(1.0/ihist.Integral())
+		if not has_leg:
+                    tmp_legend.AddEntry(ihist,proc_name,"L")
+                if isFirstHist:
+                    ihist.Draw("hist")
+                    isFirstHist=False
+                else:
+                    ihist.Draw("hist same")
+	    has_leg = True
+            tmp_legend.Draw("same")
+            c.SaveAs('%s/%s_shapes.png'%(self.output_dir,key))
+            #del(c)
+        print '(info) Done plotShapes!'
 
 
     def makeQualityPlots(self):
@@ -203,7 +228,7 @@ class plotter(object):
                 if iobs not in hname: continue
                 # make quality hists for Data
                 if 'DATA' in hname:
-                    hist_quality = self.GetQualityPlots(ihist) 
+                    hist_quality = helper.GetQualityPlots_data(ihist) 
                     hist_quality.SetLineColor(ROOT.kRed)                    
                     data_quality_hists.append(hist_quality)
                 else:
@@ -219,7 +244,7 @@ class plotter(object):
                         if self.verbose:
                             print '(info) Add %s in %s'%(hname,total_temp.GetName())
             # Get template_quality_hists
-            quality_total_temp = self.GetQualityPlots(total_temp)
+            quality_total_temp = helper.GetQualityPlots_MC(total_temp)
             quality_total_temp.SetLineColor(ROOT.kBlue)
             template_quality_hists.append(quality_total_temp)
 
@@ -236,7 +261,7 @@ class plotter(object):
             # make nicer plots and write into another dir
             self.outfile_aux.cd('plots')
             c = ROOT.TCanvas()
-            c.SetLogy()
+            # c.SetLogy()
             c.SetName(item.GetName())
             item.Draw('hist')
             # set xaxis title
@@ -246,6 +271,7 @@ class plotter(object):
                 data_quality_hists[i].Draw('same hist')
             tmp_legend.Draw('Same')
             c.Write()
+            c.SaveAs('%s/%s.png'%(self.output_dir,c.GetName()))
         print '(info) Done makeQualityPlots.'
 
 
