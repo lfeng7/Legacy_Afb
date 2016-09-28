@@ -173,38 +173,49 @@ class plotter(object):
         input: self.temp_shapes
         output: plot hist and save in output dir
         """
+	self.shape_hists = []
         tmp_legend = ROOT.TLegend(0.7,0.7,0.9,0.9)
 
 	has_leg = False
         for key,hist_list in self.temp_shapes.iteritems():
             c = ROOT.TCanvas()
             isFirstHist=True
+	    # first get ymax
+	    ymax= 0
+            for i,ihist_0 in enumerate(hist_list):
+                ihist = ihist_0.Clone()
+                ihist.Scale(1.0/ihist.Integral())
+		ymax = max(ymax,ihist.GetMaximum())
+	    ymax *= 1.1
+	    # draw histogram
             for i,ihist_0 in enumerate(hist_list):
                 if 'other_bkg' in ihist_0.GetName():
                     continue
 		# Need to find correct color first....
 		# f_plus__qcd_proj_x 
-		print ihist_0.GetName()
 		proc_name = ihist_0.GetName().split('__')[-1].split('_proj')[0]
-		print proc_name
 		icolor = helper.getColors(proc_name)
 		ihist = ihist_0.Clone()
-		ihist.SetDirectory(0)
+#		ihist.SetDirectory(0)
 		ihist.SetFillColor(0)
 		ihist.SetLineColor(icolor)
 		# normalize to 1
 		ihist.Scale(1.0/ihist.Integral())
+		ihist.SetMaximum(ymax)
+                ihist.SetMinimum(0)
+		self.shape_hists.append(ihist)
 		if not has_leg:
                     tmp_legend.AddEntry(ihist,proc_name,"L")
                 if isFirstHist:
-                    ihist.Draw("hist")
+                    ihist.Draw("hist e0")
                     isFirstHist=False
                 else:
-                    ihist.Draw("hist same")
+                    ihist.Draw("hist same e0")
+	    print '%s done'%key
 	    has_leg = True
-            tmp_legend.Draw("same")
+            self.legend.Draw("same")
             c.SaveAs('%s/%s_shapes.png'%(self.output_dir,key))
-            #del(c)
+            del(c)
         print '(info) Done plotShapes!'
 
 
