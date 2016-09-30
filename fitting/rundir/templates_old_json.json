@@ -1,0 +1,476 @@
+//Configuration Options
+{
+	"inputDirectory":"/uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/fitting/rundir/theta_tempMerge/",
+	"outputFile":"/uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/fitting/rundir/theta_tempMerge/templates.root",
+	//template definitions
+	"templates":[
+		//f_qqs_plus
+		{
+			"name":"f_qqs_plus",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 1 && Ql>0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_qqs_xi_plus
+		{
+			"name":"f_qqs_xi_plus",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight*wsxi",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 1 && Ql>0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_qqs_delta_plus
+		{
+			"name":"f_qqs_delta_plus",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight*wsdelta",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 1 && Ql>0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_qqs_minus
+		{
+			"name":"f_qqs_minus",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 1 && Ql<0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_qqs_xi_minus
+		{
+			"name":"f_qqs_xi_minus",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight*wsxi",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 1 && Ql<0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_qqs_delta_minus
+		{
+			"name":"f_qqs_delta_minus",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight*wsdelta",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 1 && Ql<0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_gg_plus
+		{
+			"name":"f_gg_plus",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 2 && Ql>0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_bck_plus
+		{
+			"name":"f_bck_plus",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 3 && Ql>0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			},
+			"postprocessing":[
+				{"type":"smooth", "kernel":"adaptive", "entriesperbin":2},
+				{"type":"reweight", "axes":[0,1,2]}
+			]
+		},
+		//f_WJets_plus
+		{
+			"name":"f_WJets_plus",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 4 && Ql>0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			},
+			"postprocessing":[
+				{"type":"smooth", "kernel":"adaptive", "entriesperbin":2},
+				{"type":"reweight", "axes":[0,1,2]}
+			]
+		},
+		//f_gg_minus
+		{
+			"name":"f_gg_minus",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 2 && Ql<0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_bck_minus
+		{
+			"name":"f_bck_minus",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 3 && Ql<0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			},
+			"postprocessing":[
+				{"type":"smooth", "kernel":"adaptive", "entriesperbin":2},
+				{"type":"reweight", "axes":[0,1,2]}
+			]
+		},
+		//f_WJets_minus
+		{
+			"name":"f_WJets_minus",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 4 && Ql<0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			},
+			"postprocessing":[
+				{"type":"smooth", "kernel":"adaptive", "entriesperbin":2},
+				{"type":"reweight", "axes":[0,1,2]}
+			]
+		},
+		//f_ntmj_plus
+		{
+			"name":"f_ntmj_plus",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight*normalization_weight",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == -1 && Ql>0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			},
+			"postprocessing":[
+				{"type":"smooth", "kernel":"adaptive", "entriesperbin":2},
+				{"type":"reweight", "axes":[0,1,2]}
+			]
+		},
+		//f_ntmj_minus
+		{
+			"name":"f_ntmj_minus",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight*normalization_weight",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == -1 && Ql<0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			},
+			"postprocessing":[
+				{"type":"smooth", "kernel":"adaptive", "entriesperbin":2},
+				{"type":"reweight", "axes":[0,1,2]}
+			]
+		},
+		//f_qqa_plus_positive_weights
+		{
+			"name":"f_qqa_plus_positive_weights",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight*wa",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 1 && Ql>0 && (weight*wa)>0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_qqa_plus_negative_weights
+		{
+			"name":"f_qqa_plus_negative_weights",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight*wa*-1.0",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 1 && Ql>0 && (weight*wa)<0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_qqa_plus
+		{
+		"name":"f_qqa_plus",
+		"templatesum":[
+			{"name":"f_qqa_plus_positive_weights","factor":1.0},
+			{"name":"f_qqa_plus_negative_weights","factor":-1.0}
+		],
+		"conserveSumOfWeights":true
+		},
+		//f_qqa_xi_plus_positive_weights
+		{
+			"name":"f_qqa_xi_plus_positive_weights",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight*waxi",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 1 && Ql>0 && (weight*waxi)>0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_qqa_xi_plus_negative_weights
+		{
+			"name":"f_qqa_xi_plus_negative_weights",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight*waxi*-1.0",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 1 && Ql>0 && (weight*waxi)<0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_qqa_xi_plus
+		{
+		"name":"f_qqa_xi_plus",
+		"templatesum":[
+			{"name":"f_qqa_xi_plus_positive_weights","factor":1.0},
+			{"name":"f_qqa_xi_plus_negative_weights","factor":-1.0}
+		],
+		"conserveSumOfWeights":true
+		},
+		//f_qqa_delta_plus_positive_weights
+		{
+			"name":"f_qqa_delta_plus_positive_weights",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight*wadelta",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 1 && Ql>0 && (weight*wadelta)>0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_qqa_delta_plus_negative_weights
+		{
+			"name":"f_qqa_delta_plus_negative_weights",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight*wadelta*-1.0",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 1 && Ql>0 && (weight*wadelta)<0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_qqa_delta_plus
+		{
+		"name":"f_qqa_delta_plus",
+		"templatesum":[
+			{"name":"f_qqa_delta_plus_positive_weights","factor":1.0},
+			{"name":"f_qqa_delta_plus_negative_weights","factor":-1.0}
+		],
+		"conserveSumOfWeights":true
+		},
+		//f_qqa_minus_positive_weights
+		{
+			"name":"f_qqa_minus_positive_weights",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight*wa",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 1 && Ql<0 && (weight*wa)>0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_qqa_minus_negative_weights
+		{
+			"name":"f_qqa_minus_negative_weights",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight*wa*-1.0",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 1 && Ql<0 && (weight*wa)<0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_qqa_minus
+		{
+		"name":"f_qqa_minus",
+		"templatesum":[
+			{"name":"f_qqa_minus_positive_weights","factor":1.0},
+			{"name":"f_qqa_minus_negative_weights","factor":-1.0}
+		],
+		"conserveSumOfWeights":true
+		},
+		//f_qqa_xi_minus_positive_weights
+		{
+			"name":"f_qqa_xi_minus_positive_weights",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight*waxi",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 1 && Ql<0 && (weight*waxi)>0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_qqa_xi_minus_negative_weights
+		{
+			"name":"f_qqa_xi_minus_negative_weights",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight*waxi*-1.0",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 1 && Ql<0 && (weight*waxi)<0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_qqa_xi_minus
+		{
+		"name":"f_qqa_xi_minus",
+		"templatesum":[
+			{"name":"f_qqa_xi_minus_positive_weights","factor":1.0},
+			{"name":"f_qqa_xi_minus_negative_weights","factor":-1.0}
+		],
+		"conserveSumOfWeights":true
+		},
+		//f_qqa_delta_minus_positive_weights
+		{
+			"name":"f_qqa_delta_minus_positive_weights",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight*wadelta",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 1 && Ql<0 && (weight*wadelta)>0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_qqa_delta_minus_negative_weights
+		{
+			"name":"f_qqa_delta_minus_negative_weights",
+			"files":["aggregated_distributions.root"],
+			"tree":"final_tree",
+			"variables":["costheta","xF","tt_M"],
+			"weight":"weight*wadelta*-1.0",
+			"conserveSumOfWeights":true,
+			"selection":"dist_type == 1 && Ql<0 && (weight*wadelta)<0",
+			"assertion":"nJets>3 && nJets<6 && Ql != 0",
+			"binning":{
+				"type":"fixed",
+				"bins":[20,-1,1,30,0,0.6,40,350,1750]
+			}
+		},
+		//f_qqa_delta_minus
+		{
+		"name":"f_qqa_delta_minus",
+		"templatesum":[
+			{"name":"f_qqa_delta_minus_positive_weights","factor":1.0},
+			{"name":"f_qqa_delta_minus_negative_weights","factor":-1.0}
+		],
+		"conserveSumOfWeights":true
+		}
+	]
+}
