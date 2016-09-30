@@ -127,7 +127,7 @@ def GetQualityPlots_MC(hist,verbose=True):
     return hist_quality
 
 def getColors(name):
-    colors = {'qq':ROOT.kRed+1,'gg':ROOT.kRed-7,'tt_bkg':ROOT.kBlue+3,'other_bkg':ROOT.kMagenta,'singleT':ROOT.kMagenta,'WJets':ROOT.kGreen-3,'qcd':ROOT.kYellow,'zjets':ROOT.kAzure-2 }
+    colors = {'qq':ROOT.kRed+1,'gg':ROOT.kRed-7,'tt_bkg':ROOT.kBlue+3,'other_bkg':ROOT.kMagenta,'singleT':ROOT.kMagenta,'WJets':ROOT.kGreen-3,'qcd':ROOT.kYellow-3,'zjets':ROOT.kAzure-2 }
     icolor = colors.get(name,0)
     return icolor
     

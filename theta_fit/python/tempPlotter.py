@@ -15,6 +15,9 @@ class plotter(object):
         super(plotter, self).__init__()
         self.input_file = template_file
         self.verbose = verbose
+        self.is_postfit = False
+        if 'postfit' in template_file:
+            self.is_postfit = True
         self.template_file = ROOT.TFile(template_file)
         self.all_hist = []
         self.projections = OrderedDict() # {'wjets_plus':[hist_cs,hist_xf,hist_mass],,,}
@@ -28,6 +31,7 @@ class plotter(object):
         self.process_counts = OrderedDict() # for total number of events given the 1D templates , for R_process calculation
         self.bin_type = bin_type
         self.shapes_to_compare = ['qq','gg','WJets','other_bkg']
+
     def main(self):
         """
         Main function
@@ -38,8 +42,9 @@ class plotter(object):
         self.stackMaker() # add projections into proper stacks
         self.make_data_mc_comparison()
         self.write_counts_to_file()
-        self.makeQualityPlots()
-        self.plotShapes()
+        if not self.is_postfit:
+            self.makeQualityPlots()
+            self.plotShapes()
 
     def define_process(self):
         """
@@ -190,7 +195,8 @@ class plotter(object):
 	    # draw histogram
             for i,ihist_0 in enumerate(hist_list):
                 if 'other_bkg' in ihist_0.GetName():
-                    continue
+#                    continue
+		    pass
 		# Need to find correct color first....
 		# f_plus__qcd_proj_x 
 		proc_name = ihist_0.GetName().split('__')[-1].split('_proj')[0]
