@@ -52,7 +52,7 @@ struct data_file {			//Holds all the necessary attributes of a sample file
 double xFLow = 0.0;
 double xFHigh = 0.6;
 double massLow = 350.0;
-double massHigh = 1750.0;
+double massHigh = 1000.0;
 
 //head and tail of sample file linked list
 sample_file* MC_HEAD = NULL;
@@ -372,7 +372,7 @@ void mergeHistoFiles() {
 	xFLow = y_low_local;
 	xFHigh = y_high_local;
 	massLow = z_low_local;
-	massHigh = z_high_local;
+	//massHigh = z_high_local;
 	//Set up new histogram names and titles
 	char** new_names = (char**)malloc(36*sizeof(char*));
 	char** new_titles = (char**)malloc(36*sizeof(char*));

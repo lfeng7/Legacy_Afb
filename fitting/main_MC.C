@@ -20,13 +20,23 @@ using namespace std;
 const char* detector_tune = "The tune of detector reweighting is : nominal ";
 
 //binning, mass range, and xf range defaults
+
+//original binning
+//int XBINS = 20;
+//int YBINS = 30;
+//int ZBINS = 40;
+//double LOWMASS = 350.0;
+//double HIGHMASS = 1750.0;
+
+// new binning
 int XBINS = 20;
-int YBINS = 30;
-int ZBINS = 40;
+int YBINS = 14; // every 0.05 in xf 
+int ZBINS = 13; // every 50 GeV in Mtt
 double LOWMASS = 350.0;
-double HIGHMASS = 1750.0;
+double HIGHMASS = 1000.0;
+
 double XFLOW = 0.0;
-double XFHIGH = 0.6;
+double XFHIGH = 0.7;
 int pdf_member = -1; // pdf weight: Default pdf member
 const char* SF_sys_global = "nominal";
 

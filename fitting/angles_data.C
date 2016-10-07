@@ -341,10 +341,31 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 	Long64_t nentries = fChain->GetEntriesFast();
 	Long64_t nbytes = 0, nb = 0;
 	
-        // Get xbinlist again
-        Double_t* xbinlist = (Double_t*)fqqs_plus->GetXaxis()->GetXbins()->GetArray();
-        Double_t* ybinlist = (Double_t*)fqqs_plus->GetYaxis()->GetXbins()->GetArray();
-        Double_t* zbinlist = (Double_t*)fqqs_plus->GetZaxis()->GetXbins()->GetArray();
+    // Get xbinlist again
+    // Double_t* xbinlist = (Double_t*)fqqs_plus->GetXaxis()->GetXbins()->GetArray();
+    // Double_t* ybinlist = (Double_t*)fqqs_plus->GetYaxis()->GetXbins()->GetArray();
+    // Double_t* zbinlist = (Double_t*)fqqs_plus->GetZaxis()->GetXbins()->GetArray();
+
+    // get bin list for both fixed and variable binning
+    const int n_binsx = nbinsx;
+    const int n_binsy = nbinsy;
+    const int n_binsz = nbinsz;
+
+    double xbinlist[n_binsx];
+    double ybinlist[n_binsy];
+    double zbinlist[n_binsz];
+    printf("bins for x axis\n");
+    for(int i=1;i<nbinsx+2;i++){
+    	xbinlist[i-1]=fqqs_plus->GetXaxis()->GetBinLowEdge(i);
+    	printf("%.2f",xbinlist[i-1]);
+    }
+    for(int i=1;i<nbinsy+2;i++){
+    	ybinlist[i-1]=fqqs_plus->GetYaxis()->GetBinLowEdge(i);
+    }
+    for(int i=1;i<nbinsz+2;i++){
+    	zbinlist[i-1]=fqqs_plus->GetZaxis()->GetBinLowEdge(i);
+    }
+
 
 	//make histograms to hold the data and the fit and their projections
 	TH3D* data_hist = new TH3D("data_hist","Data Distribution; cos(#theta *); Feynman x (x_{F}); M_{t #bar{t}} (GeV)",

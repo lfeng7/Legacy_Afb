@@ -19,6 +19,15 @@ shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight']
 flat_param = ['AFB','R_qq','R_WJets']
 obs = 'f_minus'
 
+# define sigma value here for all parameters
+sigma_values = {}
+sigma_values['AFB']=1.0
+sigma_values['qcd_rate']=0.2
+sigma_values['R_qq']=0.8
+sigma_values['R_other_bkg']=0.8
+sigma_values['R_WJets']=0.8
+sigma_values['lumi']=0.045
+
 ntoys = 2000
 Toys_per_thread = 100
 
@@ -159,9 +168,10 @@ def mle_result_print(result,sp='',n=None):
         # n is number of toys to print
         if n is None: n = len(result[sp][p])
         str_result += "%20s =" % p
+        sigma_p = sigma_values[p]
         # for parameter results
         for i in range(min([n, 10])):
-            str_result +=  " %5.2f +- %5.2f \n" % (result[sp][p][i][0], result[sp][p][i][1])
+            str_result +=  " %5.2f +- %5.2f \n" % (result[sp][p][i][0]*sigma_p, result[sp][p][i][1]*sigma_p)
     # stdev of pars for each experiment
     sigmas = []
     for i in range(min([n, 10])):
