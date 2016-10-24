@@ -136,7 +136,8 @@ import math
 def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',logy=False,draw_option = 'hist'):
     # Def axis title
     xaxis_name = data_.GetXaxis().GetTitle()
-    canvas_title = data_.GetTitle()
+#    canvas_title = data_.GetTitle()
+    canvas_title = 'CMS Private Work, 19.7 fb^{-1} at #sqrt{s} = 8 TeV'
     # create canvas
     c1 = ROOT.TCanvas(data_.GetName()+'_compare')
     if logy == "log" : 
@@ -170,7 +171,11 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
             print 'cannot determin which projection!'
             sys.exit(1)
         h_res = ROOT.TH1D(event_type+'_residuals',';; Data/MC',len(bins)-1,bins)
+        h_ref = ROOT.TH1D(event_type+'_reference',';; Data/MC',len(bins)-1,bins)
+
     h_res.SetDirectory(0)
+    h_ref.SetDirectory(0)
+
     # h_res.GetXaxis().SetName(h_data.GetXaxis().GetName())
     # h_res.SetXTitle(h_data.GetXaxis().GetName())
 
@@ -183,16 +188,20 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
             res = databin*1.0/mcbin
             # Calculate error of residual, delta(res) = residual*sqrt(1/data+1/mc)
             res_err = res*math.sqrt(1.0/databin+1.0/mcbin)
+	    ref_err = math.sqrt(1.0/mcbin)
             # Find maximum residual
             maxxdeviations = max(maxxdeviations,max(abs(res+res_err-1.0),abs(res-res_err-1.0)))
         else :
-            res = 0 ; res_err = 0
+            res = 0 ; res_err = 0 ; ref_err = 0;
         # Set residual histograms
         h_res.SetBinContent(ibin,res)
         h_res.SetBinError(ibin,res_err)
+	h_ref.SetBinContent(ibin,1.0)
+	h_ref.SetBinError(ibin,ref_err)
     # print 'maxxdeviations',maxxdeviations
     # Setup residual histograms
     h_res.SetStats(0)
+    h_ref.SetStats(0)
     h_res.GetXaxis().SetLabelSize((0.05*0.72)/0.28); h_res.GetXaxis().SetTitleOffset(0.8)
     h_res.GetYaxis().SetLabelSize((0.05*0.72)/0.28); h_res.GetYaxis().SetTitleOffset(0.4)
     h_res.GetXaxis().SetTitleSize((0.72/0.28)*h_res.GetXaxis().GetTitleSize())
@@ -201,6 +210,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
     minx = 1.0-1.1*maxxdeviations
     h_res.GetYaxis().SetRangeUser(minx,maxx)
     h_res.GetYaxis().SetNdivisions(503)
+    h_res.GetYaxis().SetDecimals(1)
     h_res.GetXaxis().SetTitle(xaxis_name)
     # cosmetics
     h_res.SetLineStyle(0)
@@ -235,7 +245,9 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
     mc_.Draw(draw_option);
     mc_.GetYaxis().SetTitle("Events")
     mc_.GetYaxis().SetTitleOffset(1.0)
+    mc_.GetXaxis().SetTitle("")
     mc_.GetXaxis().SetLabelOffset(999)   
+    mc_.GetXaxis().SetLabelSize(0)
     mc_.SetTitle(canvas_title)
     # Draw mc stack error 
     final_hist = mc_.GetStack().Last().Clone()
@@ -259,13 +271,31 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
     legend.SetShadowColor(0)
     legend.SetLineColor(0)
     legend.Draw()
+    legend.SetFillColor(0)   
+
+    latex2 = ROOT.TLatex()
+    # latex2.SetNDC()
+    # latex2.SetTextSize(0.5*c.GetTopMargin())
+    # latex2.SetTextFont(42)
+    # latex2.SetTextAlign(31) # align right
+    # latex2.DrawLatex(0.87, 0.95,"12.9 fb^{-1} (13 TeV)")
+    latex2.SetTextFont(22)
+    latex2.SetTextSize(0.05587301);
+    latex2.SetLineWidth(2);
+    latex2.DrawLatex(-0.753101,1307.34, "e- + jets")
+
     x_resid_pad.cd(); 
     h_res.Draw('PE1X0 '); xline.Draw()
     h_res.GetXaxis().SetTitle(xaxis_name)
+    h_ref.SetFillColor(ROOT.kBlue)
+    h_ref.SetMarkerColor(h_ref.GetFillColor())
+    h_ref.SetFillStyle(3002)
+    h_ref.Draw('SAMEs E2')
 
     obj_title = c1.FindObject("title")
     obj_title.SetShadowColor(0)
     obj_title.SetLineColor(0)
     c1.Update()    
     c1.SaveAs('%s.png'%event_type)
+    c1.SaveAs('%s_source.root'%event_type)
     return c1,final_hist

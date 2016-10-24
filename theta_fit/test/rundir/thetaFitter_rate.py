@@ -34,7 +34,7 @@ Toys_per_thread = 100
 # define AFB toy params
 toy_param = 'AFB'
 range_toy_param = [-1,1.01]
-AFB_toy_step = 0.2
+AFB_toy_step = 0.5
 
 # define Rqq toy params
 #toy_param = 'R_qq'
