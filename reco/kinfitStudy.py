@@ -51,7 +51,7 @@ parser.add_option('--lepisocut', metavar='F', type='float', action='store',
                   help='Lower bound for fake electron isolation.')
 
 parser.add_option('--nbcut', metavar='F', type='int', action='store',
-                  default = 1,
+                  default = 2,
                   dest='nbcut',
                   help='Number of b-tagged jets cut')
 

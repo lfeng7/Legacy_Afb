@@ -22,7 +22,7 @@ class plotter(object):
         self.all_hist = []
         self.projections = OrderedDict() # {'wjets_plus':[hist_cs,hist_xf,hist_mass],,,}
         self.process = OrderedDict()
-        self.observables = ['plus','minus']
+        self.observables = ['plus','minus','comb']
         self.stack_lists = ['x','y','z']
         self.stack_xaxis = ['cos#theta*','|x_{F}|','M_{tt}(GeV)']
         self.stacks = {} # keys: 'plus_x','minus_y' etc
@@ -94,6 +94,8 @@ class plotter(object):
             for i in range(len(self.stack_lists)):
                 var = self.stack_lists[i] # like x
                 ihist = value[i]
+		# set xaxis title
+		ihist.GetXaxis().SetTitle(self.stack_xaxis[i])
                 stack_key = '%s_%s'%(iobs,var)
                 if iprocess != 'DATA':
                     # Add to proper THStack if it is not DATA
@@ -106,7 +108,10 @@ class plotter(object):
                 # add to legend
                 if stack_key=='plus_x':
                     print '(info) Adding %s into stack'%iprocess_title
-                    self.legend.AddEntry(ihist,iprocess_title,"F")
+		    if iprocess != 'DATA':
+                        self.legend.AddEntry(ihist,iprocess_title,"F")
+		    else:
+                        self.legend.AddEntry(ihist,iprocess_title,"lep")
                 # add total integral of hists into a list for later calculation of R_process
                 if 'x' in stack_key:
                     self.process_counts[iprocess] += ihist.Integral()
@@ -132,6 +137,32 @@ class plotter(object):
         # Create a txt file for counts
         self.txt_file = open('%s/counts_%s.txt'%(self.output_dir,input_name),'w')
 
+    def combineCharge(self):
+        """
+        input: self.all_templates ( all 1D nominal or postfit templates )
+        output: add charge combined templates into self.all_templates
+        """
+        comb_temps = {}
+        for itemp in self.all_templates:
+            # find process names 
+            # template name: f_plus__DATA
+            temp_name = itemp.GetName()
+            if len(temp_name.split('__'))>2:continue
+            proc_name = temp_name.split('__')[-1]
+            combined_key = 'f_comb__%s'%proc_name
+            if comb_temps.get(combined_key,0)==0:
+                print '(info) Making combined temp %s'%combined_key
+                tmp_hist = itemp.Clone(combined_key)
+                tmp_hist.SetDirectory(0)
+                comb_temps[combined_key]=tmp_hist
+            else:
+                comb_temps[combined_key].Add(itemp)
+        # Append comb templates into self.templates
+        tmp_hists = [val for key,val in comb_temps.iteritems()]
+        self.all_templates.extend(tmp_hists)
+        print '(info) Done combineCharge!'
+
+
 
     def makeControlPlots(self):
         """
@@ -146,6 +177,10 @@ class plotter(object):
             if len(name.split('__'))>2: continue
             self.all_templates.append(self.template_file.Get(name))
             print name
+
+        # make charge combined templates here
+        self.combineCharge()
+
         # for every 1D templates, get 3D original and 3 1D projection histograms
         tmp_projections = {}
         for ihist in self.all_templates:

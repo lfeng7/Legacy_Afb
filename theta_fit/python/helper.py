@@ -231,6 +231,8 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
     channame = event_type
     # Make and adjust pads
     x_histo_pad=ROOT.TPad(channame+'_x_histo_pad',channame+'_x_histo_pad',0,0.25,1,1)
+    x_histo_pad.SetGridx(); x_histo_pad.SetGridy();
+
     if logy == 'log': x_histo_pad.SetLogy()
     x_resid_pad=ROOT.TPad(channame+'_x_residuals_pad',channame+'_x_residuals_pad',0,0,1.,0.25)
     x_histo_pad.SetCanvas(c1); x_resid_pad.SetCanvas(c1)
@@ -240,6 +242,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
     x_resid_pad.SetLeftMargin(0.16); x_resid_pad.SetRightMargin(0.05)
     x_resid_pad.SetTopMargin(0.0);   x_resid_pad.SetBottomMargin(0.3)
     x_resid_pad.SetBorderMode(0)
+    x_resid_pad.SetGridx(); x_resid_pad.SetGridy();
     x_resid_pad.Draw(); x_histo_pad.Draw()
     x_histo_pad.cd(); 
     mc_.Draw(draw_option);
@@ -261,6 +264,8 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
 
     # Draw data stat box
     ROOT.gStyle.SetOptStat("i");
+    ROOT.gStyle.SetStatFormat("5.5g");
+
     data_.SetStats(1)
     data_.Draw('SAMEs PE1X0'); 
     x_histo_pad.Update()
@@ -273,6 +278,11 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
     legend.Draw()
     legend.SetFillColor(0)   
 
+#    x_histo_pad.cd();
+#    label1 = ROOT.TPaveLabel(-3.5,700,-1,800,'e+jets');
+#    label1.SetTextSize(0.05);
+#    label1.Draw("sames")
+
     latex2 = ROOT.TLatex()
     # latex2.SetNDC()
     # latex2.SetTextSize(0.5*c.GetTopMargin())
@@ -282,11 +292,12 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
     latex2.SetTextFont(22)
     latex2.SetTextSize(0.05587301);
     latex2.SetLineWidth(2);
-    latex2.DrawLatex(-0.753101,1307.34, "e- + jets")
+    latex2.DrawLatex(-0.8250709,2726.119, "e+jets")
 
     x_resid_pad.cd(); 
     h_res.Draw('PE1X0 '); xline.Draw()
     h_res.GetXaxis().SetTitle(xaxis_name)
+    h_res.SetMinimum(0.7);h_res.SetMaximum(1.3);
     h_ref.SetFillColor(ROOT.kBlue)
     h_ref.SetMarkerColor(h_ref.GetFillColor())
     h_ref.SetFillStyle(3002)
