@@ -30,13 +30,13 @@ const char* detector_tune = "The tune of detector reweighting is : nominal ";
 
 // new binning
 int XBINS = 20;
-int YBINS = 14; // every 0.05 in xf 
-int ZBINS = 13; // every 50 GeV in Mtt
+int YBINS = 15; // every 0.02 in xf 
+int ZBINS = 15; // every 30 GeV in Mtt
 double LOWMASS = 350.0;
-double HIGHMASS = 1000.0;
+double HIGHMASS = 700;
 
 double XFLOW = 0.0;
-double XFHIGH = 0.7;
+double XFHIGH = 0.3;
 int pdf_member = -1; // pdf weight: Default pdf member
 const char* SF_sys_global = "nominal";
 

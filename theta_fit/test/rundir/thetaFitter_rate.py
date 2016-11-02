@@ -15,9 +15,12 @@ theta fitting code
 epsilon = 1E-8
 AFB_CENTRAL_VALUE = 0
 
-shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight']
+#shape_sys_gauss = []
+shape_sys_gauss = ['btag_eff_reweight','lepID_reweight']
+#shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight']
 flat_param = ['AFB','R_qq','R_WJets']
 obs = 'f_minus'
+pois = ['AFB','R_qq','R_other_bkg','R_WJets','qcd_rate']
 
 # define sigma value here for all parameters
 sigma_values = {}
@@ -27,6 +30,7 @@ sigma_values['R_qq']=0.8
 sigma_values['R_other_bkg']=0.8
 sigma_values['R_WJets']=0.8
 sigma_values['lumi']=0.045
+
 
 ntoys = 2000
 Toys_per_thread = 100
@@ -162,16 +166,27 @@ def resetModel():
 def mle_result_print(result,sp='',n=None):
     str_result = ''
     n = len(result[sp]['__nll'])
-    # fit parameters
-    for p in result[sp]:
-        if '__' in p: continue
+    # fit parameters of interests
+    for p in pois:
+        if '__' in p or result[sp].get(p,0)==0: continue
         # n is number of toys to print
         if n is None: n = len(result[sp][p])
         str_result += "%20s =" % p
-        sigma_p = sigma_values[p]
+        sigma_p = sigma_values.get(p,1.0)
         # for parameter results
         for i in range(min([n, 10])):
-            str_result +=  " %5.2f +- %5.2f \n" % (result[sp][p][i][0]*sigma_p, result[sp][p][i][1]*sigma_p)
+            str_result +=  " %5.3f +- %5.3f \n" % (result[sp][p][i][0]*sigma_p, result[sp][p][i][1]*sigma_p)
+    str_result += '\n'
+    # other nuisance params
+    for p in result[sp]:
+        if '__' in p or p in pois: continue
+        # n is number of toys to print
+        if n is None: n = len(result[sp][p])
+        str_result += "%20s =" % p
+        sigma_p = sigma_values.get(p,1.0)
+        # for parameter results
+        for i in range(min([n, 10])):
+            str_result +=  " %5.3f +- %5.3f \n" % (result[sp][p][i][0]*sigma_p, result[sp][p][i][1]*sigma_p)
     # stdev of pars for each experiment
     sigmas = []
     for i in range(min([n, 10])):
@@ -193,7 +208,11 @@ def mle_result_print(result,sp='',n=None):
         str_result += "%20s =" % p
         for i in range(min([n, 10])):
             if 'cov' not in p:
-                str_result += " %5.2f\n"%result[sp][p][i]
+		if 'chi2' in p:
+		    res = result[sp][p][i]/(model_bins*2)
+		else:
+		    res = result[sp][p][i]
+                str_result += " %5.3f\n"%res
             else:
                 # This is the cov matrix
                 cov_matrix = result[sp][p][i]
