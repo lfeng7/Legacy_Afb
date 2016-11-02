@@ -22,3 +22,14 @@ def makeTGraphErrors(x,y,y_err,x_err=None,x_title='x',y_title='y',title='TGraph'
         graph.GetXaxis().SetTitle(x_title)
         graph.GetYaxis().SetTitle(y_title)
         return graph
+
+def arrayToStr(m):
+    """
+    Convert a matrix into a nice str representation
+    """
+    str_rep = ''
+    for row in m:
+        for item in row:
+            str_rep += '%15.3f,'%item
+        str_rep += '\n'
+    return str_rep
