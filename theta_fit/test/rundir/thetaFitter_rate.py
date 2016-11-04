@@ -4,6 +4,7 @@ import math
 import os
 import copy
 import ROOT
+import numpy as np
 execfile("helper.py")
 execfile("common.py")
 ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
@@ -17,48 +18,40 @@ class thetaFitter(object):
     """docstring for thetaFitter"""
     def __init__(self, AFB_sigma=1.0):
         super(thetaFitter, self).__init__()
-        self.AFB_sigma = AFB_sigma
         
         self.AFB_CENTRAL_VALUE = 0
+	self.AFB_sigma = AFB_sigma
 
         #self.shape_sys_gauss = []
-        self.shape_sys_gauss = ['btag_eff_reweight','lepID_reweight']
-        #self.shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight']
+        #self.shape_sys_gauss = ['btag_eff_reweight','lepID_reweight']
+        self.shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight']
         self.flat_param = ['AFB','R_qq','R_WJets']
         self.obs = 'f_minus'
         self.pois = ['AFB','R_qq','R_other_bkg','R_WJets','qcd_rate']
 
         # define sigma value here for all parameters
         self.sigma_values = {}
-        self.sigma_values['AFB']=1.0
+        self.sigma_values['AFB']=AFB_sigma
         self.sigma_values['qcd_rate']=0.2
         self.sigma_values['R_qq']=0.8
         self.sigma_values['R_other_bkg']=0.8
         self.sigma_values['R_WJets']=0.8
         self.sigma_values['lumi']=0.045
 
-
-        self.ntoys = 2000
-        self.Toys_per_thread = 100
-
+        # Toy experiments settings
+        self.ntoys = 100
+        self.Toys_per_thread = 50
         # define AFB toy params
-        self.toy_param = 'AFB'
-        self.range_toy_param = [-1,1.01]
-        self.AFB_toy_step = 0.5
+        AFB_list = np.arange(-1,1.01,0.5).tolist()
+        Rqq_list = np.arange(-1.0,1.01,0.5).tolist()
 
-        # define Rqq toy params
-        #toy_param = 'R_qq'
-        #self.range_toy_param = [-4.0,4.01]
-        #self.range_toy_param = 2.0
+        #AFB_list=[-1.0,-0.5,-0.2,0,0.2,0.5,1.0]
+        AFB_list = [-0.4,0]
+        #AFB_list = [-50,-20,-10,0,10,20,50]#-5,-2,-0.5,0,0.5,2,5,10]#,0,0.3,0.7]
+	Rqq_list = [0,0.5]
 
-        self.AFB_list = []
-        afb_tmp = self.range_toy_param[0]
-        while afb_tmp<self.range_toy_param[1]:
-            self.AFB_list.append(afb_tmp)
-            afb_tmp += self.AFB_toy_step
-        #self.AFB_list=[-1.0,-0.5,-0.2,0,0.2,0.5,1.0]
-        #self.AFB_list = [-0.4,0,0.4]
-        #self.AFB_list = [-50,-20,-10,0,10,20,50]#-5,-2,-0.5,0,0.5,2,5,10]#,0,0.3,0.7]
+        self.toy_params = {'AFB':AFB_list,'R_qq':Rqq_list}
+
 
     def defineIO(self,template_file_path):
         """
@@ -117,40 +110,50 @@ class thetaFitter(object):
 
     def doToys(self): # checked
         """
-        inputs: None
+        inputs: self.AFB_list
         outputs: fitted toy experiments and plots
         """
 
         print '(info) Begin toy experiments on AFB.'
         nthreads = str(self.ntoys/self.Toys_per_thread)
+	# debug
+	#nthreads = '20'
+	print 'nthreads',nthreads
+
         self.toy_options.set('main','n_threads',nthreads)
         #toy_dist =  model.distribution.copy()
-        self.toy_dist = self.getToyDist() 
-        fit_hists=[] # for containing fit results of different input param values
-        toy_AFB_input,toy_AFB_fit_mean,toy_AFB_fit_sigma = [],[],[]
-        for AFB in self.AFB_list:
-            fit_hist, fit_results = self.fitToys(AFB)
-            # fit_results=[fit_mean,fit_sigma]
-            toy_AFB_input.append(AFB)
-            toy_AFB_fit_mean.append(fit_results[0])
-            toy_AFB_fit_sigma.append(fit_results[1])
-            fit_hists.append(fit_hist)
-        # plot Neyman bands
-        # from helper.py
-        # def makeTGraphErrors(x,y,y_err,x_err=None,x_title='x',y_title='y',title='TGraph'):
-        # makeTGraphErrors is from helper.py
-        neyman_plot = makeTGraphErrors(x=toy_AFB_input,y=toy_AFB_fit_mean,y_err=toy_AFB_fit_sigma,x_title='param_input',y_title='param_fit',title='%s Based on %i toy experiments'%(self.toy_param,self.ntoys))
-        neyman_plot.Fit("pol1")
-        canv_neyman = ROOT.TCanvas()
-        canv_neyman.SetName('%s_neyman'%self.toy_param)
-        self.fout.cd()
-        neyman_plot.Draw()
-        canv_neyman.SaveAs('%s/%s_neyman.png'%(self.outdir,self.toy_param))
-        canv_neyman.Write()
-        neyman_plot.Write()
-        # plot pull plots
-        self.plotPull(self.fout)
-        print '(info) Done all toy experiments!'
+        for key,value in self.toy_params.iteritems():
+            toy_dist = self.getToyDist() 
+
+            toy_sigma = self.sigma_values[key]
+            toy_name = key
+
+            fit_hists=[] # for containing fit results of different input param values
+            toy_input,toy_fit_mean,toy_fit_sigma = [],[],[]
+            for toy_val in value:
+                """ def fitToys(self,toy_param_val,toy_param_sigma,toy_param_name): """
+                fit_hist, fit_results = self.fitToys(toy_dist = toy_dist,toy_param_val=toy_val,toy_param_sigma=toy_sigma,toy_param_name=toy_name)
+                # fit_results=[fit_mean,fit_sigma]
+                toy_input.append(toy_val)
+                toy_fit_mean.append(fit_results[0])
+                toy_fit_sigma.append(fit_results[1])
+                fit_hists.append(fit_hist)
+            # plot Neyman bands
+            # from helper.py
+            # def makeTGraphErrors(x,y,y_err,x_err=None,x_title='x',y_title='y',title='TGraph'):
+            # makeTGraphErrors is from helper.py
+            neyman_plot = makeTGraphErrors(x=toy_input,y=toy_fit_mean,y_err=toy_fit_sigma,x_title='param_input',y_title='param_fit',title='%s Based on %i toy experiments'%(toy_name,self.ntoys))
+            neyman_plot.Fit("pol1")
+            canv_neyman = ROOT.TCanvas()
+            canv_neyman.SetName('%s_neyman'%toy_name)
+            self.fout.cd()
+            neyman_plot.Draw()
+            canv_neyman.SaveAs('%s/%s_neyman.png'%(self.outdir,toy_name))
+            canv_neyman.Write()
+            neyman_plot.Write()
+            # plot pull plots
+            self.plotPull(self.fout)
+            print '(info) Done all toy experiments!'
 
     def histogram_filter(self,hname):
         """
@@ -216,6 +219,17 @@ class thetaFitter(object):
         print '(info) Done getmodel.'
         return model
 
+    def arrayToStr(self,m):
+        """
+        Convert a matrix into a nice str representation
+        """
+        str_rep = ''
+        for row in m:
+            for item in row:
+                str_rep += '%15.3f,'%item
+            str_rep += '\n'
+        return str_rep
+
     # Not used anymore  
     def setRange(self):
         """
@@ -261,7 +275,7 @@ class thetaFitter(object):
             sigma_p = self.sigma_values.get(p,1.0)
             # for parameter results
             for i in range(min([n, 10])):
-                str_result +=  " %6.3f +- %5.3f \n" % (result[sp][p][i][0]*sigma_p, result[sp][p][i][1]*sigma_p)
+                str_result +=  " %5.3f +- %5.3f \n" % (result[sp][p][i][0]*sigma_p, result[sp][p][i][1]*sigma_p)
         str_result += '\n'
         # other nuisance params
         for p in result[sp]:
@@ -272,7 +286,7 @@ class thetaFitter(object):
             sigma_p = self.sigma_values.get(p,1.0)
             # for parameter results
             for i in range(min([n, 10])):
-                str_result +=  " %6.3f +- %5.3f \n" % (result[sp][p][i][0]*sigma_p, result[sp][p][i][1]*sigma_p)
+                str_result +=  " %5.3f +- %5.3f \n" % (result[sp][p][i][0]*sigma_p, result[sp][p][i][1]*sigma_p)
         # stdev of pars for each experiment
         sigmas = []
         for i in range(min([n, 10])):
@@ -376,7 +390,7 @@ class thetaFitter(object):
         """
         print '(info) plot_hist for %s'%name
         # first exclude outliers
-        data = reject_outliers(data)
+        data = self.reject_outliers(data)
         data = np.array(data)
         data_mean = data.mean()
         data_std = data.std()
@@ -398,7 +412,7 @@ class thetaFitter(object):
         hist.Draw('hist e')
        
         # output 
-        fout.cd()
+        self.fout.cd()
         hist.Write()
         canv.Write()
         return hist,canv,[fit_mean,fit_sigma]
@@ -414,37 +428,39 @@ class thetaFitter(object):
         return toy_dist
         
 
-    def fitToys(self,AFB_toy): # checked
+    def fitToys(self,toy_dist,toy_param_val,toy_param_sigma,toy_param_name): # checked
         """
         Fit to toy experiment with input AFB fixed
         """
         #toy_dist =  self.model.distribution.copy()
-        # calculate the AFB input in terms of self.AFB_sigma of templates. e.g, if template is self.AFB_sigma=0.1, AFB_input=-0.6 => new_input = -7
-        new_mean = AFB_toy/self.AFB_sigma
-        self.toy_dist.set_distribution_parameters(self.toy_param,mean=new_mean,width=0.0,range=[new_mean,new_mean])
+        # calculate the AFB input in terms of toy_param_sigma of templates. e.g, if template is toy_param_sigma=0.1, AFB_input=-0.6 => new_input = -7
+	print self.toy_options
+
+        new_mean = toy_param_val/toy_param_sigma
+        toy_dist.set_distribution_parameters(toy_param_name,mean=new_mean,width=0.0,range=[new_mean,new_mean])
         toy_fit = mle(self.model, 'toys:0.0', self.ntoys,with_covariance=False, signal_process_groups = {'': [] },chi2=True,options = self.toy_options,nuisance_prior_toys=toy_dist)
         fit_AFB,fit_chi2 = [],[]
         # self.ntoys = len(fit_AFB)
-        all_AFB = toy_fit[''][self.toy_param]
+        all_AFB = toy_fit[''][toy_param_name]
         all_chi2 = toy_fit['']['__chi2']
         # all_AFB is in the form of [(-0.9563586273699287, 0.8486084490392977), (-0.8390765758997597, 0.89665414376131)]
         # which is self.ntoys number of tuples with first as central, second as error
         for i in range(len(all_AFB)):
             # remember to convert fit AFB central value back to actual AFB
-            actual_AFB = all_AFB[i][0]*self.AFB_sigma
+            actual_AFB = all_AFB[i][0]*toy_param_sigma
             fit_AFB.append(actual_AFB)
             # convert chi2 with ndof to chi2/ndof
             fit_chi2.append(all_chi2[i]*1.0/self.model_bins)
         # make histograms
-        if AFB_toy<0:
-            postfix = 'minus%ipct'%(abs(AFB_toy)*100)
+        if toy_param_val<0:
+            postfix = 'minus%ipct'%(abs(toy_param_val)*100)
         else:
-            postfix = 'plus%ipct'%(AFB_toy*100)
-        hist_AFB,canv_AFB,fit_results_AFB = self.plot_hist(data=fit_AFB,name='%s_%s'%(self.toy_param,postfix),xtitle='%s(fit)'%self.toy_param,title='%s for %i toys, input = %.2f'%(self.toy_param,self.ntoys,new_mean))
+            postfix = 'plus%ipct'%(toy_param_val*100)
+        hist_AFB,canv_AFB,fit_results_AFB = self.plot_hist(data=fit_AFB,name='%s_%s'%(toy_param_name,postfix),xtitle='%s(fit)'%toy_param_name,title='%s for %i toys, input = %.2f'%(toy_param_name,self.ntoys,new_mean))
         hist_chi2,canv_chi2,fit_results_chi2 = self.plot_hist(data=fit_chi2,name='chi2_%s'%postfix,xtitle='chi2/%i'%self.model_bins,title='chi2 for %i toys, AFB_input = %.2f'%(self.ntoys,new_mean))
 
         # finish
-        print '(info) Done fitToys for Param %s = %.2f'%(self.toy_param,AFB_toy)
+        print '(info) Done fitToys for Param %s = %.2f'%(toy_param_name,toy_param_val)
     #    canv_AFB.SaveAs('%s/AFB_toys_%s.png'%(self.outdir,postfix))
     #    canv_chi2.SaveAs('%s/chi2_toys_%s.png'%(self.outdir,postfix))
         return [hist_AFB,hist_chi2],fit_results_AFB
@@ -458,7 +474,7 @@ class thetaFitter(object):
         hist_sets = set()
         for ikey in keys:
             if 'TH1' in  ikey.GetClassName() : histname = ikey.GetName()
-            if histname in hist_sets or self.toy_param not in histname:
+            if histname in hist_sets or not [ item for item in self.toy_params.keys() if item in histname]:
                 continue
             else:
                 hist_sets.add(histname)
