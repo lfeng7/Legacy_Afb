@@ -20,7 +20,7 @@ class thetaFitter(object):
         super(thetaFitter, self).__init__()
         
         self.AFB_CENTRAL_VALUE = 0
-	self.AFB_sigma = AFB_sigma
+        self.AFB_sigma = AFB_sigma
 
         #self.shape_sys_gauss = []
         #self.shape_sys_gauss = ['btag_eff_reweight','lepID_reweight']
@@ -39,7 +39,7 @@ class thetaFitter(object):
         self.sigma_values['lumi']=0.045
 
         # Toy experiments settings
-        self.ntoys = 100
+        self.ntoys = 1000
         self.Toys_per_thread = 50
         # define AFB toy params
         AFB_list = np.arange(-1,1.01,0.5).tolist()
@@ -48,10 +48,13 @@ class thetaFitter(object):
         #AFB_list=[-1.0,-0.5,-0.2,0,0.2,0.5,1.0]
         AFB_list = [-0.4,0]
         #AFB_list = [-50,-20,-10,0,10,20,50]#-5,-2,-0.5,0,0.5,2,5,10]#,0,0.3,0.7]
-	Rqq_list = [0,0.5]
+        Rqq_list = [0,0.5]
 
         self.toy_params = {'AFB':AFB_list,'R_qq':Rqq_list}
 
+        # # counter setup
+        # self.process = OrderedDict()
+        # self.process_counts = OrderedDict() # for total number of events given the 1D templates , for R_process calculation
 
     def defineIO(self,template_file_path):
         """
@@ -64,6 +67,54 @@ class thetaFitter(object):
             print '(info) Creating new dir %s.'%self.outdir
         self.txtfile = open('%s/results.txt'%self.outdir,'w')
         self.fout = ROOT.TFile('%s/plots.root'%self.outdir,'recreate')
+
+    # def define_process(self):
+    #     """
+    #     define template processes in a dict. 
+    #     Order of entries adding will decide the order of stack fill process.
+    #     """
+    #     self.process['zjets'] ='DY+Jets'
+    #     self.process['qcd']   ='QCD'
+    #     self.process['WJets'] ='W+Jets'
+    #     self.process['singleT'] ='Single Top'
+    #     self.process['tt_bkg'] ='None-semilep TT'
+    #     self.process['other_bkg'] ='TT/SingleT/DY'
+    #     self.process['gg']    ='gg/qg TT'
+    #     self.process['qq']   ='qq TT'
+    #     self.process['DATA']   ='DATA'
+    #     # initiate a process count table
+    #     for ikey in self.process:
+    #         self.process_counts[ikey]=0
+    #     print '(info) Done define_process.'
+
+    def simple_counter(self,theta_histo):
+        """
+        input: theta-template histo objects?
+        output: R_process table , a dictionary {'Rqq':float,'Rgg':float,etc}
+        """
+        ## histos object is like this 
+        ## {'f_minus': {'qq': <theta_auto.Model.Histogram object at 0xa78f90>, 'gg': <theta_auto.Model.Histogram object at 0x9b4050>, 
+        ## 'WJets': <theta_auto.Model.Histogram object at 0x28b20d0>, 'other_bkg': <theta_auto.Model.Histogram object at 0x28b7cd0>, 
+        ##'qcd': <theta_auto.Model.Histogram object at 0x28b7e50>}, 'f_plus': { ... } } 
+        R_process = {'total':0}
+        counter = {'total':0} 
+        for obs in theta_histo: # 'f_minus','f_plus'
+            for proc in theta_histo[obs]: # 'qq','gg','WJets','other_bkg','qcd'
+                if proc not in R_process:
+                    R_process[proc],counter[proc] = 0.,0.
+                else:
+                    count = theta_histo[obs][proc].get_value_sum()
+                    counter[proc] += count
+                    counter['total'] += count
+        total_count = counter['total']
+        for proc in counter:
+            if 'qq' not in proc:
+                R_proc = counter[proc]/total_count
+            else:
+                R_proc = counter['qq']/(counter['gg']+counter['qq'])
+	    R_process[proc] = R_proc
+            #print 'R_%s = %.3f'%(proc,counter[proc]/total_count)
+        return R_process 
 
 
     # main function starts here
@@ -114,11 +165,10 @@ class thetaFitter(object):
         outputs: fitted toy experiments and plots
         """
 
-        print '(info) Begin toy experiments on AFB.'
+        print '(info) Begin toy experiments on %s'%self.toy_params
         nthreads = str(self.ntoys/self.Toys_per_thread)
-	# debug
-	#nthreads = '20'
-	print 'nthreads',nthreads
+        # debug
+        #nthreads = '20'
 
         self.toy_options.set('main','n_threads',nthreads)
         #toy_dist =  model.distribution.copy()
@@ -132,12 +182,20 @@ class thetaFitter(object):
             toy_input,toy_fit_mean,toy_fit_sigma = [],[],[]
             for toy_val in value:
                 """ def fitToys(self,toy_param_val,toy_param_sigma,toy_param_name): """
-                fit_hist, fit_results = self.fitToys(toy_dist = toy_dist,toy_param_val=toy_val,toy_param_sigma=toy_sigma,toy_param_name=toy_name)
+                fit_hist, fit_results, Rqq_input = self.fitToys(toy_dist = toy_dist,toy_param_val=toy_val,toy_param_sigma=toy_sigma,toy_param_name=toy_name)
                 # fit_results=[fit_mean,fit_sigma]
-                toy_input.append(toy_val)
+                if 'qq' in toy_name:
+		    toy_input_val = Rqq_input
+                    toy_input.append(Rqq_input)
+                else:
+		    toy_input_val = toy_val*toy_sigma
+                    toy_input.append(toy_input_val)
+		    
                 toy_fit_mean.append(fit_results[0])
                 toy_fit_sigma.append(fit_results[1])
                 fit_hists.append(fit_hist)
+		print '(info) toy exp fit for %s = %.3f is %.3f +/- %.3f'%(toy_name,toy_input_val,fit_results[0],fit_results[1])
+
             # plot Neyman bands
             # from helper.py
             # def makeTGraphErrors(x,y,y_err,x_err=None,x_title='x',y_title='y',title='TGraph'):
@@ -426,44 +484,88 @@ class thetaFitter(object):
         for p in toy_dist.get_parameters() :
             toy_dist.set_distribution(p,typ='gauss',mean=0.0,width=0.0,range=[0.0,0.0])
         return toy_dist
-        
 
+    def dict_to_str(self,idict):
+	str_out = ''
+	for key,val in idict.iteritems():
+	    str_out+='%s: %.3f, '%(key,val)
+	return str_out
+        
+############### still working on this!!!! ################
     def fitToys(self,toy_dist,toy_param_val,toy_param_sigma,toy_param_name): # checked
         """
         Fit to toy experiment with input AFB fixed
         """
         #toy_dist =  self.model.distribution.copy()
         # calculate the AFB input in terms of toy_param_sigma of templates. e.g, if template is toy_param_sigma=0.1, AFB_input=-0.6 => new_input = -7
-	print self.toy_options
 
         new_mean = toy_param_val/toy_param_sigma
         toy_dist.set_distribution_parameters(toy_param_name,mean=new_mean,width=0.0,range=[new_mean,new_mean])
+
+        # calculate R_proc before fit
+        histos = evaluate_prediction(self.model,toy_dist.get_means(),include_signal = False)
+        R_proc_toy = self.simple_counter(histos)
+        Rqq_input = R_proc_toy['qq']
+
+	print '\n(info) Toy experiments with %s = %s'%(toy_param_name,toy_param_val)
+	print '(info) Input R_process is { %s }'%self.dict_to_str(R_proc_toy)
+
+        # do mle fit for generated toys
         toy_fit = mle(self.model, 'toys:0.0', self.ntoys,with_covariance=False, signal_process_groups = {'': [] },chi2=True,options = self.toy_options,nuisance_prior_toys=toy_dist)
         fit_AFB,fit_chi2 = [],[]
         # self.ntoys = len(fit_AFB)
         all_AFB = toy_fit[''][toy_param_name]
         all_chi2 = toy_fit['']['__chi2']
+
+        ###### need to implement getting post fit R_proc for toy experiments on R_qq only! ######
+        # toy_fit['']['lumi'] = [(-0.9563586273699287, 0.8486084490392977), (-0.8390765758997597, 0.89665414376131)] 
+        if 'qq' in toy_param_name:
+            fit_Rqq = []
+            for i in range(len(all_AFB)):
+                parameter_values = {}
+                for param in self.model_pars:
+                    parameter_values[param] = toy_fit[''][param][i][0]
+                histos = evaluate_prediction(self.model,parameter_values,include_signal = False)
+                R_proc_fit = self.simple_counter(histos)
+                fit_Rqq.append(R_proc_fit['qq'])
+            # calculate mean and stdev for all toys given current input val
+            fit_Rqq = numpy.array(fit_Rqq)
+            mean_and_std = [fit_Rqq.mean(),fit_Rqq.std()]
+
         # all_AFB is in the form of [(-0.9563586273699287, 0.8486084490392977), (-0.8390765758997597, 0.89665414376131)]
         # which is self.ntoys number of tuples with first as central, second as error
         for i in range(len(all_AFB)):
-            # remember to convert fit AFB central value back to actual AFB
+            # get post fit Rqq
+            fit_AFB_value = all_AFB[i][0]
+
+            # remember to convert fit AFB central value back to actual AFB, which is independent of choice of sigma
             actual_AFB = all_AFB[i][0]*toy_param_sigma
+            if 'qq' in toy_param_name:
+                actual_AFB = Rqq_input*(1+actual_AFB)
+	    # fit_AFB contains all fit results that has converted to physically meanningful val, independent of sigma
             fit_AFB.append(actual_AFB)
             # convert chi2 with ndof to chi2/ndof
             fit_chi2.append(all_chi2[i]*1.0/self.model_bins)
+
         # make histograms
         if toy_param_val<0:
             postfix = 'minus%ipct'%(abs(toy_param_val)*100)
         else:
             postfix = 'plus%ipct'%(toy_param_val*100)
-        hist_AFB,canv_AFB,fit_results_AFB = self.plot_hist(data=fit_AFB,name='%s_%s'%(toy_param_name,postfix),xtitle='%s(fit)'%toy_param_name,title='%s for %i toys, input = %.2f'%(toy_param_name,self.ntoys,new_mean))
-        hist_chi2,canv_chi2,fit_results_chi2 = self.plot_hist(data=fit_chi2,name='chi2_%s'%postfix,xtitle='chi2/%i'%self.model_bins,title='chi2 for %i toys, AFB_input = %.2f'%(self.ntoys,new_mean))
+        hist_AFB,canv_AFB,fit_results_AFB = self.plot_hist(data=fit_AFB,name='%s_%s'%(toy_param_name,postfix),xtitle='%s(fit)'%toy_param_name,title='%s for %i toys, input = %.2f'%(toy_param_name,self.ntoys,toy_param_val))
+        hist_chi2,canv_chi2,fit_results_chi2 = self.plot_hist(data=fit_chi2,name='chi2_%s'%postfix,xtitle='chi2/%i'%self.model_bins,title='chi2 for %i toys, AFB_input = %.2f'%(self.ntoys,toy_param_val))
+
+	# compare Theta-fitter output for fit param
+	print '(debug) Theta output %s = %.3f +/- %.3f'%(toy_param_name,fit_results_AFB[0],fit_results_AFB[1])
 
         # finish
         print '(info) Done fitToys for Param %s = %.2f'%(toy_param_name,toy_param_val)
     #    canv_AFB.SaveAs('%s/AFB_toys_%s.png'%(self.outdir,postfix))
     #    canv_chi2.SaveAs('%s/chi2_toys_%s.png'%(self.outdir,postfix))
-        return [hist_AFB,hist_chi2],fit_results_AFB
+        if 'qq' in toy_param_name:
+            return [hist_AFB,hist_chi2],mean_and_std,Rqq_input
+        else:
+            return [hist_AFB,hist_chi2],fit_results_AFB,Rqq_input
 
 
     def plotPull(self,tfile):
