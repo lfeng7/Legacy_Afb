@@ -43,12 +43,12 @@ class thetaFitter(object):
         self.Toys_per_thread = 50
         # define AFB toy params
         AFB_list = np.arange(-1,1.01,0.5).tolist()
-        Rqq_list = np.arange(-1.0,1.01,0.5).tolist()
+        Rqq_list = np.arange(-0.8,1.21,0.4).tolist()
 
         #AFB_list=[-1.0,-0.5,-0.2,0,0.2,0.5,1.0]
-        AFB_list = [-0.4,0]
+#        AFB_list = [-0.4,0]
         #AFB_list = [-50,-20,-10,0,10,20,50]#-5,-2,-0.5,0,0.5,2,5,10]#,0,0.3,0.7]
-        Rqq_list = [0,0.5]
+        #Rqq_list = [0,0.5,1.0,1.5]
 
         self.toy_params = {'AFB':AFB_list,'R_qq':Rqq_list}
 
@@ -274,6 +274,12 @@ class thetaFitter(object):
         for p in model.processes:
             if p == 'qcd': continue
             model.add_lognormal_uncertainty('lumi', math.log(1.045), p)
+
+	# get MC R_process 
+        histos = evaluate_prediction(model,model.distribution.get_means(),include_signal = False)
+	self.R_process_MC = self.simple_counter(histos)
+	self.Rqq_MC = self.R_process_MC['qq']
+
         print '(info) Done getmodel.'
         return model
 
@@ -522,6 +528,8 @@ class thetaFitter(object):
         if 'qq' in toy_param_name:
             fit_Rqq = []
             for i in range(len(all_AFB)):
+		continue	
+		if i%50==1: print '(progress) simple_counter at %i toy'%i
                 parameter_values = {}
                 for param in self.model_pars:
                     parameter_values[param] = toy_fit[''][param][i][0]
@@ -530,22 +538,27 @@ class thetaFitter(object):
                 fit_Rqq.append(R_proc_fit['qq'])
             # calculate mean and stdev for all toys given current input val
             fit_Rqq = numpy.array(fit_Rqq)
-            mean_and_std = [fit_Rqq.mean(),fit_Rqq.std()]
+            #mean_and_std = [fit_Rqq.mean(),fit_Rqq.std()]
 
         # all_AFB is in the form of [(-0.9563586273699287, 0.8486084490392977), (-0.8390765758997597, 0.89665414376131)]
         # which is self.ntoys number of tuples with first as central, second as error
+	converted_fit_val = []
         for i in range(len(all_AFB)):
             # get post fit Rqq
             fit_AFB_value = all_AFB[i][0]
 
             # remember to convert fit AFB central value back to actual AFB, which is independent of choice of sigma
             actual_AFB = all_AFB[i][0]*toy_param_sigma
+	    converted_fit_val.append(actual_AFB)
             if 'qq' in toy_param_name:
-                actual_AFB = Rqq_input*(1+actual_AFB)
+                actual_AFB = self.Rqq_MC*(1+actual_AFB)
 	    # fit_AFB contains all fit results that has converted to physically meanningful val, independent of sigma
             fit_AFB.append(actual_AFB)
             # convert chi2 with ndof to chi2/ndof
             fit_chi2.append(all_chi2[i]*1.0/self.model_bins)
+
+	converted_fit_val = numpy.array(converted_fit_val)
+	print '(debug)  converted_fit_val = %.3f +/- %.3f'%(converted_fit_val.mean(),converted_fit_val.std())
 
         # make histograms
         if toy_param_val<0:
@@ -563,6 +576,7 @@ class thetaFitter(object):
     #    canv_AFB.SaveAs('%s/AFB_toys_%s.png'%(self.outdir,postfix))
     #    canv_chi2.SaveAs('%s/chi2_toys_%s.png'%(self.outdir,postfix))
         if 'qq' in toy_param_name:
+	    mean_and_std = fit_results_AFB
             return [hist_AFB,hist_chi2],mean_and_std,Rqq_input
         else:
             return [hist_AFB,hist_chi2],fit_results_AFB,Rqq_input
