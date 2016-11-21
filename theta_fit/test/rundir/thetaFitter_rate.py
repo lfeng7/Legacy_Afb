@@ -23,9 +23,9 @@ class thetaFitter(object):
         self.AFB_CENTRAL_VALUE = 0
         self.AFB_sigma = AFB_sigma
 
-        #self.shape_sys_gauss = []
-        #self.shape_sys_gauss = ['btag_eff_reweight','lepID_reweight']
         self.shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight']
+        #self.shape_sys_gauss_white = 'all'	
+	self.shape_sys_gauss_white = []
         self.flat_param = ['AFB','R_qq','R_WJets']
         self.obs = 'f_minus'
         self.pois = ['AFB','R_qq','R_other_bkg','R_WJets','qcd_rate']
@@ -219,8 +219,8 @@ class thetaFitter(object):
         """
         Filter out any histgrams in black list
         """
-        blacklist = []
-        blacklist += self.shape_sys_gauss
+	if self.shape_sys_gauss_white == 'all': return True
+        blacklist = [item for item in self.shape_sys_gauss if item not in self.shape_sys_gauss_white]
         toReturn = True
         for item in blacklist:
             if item in hname:
@@ -418,6 +418,7 @@ class thetaFitter(object):
                 param_name = param_name[0]
             else:
                 continue
+            if 'reweight' in param_name: continue
             # print '(debug) param_name %s.'%param_name
             # R_process = R_process_MC*(1+N_sigma*sigma)
             # e.g., R_qq_MC = 0.067, fit 'R_qq' = 0.8 +/- 0.12, sigma_Rqq = 0.8
