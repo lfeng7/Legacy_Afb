@@ -5,6 +5,7 @@ import os
 import copy
 import ROOT
 import numpy as np
+from collections import OrderedDict
 execfile("helper.py")
 execfile("common.py")
 ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
@@ -96,24 +97,25 @@ class thetaFitter(object):
         ## {'f_minus': {'qq': <theta_auto.Model.Histogram object at 0xa78f90>, 'gg': <theta_auto.Model.Histogram object at 0x9b4050>, 
         ## 'WJets': <theta_auto.Model.Histogram object at 0x28b20d0>, 'other_bkg': <theta_auto.Model.Histogram object at 0x28b7cd0>, 
         ##'qcd': <theta_auto.Model.Histogram object at 0x28b7e50>}, 'f_plus': { ... } } 
-        R_process = {'total':0}
+        R_process = OrderedDict()
         counter = {'total':0} 
         for obs in theta_histo: # 'f_minus','f_plus'
             for proc in theta_histo[obs]: # 'qq','gg','WJets','other_bkg','qcd'
                 if proc not in R_process:
                     R_process[proc],counter[proc] = 0.,0.
-                else:
-                    count = theta_histo[obs][proc].get_value_sum()
-                    counter[proc] += count
-                    counter['total'] += count
+                count = theta_histo[obs][proc].get_value_sum()
+                counter[proc] += count
+                counter['total'] += count
         total_count = counter['total']
-        for proc in counter:
+        for proc in R_process:
+            # print '(debug) %s = %i'%(proc,counter[proc])
             if 'qq' not in proc:
                 R_proc = counter[proc]/total_count
             else:
                 R_proc = counter['qq']/(counter['gg']+counter['qq'])
-	    R_process[proc] = R_proc
+            R_process[proc] = R_proc
             #print 'R_%s = %.3f'%(proc,counter[proc]/total_count)
+        R_process['tt'] = 1-sum([val for key,val in R_process.iteritems() if key not in ['qq','gg']])
         return R_process 
 
 
@@ -151,7 +153,7 @@ class thetaFitter(object):
             self.doToys()
 
         # Save post fit hists to root file
-        self.savePostFit(parVals)
+        self.savePostFit(self.postfit_histos)
 
         # Write as html+
         report.write_html('%s/htmlout'%self.outdir)
@@ -185,16 +187,16 @@ class thetaFitter(object):
                 fit_hist, fit_results, Rqq_input = self.fitToys(toy_dist = toy_dist,toy_param_val=toy_val,toy_param_sigma=toy_sigma,toy_param_name=toy_name)
                 # fit_results=[fit_mean,fit_sigma]
                 if 'qq' in toy_name:
-		    toy_input_val = Rqq_input
+                    toy_input_val = Rqq_input
                     toy_input.append(Rqq_input)
                 else:
-		    toy_input_val = toy_val*toy_sigma
+                    toy_input_val = toy_val*toy_sigma
                     toy_input.append(toy_input_val)
-		    
+            
                 toy_fit_mean.append(fit_results[0])
                 toy_fit_sigma.append(fit_results[1])
                 fit_hists.append(fit_hist)
-		print '(info) toy exp fit for %s = %.3f is %.3f +/- %.3f'%(toy_name,toy_input_val,fit_results[0],fit_results[1])
+                print '(info) toy exp fit for %s = %.3f is %.3f +/- %.3f'%(toy_name,toy_input_val,fit_results[0],fit_results[1])
 
             # plot Neyman bands
             # from helper.py
@@ -275,10 +277,10 @@ class thetaFitter(object):
             if p == 'qcd': continue
             model.add_lognormal_uncertainty('lumi', math.log(1.045), p)
 
-	# get MC R_process 
+        # get MC R_process 
         histos = evaluate_prediction(model,model.distribution.get_means(),include_signal = False)
-	self.R_process_MC = self.simple_counter(histos)
-	self.Rqq_MC = self.R_process_MC['qq']
+        self.R_process_MC = self.simple_counter(histos)
+        self.Rqq_MC = self.R_process_MC['qq']
 
         print '(info) Done getmodel.'
         return model
@@ -328,6 +330,10 @@ class thetaFitter(object):
         print '(info) Done resetModel for finer control of model parameter priors.'
 
     def mle_result_print(self,result,sp='',n=None):
+        """
+        input: a dict from mle output, with all mle fit param results
+        output: write all kinds of mle fit results into output txt file
+        """
         str_result = ''
         n = len(result[sp]['__nll'])
         # fit parameters of interests
@@ -389,7 +395,52 @@ class thetaFitter(object):
                     str_result += 'Correlation matrix\n'
                     for item in self.model_pars:
                         str_result += '%15s,'%item
-                    str_result += '\n%s\n'%arrayToStr(rho_matrix)                
+                    str_result += '\n%s\n'%arrayToStr(rho_matrix)    
+
+        # add R_process before and after fit with error
+        str_result += '---------------------------------------------------------------------------\n\n'
+        # first add MC_input values
+        prefit_R = '(info) R_process prefit\n'
+        prefit_R += self.R_proc_to_str(self.R_process_MC)
+
+        # Next add post fit R_process from mle fit results
+        # >>> self.parVals['']['R_qq'][0] = (0.805501721611904, 0.12242412236195577)
+        postfit_R = '\n(info) R_process postfit from MLE output\n'
+        fit_AFB_mean = self.parVals['']['AFB'][0][0]*self.sigma_values['AFB']
+        fit_AFB_err = self.parVals['']['AFB'][0][1]*self.sigma_values['AFB']
+        postfit_R += 'AFB = %.3f +/- %.3f\n\n'%(fit_AFB_mean,fit_AFB_err)
+        R_tt,R_tt_err_sq = 1.,0.
+        fit_R = {}
+        temp_str = {}
+        for key,val in self.R_process_MC.iteritems():
+            param_name = [par for par in self.parVals[''] if key in par]
+            if param_name : 
+                param_name = param_name[0]
+            else:
+                continue
+            # print '(debug) param_name %s.'%param_name
+            # R_process = R_process_MC*(1+N_sigma*sigma)
+            # e.g., R_qq_MC = 0.067, fit 'R_qq' = 0.8 +/- 0.12, sigma_Rqq = 0.8
+            # fianl fit R_qq_fit = 0.067(1+0.8*0.8) +/- 0.067*(0.12*0.8)
+            fit_R_mean = self.R_postfit[key]
+            fit_R_err  = val*(self.parVals[''][param_name][0][1]*self.sigma_values[param_name])
+            temp_str[key] = '%s = %.3f +/- %.3f\n'%(param_name,fit_R_mean,fit_R_err)
+            fit_R[key] = [fit_R_mean,fit_R_err]
+            if 'qq' not in key:
+                R_tt -= fit_R_mean
+                R_tt_err_sq += fit_R_err*fit_R_err
+
+        R_tt_err = numpy.sqrt(R_tt_err_sq)
+        R_qq = fit_R['qq'][0]; R_qq_err = fit_R['qq'][1]
+        R_gg = R_tt*(1-R_qq)
+        R_gg_err = numpy.sqrt(  numpy.power(R_gg*R_tt_err/R_tt,2)+numpy.power(R_tt*R_qq_err,2) )
+        temp_str['gg'] = 'R_gg = %.3f +/- %.3f\n'%( R_gg,R_gg_err )
+        temp_str['tt'] = 'R_tt = %.3f +/- %.3f\n'%( R_tt,R_tt_err )
+        # Insert fit results with same order as counter
+        for key in self.R_process_MC:
+            postfit_R += temp_str[key]
+
+        str_result += prefit_R+postfit_R
         # save result to txt
         print str_result
         self.txtfile.write(str_result)
@@ -436,6 +487,20 @@ class thetaFitter(object):
         # plot nll_scan result
         plotutil.plot(mle_nllscan,'AFB(sigma=%.1f)'%self.AFB_sigma,'NLL','%s/AFB_nll.png'%self.outdir)
 
+        # Get postfit histo object for later plotting
+        parameter_values = {}
+        for p in self.model.get_parameters([]):
+            parameter_values[p] = parVals[''][p][0][0]
+        # parameter_values['beta_signal'] = 1.0 # do not scale signal
+        # Save postfit templates
+        histos = evaluate_prediction(self.model,parameter_values,include_signal = False)
+        self.postfit_histos = histos
+        # Write R_process postfit into txt file
+        R_proc_post = self.simple_counter(histos)
+        self.R_postfit = R_proc_post
+        R_proc_post = '\n(info) R_process postfit from counting\n'+self.R_proc_to_str(R_proc_post)
+        self.txtfile.write(R_proc_post)
+        print R_proc_post
         print '(info) Done mleFit.' 
         return parVals,options
 
@@ -492,11 +557,17 @@ class thetaFitter(object):
         return toy_dist
 
     def dict_to_str(self,idict):
-	str_out = ''
-	for key,val in idict.iteritems():
-	    str_out+='%s: %.3f, '%(key,val)
-	return str_out
-        
+        str_out = ''
+        for key,val in idict.iteritems():
+            str_out+='%s: %.3f, '%(key,val)
+        return str_out
+
+    def R_proc_to_str(self,idict):
+        str_out = ''
+        for key,val in idict.iteritems():
+            str_out+='R_%s = %.3f\n'%(key,val)
+        return str_out
+
 ############### still working on this!!!! ################
     def fitToys(self,toy_dist,toy_param_val,toy_param_sigma,toy_param_name): # checked
         """
@@ -513,8 +584,8 @@ class thetaFitter(object):
         R_proc_toy = self.simple_counter(histos)
         Rqq_input = R_proc_toy['qq']
 
-	print '\n(info) Toy experiments with %s = %s'%(toy_param_name,toy_param_val)
-	print '(info) Input R_process is { %s }'%self.dict_to_str(R_proc_toy)
+        print '\n(info) Toy experiments with %s = %s'%(toy_param_name,toy_param_val)
+        print '(info) Input R_process is { %s }'%self.dict_to_str(R_proc_toy)
 
         # do mle fit for generated toys
         toy_fit = mle(self.model, 'toys:0.0', self.ntoys,with_covariance=False, signal_process_groups = {'': [] },chi2=True,options = self.toy_options,nuisance_prior_toys=toy_dist)
@@ -528,8 +599,8 @@ class thetaFitter(object):
         if 'qq' in toy_param_name:
             fit_Rqq = []
             for i in range(len(all_AFB)):
-		continue	
-		if i%50==1: print '(progress) simple_counter at %i toy'%i
+                continue    
+                if i%50==1: print '(progress) simple_counter at %i toy'%i
                 parameter_values = {}
                 for param in self.model_pars:
                     parameter_values[param] = toy_fit[''][param][i][0]
@@ -542,23 +613,23 @@ class thetaFitter(object):
 
         # all_AFB is in the form of [(-0.9563586273699287, 0.8486084490392977), (-0.8390765758997597, 0.89665414376131)]
         # which is self.ntoys number of tuples with first as central, second as error
-	converted_fit_val = []
+        converted_fit_val = []
         for i in range(len(all_AFB)):
             # get post fit Rqq
             fit_AFB_value = all_AFB[i][0]
 
             # remember to convert fit AFB central value back to actual AFB, which is independent of choice of sigma
             actual_AFB = all_AFB[i][0]*toy_param_sigma
-	    converted_fit_val.append(actual_AFB)
+            converted_fit_val.append(actual_AFB)
             if 'qq' in toy_param_name:
                 actual_AFB = self.Rqq_MC*(1+actual_AFB)
-	    # fit_AFB contains all fit results that has converted to physically meanningful val, independent of sigma
+            # fit_AFB contains all fit results that has converted to physically meanningful val, independent of sigma
             fit_AFB.append(actual_AFB)
             # convert chi2 with ndof to chi2/ndof
             fit_chi2.append(all_chi2[i]*1.0/self.model_bins)
 
-	converted_fit_val = numpy.array(converted_fit_val)
-	print '(debug)  converted_fit_val = %.3f +/- %.3f'%(converted_fit_val.mean(),converted_fit_val.std())
+        converted_fit_val = numpy.array(converted_fit_val)
+        print '(debug)  converted_fit_val = %.3f +/- %.3f'%(converted_fit_val.mean(),converted_fit_val.std())
 
         # make histograms
         if toy_param_val<0:
@@ -568,15 +639,15 @@ class thetaFitter(object):
         hist_AFB,canv_AFB,fit_results_AFB = self.plot_hist(data=fit_AFB,name='%s_%s'%(toy_param_name,postfix),xtitle='%s(fit)'%toy_param_name,title='%s for %i toys, input = %.2f'%(toy_param_name,self.ntoys,toy_param_val))
         hist_chi2,canv_chi2,fit_results_chi2 = self.plot_hist(data=fit_chi2,name='chi2_%s'%postfix,xtitle='chi2/%i'%self.model_bins,title='chi2 for %i toys, AFB_input = %.2f'%(self.ntoys,toy_param_val))
 
-	# compare Theta-fitter output for fit param
-	print '(debug) Theta output %s = %.3f +/- %.3f'%(toy_param_name,fit_results_AFB[0],fit_results_AFB[1])
+        # compare Theta-fitter output for fit param
+        print '(debug) Theta output %s = %.3f +/- %.3f'%(toy_param_name,fit_results_AFB[0],fit_results_AFB[1])
 
         # finish
         print '(info) Done fitToys for Param %s = %.2f'%(toy_param_name,toy_param_val)
-    #    canv_AFB.SaveAs('%s/AFB_toys_%s.png'%(self.outdir,postfix))
-    #    canv_chi2.SaveAs('%s/chi2_toys_%s.png'%(self.outdir,postfix))
+        #    canv_AFB.SaveAs('%s/AFB_toys_%s.png'%(self.outdir,postfix))
+        #    canv_chi2.SaveAs('%s/chi2_toys_%s.png'%(self.outdir,postfix))
         if 'qq' in toy_param_name:
-	    mean_and_std = fit_results_AFB
+            mean_and_std = fit_results_AFB
             return [hist_AFB,hist_chi2],mean_and_std,Rqq_input
         else:
             return [hist_AFB,hist_chi2],fit_results_AFB,Rqq_input
@@ -601,13 +672,7 @@ class thetaFitter(object):
             canv.SaveAs('%s/pull_%s.png'%(self.outdir,histname))
         print '(info) Done plotPull.'
 
-    def savePostFit(self,parVals):
-        parameter_values = {}
-        for p in self.model.get_parameters([]):
-            parameter_values[p] = parVals[''][p][0][0]
-        # parameter_values['beta_signal'] = 1.0 # do not scale signal
-        # Save postfit templates
-        histos = evaluate_prediction(self.model,parameter_values,include_signal = False)
+    def savePostFit(self,histos):
         # Save original data histograms
         for o in self.model.get_observables():
             histos[o]['DATA'] = self.model.get_data_histogram(o)
