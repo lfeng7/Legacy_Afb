@@ -24,6 +24,7 @@ output_name = argv.pop(0)
 isTTree = False
 bin_type = 'variable'
 isVerbose = False
+use_MC_Data = False
 
 argv = ' '.join(argv)
 if 'ttree' in argv:
@@ -32,6 +33,8 @@ if 'fixed' in argv:
 	bin_type = 'fixed'
 if 'verbose' in argv:
 	isVerbose = True
+if 'mc_data' in argv:
+	use_MC_Data = True
 
 if isTTree:
 	"Processing ttree files"
@@ -40,7 +43,7 @@ if isTTree:
 
 print 'create a thetaTemp object.'
 print 'options: thetaTemp(outputName=%s, inputFile=%s, isTTree=%s, bin_type=%s, verbose=%s)'%(output_name,inputfile,isTTree,bin_type,isVerbose)
-self = thetaTempMaker.thetaTemp(outputName=output_name, inputFile=inputfile, isTTree=isTTree, bin_type=bin_type, verbose = isVerbose)
+self = thetaTempMaker.thetaTemp(outputName=output_name, inputFile=inputfile, isTTree=isTTree, bin_type=bin_type, use_MC_DATA=use_MC_Data, verbose = isVerbose)
 self.main()
 print 'All finished.'
 

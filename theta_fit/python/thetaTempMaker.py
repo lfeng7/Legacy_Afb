@@ -15,7 +15,7 @@ class thetaTemp(object):
 	Take a root file w/ ttree (for Data) or smoothed 3D templates (for MC) 
 	and create a single root file with all templates 
 	"""
-	def __init__(self, outputName, inputFile, isTTree=False, txtfile=None, verbose = False, bin_type = 'fixed'):
+	def __init__(self, outputName, inputFile, isTTree=False, txtfile=None, use_MC_DATA=False, verbose = False, bin_type = 'fixed'):
 		"""
 		inputFile is a list of path of input template root files (for ttree) or a single file for MC
 		outputName is the name for output thetaTemp.root file
@@ -33,6 +33,7 @@ class thetaTemp(object):
 		self.QCD_SF = 0.06 # this number is from the ABCD method estimation
 		self.verbose = verbose
 		self.bin_type = bin_type
+		self.use_MC_DATA =use_MC_DATA
 		self.AFB_sigma=1.0 # one sigma deviation of AFB from zero
 		if txtfile is None:
 			txtfile = 'MC_input_with_bkg.txt'
@@ -67,10 +68,15 @@ class thetaTemp(object):
 		Input: a list of root files as self.template_file
 		output: a hashtable of files belong to which process
 		"""
+		if self.use_MC_DATA:
+			self.Data_name = 'mc_data'
+		else:
+			self.Data_name = 'Run'
+
 		process_files = {}
 		for ifile in self.template_file:
 			# if it's data , hard code it
-			if 'Run' in ifile :
+			if self.Data_name in ifile :
 				if process_files.get('DATA',1):
 					process_files['DATA'] = [ifile]
 				else:
@@ -326,7 +332,10 @@ class thetaTemp(object):
 				lep_charge = ttree.Q_l
 				# get the weight right by looping over a list of arrays(or float)
 				if process_name=='DATA': # for data, with no weights
-					total_weight = 1
+					if self.use_MC_DATA:
+						total_weight = ttree.total_w
+					else:
+						total_weight = 1
 				elif process_name=='qcd':
 					# QCD ttree is a sum of data and MC events in sideband, with MC events having negative weights for substraction purpose
 					norm_weight = ttree.normalization_weight*self.QCD_SF
