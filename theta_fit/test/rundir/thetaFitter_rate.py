@@ -26,7 +26,7 @@ class thetaFitter(object):
         self.shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight']
         #self.shape_sys_gauss_white = 'all'	
 	self.shape_sys_gauss_white = []
-        self.flat_param = ['AFB','R_qq','R_WJets']
+        self.flat_param = ['AFB','R_qq','R_WJets','R_other_bkg']#,'qcd_rate']
         self.obs = 'f_minus'
         self.pois = ['AFB','R_qq','R_other_bkg','R_WJets','qcd_rate']
 
@@ -253,7 +253,12 @@ class thetaFitter(object):
         # Specifying all uncertainties. Internally, this adds a factor exp(lambda * p)
         # where p is the parameter specified as first argument and lambda is the constant
         # in the second argument:
-        model.add_lognormal_uncertainty('qcd_rate', math.log(1.2), 'qcd') # gauss, sigma=50%
+        # check if has qcd temp, if not , not adding qcd_rate sys
+        if 'qcd' in model.get_processes('f_minus'):
+            self.has_qcd = True
+            model.add_lognormal_uncertainty('qcd_rate', math.log(1.2), 'qcd') # gauss, sigma=50%
+        else:
+            self.has_qcd = False
 
         # Set parameter ranges
         for p in model.distribution.get_parameters() :

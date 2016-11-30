@@ -20,12 +20,13 @@ class sample_info(object):
 
 class samples(object):
     """docstring for samples"""
-    def __init__(self, txtfile):
+    def __init__(self, txtfile,verbose=False):
         super(samples, self).__init__()
         self.txtfile = txtfile
         self.info = {}
         self.Lumi = 19700
         self.import_info()
+        self.verbose = verbose
 
     def import_info(self):
         """
@@ -55,7 +56,8 @@ class samples(object):
         """
         key = [ikey for ikey in self.info if '%s.root'%ikey in filepath ] # this is hardcoded due to the existence of T_t anf T_tW
         if len(key)==0:
-            print 'Cannot find information for file %s in txt file %s! Will stop.'%(filepath,self.txtfile)
+            if self.verbose:
+                print 'Cannot find information for file %s in txt file %s! Will stop.'%(filepath,self.txtfile)
             return None
         else:
             key = key[0]

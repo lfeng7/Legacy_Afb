@@ -4,46 +4,43 @@ main code that produce templates for theta
 import Legacy_Afb.theta_fit.thetaTempMaker as thetaTempMaker 
 import sys
 import glob
+import argparse
 
-argv=sys.argv[1:]
-if len(argv)==0:
-	print """
-	Usage: 
-	python python make_thetaTemplates.py temp_angles/angles_data_SingleEl_Run2012ABCD.root outputname  (ttree) (variable) (verbose)
-	or
-	python make_thetaTemplates.py combined_tempMerge/templates.root 
-	"""
-	sys.exit(1)
+parser = argparse.ArgumentParser(description='make theta-templates')
+parser.add_argument('-input',type=str, help='input is smoothed histograms')
+parser.add_argument('-output',type=str, default='out', help='input is smoothed histograms')
+parser.add_argument('-MC_info',type=str, default='MC_input_with_bkg.txt', help='path of MC_info.txt')
+parser.add_argument('-smoothed', help='input is smoothed histograms', action='store_true')
+parser.add_argument('-nevts', type=int, default=1000, help='nevts to run on each sample. default=1000')
+parser.add_argument('-fixed', help='use fixed binning', action='store_true')
+parser.add_argument('-verbose', help='if verbose', action='store_true')
+parser.add_argument('-mc_data', help='use mc data sample for theoretical prediction.', action='store_true')
 
-inputfile = argv.pop(0)
-output_name = argv.pop(0)
-#output_name = inputfile.split('/')[-1]
-#output_name = 'thetaTemp_%s'%output_name
+args = parser.parse_args()
 
-# some other options
-isTTree = False
-bin_type = 'variable'
-isVerbose = False
-use_MC_Data = False
+print 'Run on %d evts.' % args.nevts
 
-argv = ' '.join(argv)
-if 'ttree' in argv:
-	isTTree = True
-if 'fixed' in argv:
-	bin_type = 'fixed'
-if 'verbose' in argv:
-	isVerbose = True
-if 'mc_data' in argv:
-	use_MC_Data = True
+if args.fixed:
+    bin_type = 'fxied'
+else:
+    bin_type = 'variable'
 
-if isTTree:
-	"Processing ttree files"
-	inputfile = glob.glob(inputfile)
-        output_name = 'thetaTemplates'
+if not args.smoothed:
+    """ Processing ttree files"""
+    inputfile = glob.glob(args.input)
+else:
+    inputfile = args.input
+output_name = '%s'%args.output
 
-print 'create a thetaTemp object.'
-print 'options: thetaTemp(outputName=%s, inputFile=%s, isTTree=%s, bin_type=%s, verbose=%s)'%(output_name,inputfile,isTTree,bin_type,isVerbose)
-self = thetaTempMaker.thetaTemp(outputName=output_name, inputFile=inputfile, isTTree=isTTree, bin_type=bin_type, use_MC_DATA=use_MC_Data, verbose = isVerbose)
+def bool_to_str(var):
+    if var:
+        return 'true'
+    else:
+        return 'false'
+
+print 'options: thetaTemp(outputName=%s, use_smoothed_temp=%s, bin_type=%s, use_MC_Data=%s, MC_info=%s)'%(output_name,bool_to_str(args.smoothed),bin_type,bool_to_str(args.mc_data),args.MC_info)
+
+self = thetaTempMaker.thetaTemp(outputName=output_name, inputFile=inputfile, isTTree=(not args.smoothed), txtfile=args.MC_info, bin_type=bin_type, use_MC_DATA=args.mc_data, verbose = args.verbose, nevts=args.nevts)
 self.main()
 print 'All finished.'
 

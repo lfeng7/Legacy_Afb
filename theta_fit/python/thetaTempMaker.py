@@ -15,12 +15,13 @@ class thetaTemp(object):
 	Take a root file w/ ttree (for Data) or smoothed 3D templates (for MC) 
 	and create a single root file with all templates 
 	"""
-	def __init__(self, outputName, inputFile, isTTree=False, txtfile=None, use_MC_DATA=False, verbose = False, bin_type = 'fixed'):
+	def __init__(self, outputName, inputFile, isTTree=False, txtfile=None, use_MC_DATA=False, verbose = False, bin_type = 'fixed', nevts = -1):
 		"""
 		inputFile is a list of path of input template root files (for ttree) or a single file for MC
 		outputName is the name for output thetaTemp.root file
 		"""
 		super(thetaTemp, self).__init__()
+                self.nevts = nevts
 		self.process = {}
 		self.outputName = outputName
 		self.outfile = ROOT.TFile('templates/%s_template.root'%outputName,'recreate')
@@ -31,13 +32,14 @@ class thetaTemp(object):
 		self.outfile_aux.mkdir('plots/')
 		self.isTTree = isTTree
 		self.QCD_SF = 0.06 # this number is from the ABCD method estimation
+                self.btag_cut = 2
 		self.verbose = verbose
 		self.bin_type = bin_type
 		self.use_MC_DATA =use_MC_DATA
 		self.AFB_sigma=1.0 # one sigma deviation of AFB from zero
 		if txtfile is None:
 			txtfile = 'MC_input_with_bkg.txt'
-		self.samples_obj = samples.samples(txtfile)
+		self.samples_obj = samples.samples(txtfile,self.verbose)
 		# Added features
 		# rate_change of each process in terms of 1sigma deviation of SF from 1.
 		self.rate_change = (('WJets',rate_sigma),('other_bkg',rate_sigma),('qq',rate_sigma))
@@ -324,12 +326,17 @@ class thetaTemp(object):
 			# Loop over entries in ttree and fill templates
 			n_entries = ttree.GetEntries()
 			for iev in range(n_entries):
+                                if iev == self.nevts:
+                                    print '(info) Reach evts %i. Move on next sample!'%iev
+                                    break
 				ttree.GetEntry(iev)
 				# load observables
 				cs = ttree.cos_theta_cs
 				xf = ttree.Feynman_x
 				mtt = ttree.ttbar_mass
 				lep_charge = ttree.Q_l
+				n_bTags = ttree.n_bTags
+				if n_bTags!=self.btag_cut: continue
 				# get the weight right by looping over a list of arrays(or float)
 				if process_name=='DATA': # for data, with no weights
 					if self.use_MC_DATA:
