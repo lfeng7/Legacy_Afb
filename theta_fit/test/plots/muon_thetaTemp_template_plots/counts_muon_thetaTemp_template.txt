@@ -1,8 +1,0 @@
-        process,          Nevts,      R_process
-          WJets,           3984,            3.7%
-      other_bkg,          18076,           16.9%
-             gg,          78068,           73.1%
-             qq,           6665,            6.2%
-           DATA,         152672,          143.0%
-          Total,         106795,          100.0%
-		Data AFB=0.009

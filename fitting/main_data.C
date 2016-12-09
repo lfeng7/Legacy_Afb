@@ -21,6 +21,8 @@ using namespace std;
 //total data title and callname
 char mg_data_title[100] = {"Data Distribution"};
 char mg_data_total_name[50] = {"all_data_angles.root"};
+const char* angles_dir = "../muon_angles_files/angles_";
+
 
 //for fitting
 angles_data *ad;
@@ -593,7 +595,7 @@ void mergeAndPlotData() {
 			sprintf(in,"%s/angles_data_%s.root",run_env,iter->sample_name); //grid					
 		} 
 		else {
-		strcpy(in,"../angles_files/angles_data_");
+		strcpy(in,angles_dir);
 		strcat(in,iter->sample_name);
 		strcat(in,".root");
 		}
@@ -949,7 +951,9 @@ void fitCombined(char* runName) {
 	minimizer->SetParameter(4,"delta",  0.00, 0.50, -1.0, 1.0);
 	minimizer->SetParameter(5,"Afb",    0.00, 0.10, -1.0, 1.0);
 
-	minimizer->SetParameter(6,"Rntmj", 0.017, 0.05,0.0,0.04); //fixed
+//	minimizer->SetParameter(6,"Rntmj", 0.017, 0.05,0.0,0.04); //fixed
+        minimizer->SetParameter(6,"Rntmj", 0.0, 0.05,0.0,0.04); //fixed
+
 
 	//minimizer->FixParameter(0);	//Rqqbar
 	//minimizer->FixParameter(1);	//Rbck

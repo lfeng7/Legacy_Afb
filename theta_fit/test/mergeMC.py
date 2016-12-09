@@ -4,30 +4,32 @@ import glob
 import sys
 from array import array
 
+import argparse
 
-argv=sys.argv[1:]
-if len(argv)==0:
-	print """
-	Usage: 
-	python "inputfiles" 1000
-	"""
-	sys.exit(1)
+parser = argparse.ArgumentParser(description='merge MC templates to form a pseudo-data file')
+parser.add_argument('-input',type=str, help='input files')
+parser.add_argument('-output',type=str, default='test', help='input is smoothed histograms')
+parser.add_argument('-MC_info',type=str, default='MC_input_with_bkg.txt', help='path of MC_info.txt')
+parser.add_argument('-nevts', type=int, default=1000, help='nevts to run on each sample. default=1000')
+parser.add_argument('-verbose', help='if verbose', action='store_true')
 
-inputfile = argv.pop(0)
-input_files = glob.glob(inputfile)
+args = parser.parse_args()
+
+
+input_files = glob.glob(args.input)
+evt_end = int(args.nevts)
+txtfile = args.MC_info
+
 
 newtree_name = 'angles_data'
 oldtree_name = 'angles'
-evt_end = -1
-if argv:
-	evt_end = int(argv.pop(0))
+
 QCD_SF = 0.06
 
-txtfile = 'MC_input_with_bkg.txt'
 all_weights = ['pileup_reweight','top_pT_reweight','btag_eff_reweight','tracking_reweight']
 all_weights+= ['lepID_reweight','lepIso_reweight','trigger_reweight']
 # set up output root file
-fout = ROOT.TFile('temp_angles/mc_data.root','recreate')
+fout = ROOT.TFile('%s_mc_data.root'%args.output,'recreate')
 newtree = ROOT.TTree(newtree_name,newtree_name)
 # Add new branches to the output tree
 br_defs = []
@@ -37,6 +39,7 @@ cos_theta_cs = array('f',[0.])
 Feynman_x = array('f',[0.])
 Q_l = array('i',[0])
 total_w = array('f',[0.])
+n_bTags = array('i',[-1])
 sample_type = ROOT.vector('string')()
 # names 
 br_defs += [('ttbar_mass',ttbar_mass,'ttbar_mass/F')]
@@ -44,6 +47,8 @@ br_defs += [('cos_theta_cs',cos_theta_cs,'cos_theta_cs/F')]
 br_defs += [('Feynman_x',Feynman_x,'Feynman_x/F')]
 br_defs += [('Q_l',Q_l,'Q_l/I')]
 br_defs += [('total_w',total_w,'total_w/F')]
+br_defs += [('n_bTags',n_bTags,'n_bTags/I')]
+
 # Add branches to the tree
 for ibr in br_defs:
     newtree.Branch(ibr[0],ibr[1],ibr[2])
@@ -56,6 +61,7 @@ samples_obj = samples.samples(txtfile)
 for ifile in input_files:
 	sample_info_obj = samples_obj.get_sample_info(ifile)
 	if not sample_info_obj: continue
+	print '(info) Processing...  %s'%sample_info_obj.print_out()
 	root_file = ROOT.TFile(ifile)
 	tmptree = root_file.Get(oldtree_name)
 	norm_weight = sample_info_obj.weight
@@ -78,6 +84,7 @@ for ifile in input_files:
 		cos_theta_cs[0] = tmptree.cos_theta_cs
 		Feynman_x[0] = tmptree.Feynman_x
 		Q_l[0] = tmptree.Q_l
+		n_bTags[0] = tmptree.n_bTags
 		# Calculate total weight
 		total_weight = [getattr(tmptree,item) for item in all_weights]
 		total_weight.append(norm_weight)

@@ -30,15 +30,18 @@ const char* detector_tune = "The tune of detector reweighting is : nominal ";
 
 // new binning
 int XBINS = 20;
-int YBINS = 15; // every 0.02 in xf 
-int ZBINS = 15; // every 30 GeV in Mtt
+int YBINS = 30; // every 0.02 in xf 
+int ZBINS = 30; // every 30 GeV in Mtt
 double LOWMASS = 350.0;
-double HIGHMASS = 700;
+double HIGHMASS = 1000;
 
 double XFLOW = 0.0;
-double XFHIGH = 0.3;
+double XFHIGH = 0.7;
 int pdf_member = -1; // pdf weight: Default pdf member
 const char* SF_sys_global = "nominal";
+const char* lep_type = "muon";
+const char* angles_dir = "../muon_angles_files/angles_";
+
 
 //sample file struct declaration
 struct sample_file {			//Holds all the necessary attributes of a sample file
@@ -244,7 +247,7 @@ void makeHistosFiles(int xBins, int yBins, int zBins, double lowmass, double hig
 			sprintf(in,"%s/angles_%s.root",dir_angles,iter->sample_name); //grid
 		}
 		else {
-		strcpy(in,"../angles_files/angles_");
+		strcpy(in,angles_dir);
 		strcat(in,iter->sample_name);
 		strcat(in,".root");
 		}
