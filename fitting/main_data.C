@@ -96,6 +96,10 @@ int main_data(int analyze, int onGrid, int comb_or_sep, char* r, char* mc_input_
 
 	char* runname;
 	runname=r;
+	string data_angles_dir_tmp = runname;
+	data_angles_dir_tmp += "_output/final_fit_stuff/";
+	const char* data_angles_dir = data_angles_dir_tmp.c_str();
+
 	//Set up the prepend for the directory of all the MC histogram files
 	if (onGrid == 0) {
 		strcpy(prepend,"./");
@@ -132,8 +136,21 @@ int main_data(int analyze, int onGrid, int comb_or_sep, char* r, char* mc_input_
 			printf("TEMPLATE FILE FOUND, NOT MERGING MC HISTO FILES\n");
 			printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 		}
-		printf("Making, merging, and plotting data _histo.root files\n");
-		mergeAndPlotData(); // Use angles.C file to make several 3D distributions, the building block for likelihood
+		
+		if (gSystem->Which(data_angles_dir,"all_data_angles.root") == 0) {
+		//if (gSystem->Which(gSystem->pwd(),"templates.root") == 0) {
+			printf("Making, merging, and plotting data _histo.root files\n");
+			mergeAndPlotData(); // Use angles.C file to make several 3D distributions, the building block for likelihood
+		}
+		else {
+			printf("all_data_histos.root found! Will not do mergeAndPlotData()!");
+			string cmd = "mv ";
+			cmd += data_angles_dir;
+			cmd += "all_data_angles.root .";
+			const char* cmd_char = cmd.c_str();
+			gSystem->Exec(cmd_char);
+			}
+		
 		gSystem->cd(".");
 		if (gSystem->Which(gSystem->pwd(),"templates.root") == 0) {
 			printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
@@ -931,10 +948,10 @@ void fitCombined(char* runName) {
 	//arg4 - estimated distance to minimum
 	//arg5 - lower value
 	//arg6 - upper value 
-	minimizer->SetParameter(0,"Rqqbar", 0.07, 0.03,  0.0, 1.0);
+	minimizer->SetParameter(0,"Rqqbar", 0.08, 0.03,  0.0, 1.0);
 
 	// minimizer->SetParameter(1,"Rbck",   0.205, 0.03,  0.0, 1.0); //floating
-	minimizer->SetParameter(1,"Rbck",   0.184, 0.03,  0.0, 1.0); //fixed
+	minimizer->SetParameter(1,"Rbck",   0.169, 0.03,  0.0, 1.0); //fixed
 	// minimizer->SetParameter(1,"Rbck",   0.3633, 0.03,  0.0, 1.0); //fixed, 1.1*Rbck
 	// minimizer->SetParameter(1,"Rbck",   0.2837, 0.03,  0.0, 1.0); //fixed, restricted eta
 	// minimizer->SetParameter(1,"Rbck",   0.3121, 0.03,  0.0, 1.0); //fixed, 1.1*Rbck, restricted eta
@@ -955,9 +972,9 @@ void fitCombined(char* runName) {
         minimizer->SetParameter(6,"Rntmj", 0.0, 0.05,0.0,0.04); //fixed
 
 
-	//minimizer->FixParameter(0);	//Rqqbar
-	//minimizer->FixParameter(1);	//Rbck
-	//minimizer->FixParameter(2);	//RWjets
+	minimizer->FixParameter(0);	//Rqqbar
+	minimizer->FixParameter(1);	//Rbck
+	minimizer->FixParameter(2);	//RWjets
 	minimizer->FixParameter(3);	//xi
 	minimizer->FixParameter(4);	//delta
 //	minimizer->FixParameter(5);    //AFB

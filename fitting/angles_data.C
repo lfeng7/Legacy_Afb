@@ -354,16 +354,23 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
     double xbinlist[n_binsx];
     double ybinlist[n_binsy];
     double zbinlist[n_binsz];
+    printf("nbinsx,nbiny,nbinsz:%i, %i, %i\n",n_binsx,n_binsy,n_binsz);
+
     printf("bins for x axis\n");
     for(int i=1;i<nbinsx+2;i++){
+	//printf("%i's bin\n",i);
     	xbinlist[i-1]=fqqs_plus->GetXaxis()->GetBinLowEdge(i);
-    	printf("%.2f",xbinlist[i-1]);
+    	printf("%.2f ",xbinlist[i-1]);
     }
+    printf("bins for y axis\n");
     for(int i=1;i<nbinsy+2;i++){
     	ybinlist[i-1]=fqqs_plus->GetYaxis()->GetBinLowEdge(i);
+        printf("%.2f ",ybinlist[i-1]);
     }
+    printf("bins for z axis\n");
     for(int i=1;i<nbinsz+2;i++){
     	zbinlist[i-1]=fqqs_plus->GetZaxis()->GetBinLowEdge(i);
+        printf("%.2f ",zbinlist[i-1]);
     }
 
 
