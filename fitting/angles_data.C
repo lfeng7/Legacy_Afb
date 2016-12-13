@@ -96,7 +96,7 @@ double angles_data::Loop(double Rqqbar, double Rbck, double RWJets, double Rntmj
 		if (Feynman_x<0.0) 
 			Feynman_x = -1.0*Feynman_x;
 		//cut on whether the event is in range of the training set
-		if (cos_theta_cs>=x_low && cos_theta_cs<=x_high && Feynman_x>=y_low && Feynman_x<=y_high && ttbar_mass>=z_low && ttbar_mass<=z_high && n_bTags >= num_b_tag_cuts && ln_L < lnL_cut) {
+		if (cos_theta_cs>=x_low && cos_theta_cs<=x_high && Feynman_x>=y_low && Feynman_x<=y_high && ttbar_mass>=z_low && ttbar_mass<=z_high && n_bTags == num_b_tag_cuts && ln_L < lnL_cut) {
 			//use parameters of event to look up values of functions from histograms (depending on lepton charge and jet number)
 			double ev_fqqs = 0.0;
 			double ev_fqqs_xi = 0.0;
@@ -347,30 +347,30 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
     // Double_t* zbinlist = (Double_t*)fqqs_plus->GetZaxis()->GetXbins()->GetArray();
 
     // get bin list for both fixed and variable binning
-    const int n_binsx = nbinsx;
-    const int n_binsy = nbinsy;
-    const int n_binsz = nbinsz;
-
+    const int n_binsx = nbinsx+1;
+    const int n_binsy = nbinsy+1;
+    const int n_binsz = nbinsz+1;
+    // size(bin_edge_list)=#bins+1 !!
     double xbinlist[n_binsx];
     double ybinlist[n_binsy];
     double zbinlist[n_binsz];
-    printf("nbinsx,nbiny,nbinsz:%i, %i, %i\n",n_binsx,n_binsy,n_binsz);
+    printf("size of bin edges list , nbinsx,nbiny,nbinsz:%i, %i, %i\n",n_binsx,n_binsy,n_binsz);
 
-    printf("bins for x axis\n");
-    for(int i=1;i<nbinsx+2;i++){
+    printf("\nbins for x axis\n");
+    for(int i=0;i<n_binsx;i++){
 	//printf("%i's bin\n",i);
-    	xbinlist[i-1]=fqqs_plus->GetXaxis()->GetBinLowEdge(i);
-    	printf("%.2f ",xbinlist[i-1]);
+    	xbinlist[i]=fqqs_plus->GetXaxis()->GetBinLowEdge(i+1);
+    	printf("%.2f ",xbinlist[i]);
     }
-    printf("bins for y axis\n");
-    for(int i=1;i<nbinsy+2;i++){
-    	ybinlist[i-1]=fqqs_plus->GetYaxis()->GetBinLowEdge(i);
-        printf("%.2f ",ybinlist[i-1]);
+    printf("\nbins for y axis\n");
+    for(int i=0;i<n_binsy;i++){
+    	ybinlist[i]=fqqs_plus->GetYaxis()->GetBinLowEdge(i+1);
+        printf("%.2f ",ybinlist[i]);
     }
-    printf("bins for z axis\n");
-    for(int i=1;i<nbinsz+2;i++){
-    	zbinlist[i-1]=fqqs_plus->GetZaxis()->GetBinLowEdge(i);
-        printf("%.2f ",zbinlist[i-1]);
+    printf("\nbins for z axis\n");
+    for(int i=0;i<n_binsz;i++){
+    	zbinlist[i]=fqqs_plus->GetZaxis()->GetBinLowEdge(i+1);
+        printf("%.2f ",zbinlist[i]);
     }
 
 
@@ -427,7 +427,7 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 			Feynman_x = -1.0*Feynman_x;
 		
 		//cut on whether the event is in range of the training set
-		if (cos_theta_cs>=x_low && cos_theta_cs<=x_high && Feynman_x>=y_low && Feynman_x<=y_high && ttbar_mass>=z_low && ttbar_mass<=z_high && n_bTags >= num_b_tag_cuts && ln_L < lnL_cut) {
+		if (cos_theta_cs>=x_low && cos_theta_cs<=x_high && Feynman_x>=y_low && Feynman_x<=y_high && ttbar_mass>=z_low && ttbar_mass<=z_high && n_bTags == num_b_tag_cuts && ln_L < lnL_cut) {
 			//Fill the data histogram with the appropriate values
 			double ev_fqqs_plus = fqqs_plus->GetBinContent(fqqs_plus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
 			double ev_fqqs_minus = fqqs_minus->GetBinContent(fqqs_minus->FindFixBin(cos_theta_cs,Feynman_x,ttbar_mass));
@@ -470,7 +470,7 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 		nb = fChain->GetEntry(jentry);   nbytes += nb;
 	}//end loop
 
-	printf("BUILDING FIT COMPARISON PLOT\n");
+	printf("\nBUILDING FIT COMPARISON PLOT\n");
 	printf("# of events in data = %d\n", count_added);
 
 	//build the total histograms by summing over the lepton charge and jet number and rescaling
@@ -724,15 +724,15 @@ double angles_data::Loop(double Rqqbar, double sigma_Rqqbar, double Rbck, double
 	leg->Draw();
 	c->cd(2);
 	y_stack->SetMaximum(1.1*data_y->GetMaximum());
-	y_stack->Draw();
+	y_stack->Draw("hist");
 	data_y->Draw("SAME PE1X0");
 	c->cd(3);
 	x_stack->SetMaximum(1.1*data_x->GetMaximum());
-	x_stack->Draw();
+	x_stack->Draw("hist");
 	data_x->Draw("SAME PE1X0");	
 	c->cd(4);
 	z_stack->SetMaximum(1.1*data_z->GetMaximum());
-	z_stack->Draw();
+	z_stack->Draw("hist");
 	data_z->Draw("SAME PE1X0");
 	//save the plots
 	c->Print("fit_comparison.png","png");	

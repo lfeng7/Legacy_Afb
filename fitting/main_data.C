@@ -143,7 +143,7 @@ int main_data(int analyze, int onGrid, int comb_or_sep, char* r, char* mc_input_
 			mergeAndPlotData(); // Use angles.C file to make several 3D distributions, the building block for likelihood
 		}
 		else {
-			printf("all_data_histos.root found! Will not do mergeAndPlotData()!");
+			printf("all_data_histos.root found! Will not do mergeAndPlotData()!\n");
 			string cmd = "mv ";
 			cmd += data_angles_dir;
 			cmd += "all_data_angles.root .";
@@ -972,9 +972,9 @@ void fitCombined(char* runName) {
         minimizer->SetParameter(6,"Rntmj", 0.0, 0.05,0.0,0.04); //fixed
 
 
-	minimizer->FixParameter(0);	//Rqqbar
-	minimizer->FixParameter(1);	//Rbck
-	minimizer->FixParameter(2);	//RWjets
+//	minimizer->FixParameter(0);	//Rqqbar
+//	minimizer->FixParameter(1);	//Rbck
+//	minimizer->FixParameter(2);	//RWjets
 	minimizer->FixParameter(3);	//xi
 	minimizer->FixParameter(4);	//delta
 //	minimizer->FixParameter(5);    //AFB
@@ -1053,14 +1053,19 @@ void move_stuff(char* runname) {
 	//gSystem->Exec("mkdir data_angles_files");
 	gSystem->Exec("mkdir data_histo_files");
 	gSystem->Exec("mkdir final_fit_stuff");
+        gSystem->Exec("mkdir fit_results");
+
 	//gSystem->Exec("mv angles_*.root data_angles_files");
 	gSystem->Exec("mv *_data_histos.root data_histo_files");
 	gSystem->Exec("mv f_*_distribution.pdf final_fit_stuff");
 	gSystem->Exec("mv all_data_histos*.* final_fit_stuff");
 	gSystem->Exec("mv all_data_angles.* final_fit_stuff");
 	// gSystem->Exec("mv aggregated_distributions.root final_fit_stuff");
-	gSystem->Exec("mv fit_results.txt final_fit_stuff");
-	gSystem->Exec("mv fit_comparison.pdf final_fit_stuff");
+	//
+	gSystem->Exec("mv fit_results.txt fit_results");
+	gSystem->Exec("mv fit_comparison.pdf fit_results");
+        gSystem->Exec("mv final_stack.root fit_results");
+
 	gSystem->Exec("mv sideband.pdf final_fit_stuff");
 	gSystem->Exec("mv ev_lnL_*.pdf final_fit_stuff");
 	//strcpy(cmd,"rsync -avh data_angles_files ");
@@ -1071,10 +1076,15 @@ void move_stuff(char* runname) {
 	strcat(cmd,dirname);
 	gSystem->Exec(cmd);
 	gSystem->Exec("rm -rf data_histo_files");
+
 	strcpy(cmd,"rsync -aq final_fit_stuff ");
 	strcat(cmd,dirname);
 	gSystem->Exec(cmd);
 	gSystem->Exec("rm -rf final_fit_stuff");
+
+        strcpy(cmd,"rsync -aq fit_results ");
+        strcat(cmd,dirname);
+        gSystem->Exec(cmd);
 }
 
 
