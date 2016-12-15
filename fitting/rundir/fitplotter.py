@@ -28,10 +28,14 @@ parser.add_option('--dir', metavar='F', type='string', action='store',
                   dest='dir',
                   help='')
 
+parser.add_option('--batch',  action='store_true',dest='batch',help='If plot interactively')
+
 (options, args) = parser.parse_args()
 
 argv = []
 
+if options.batch:
+    ROOT.gROOT.SetBatch(True)
 
 canvas_title = 'CMS Private Work, 19.7 fb^{-1} at #sqrt{s} = 8 TeV'
 
@@ -62,7 +66,7 @@ def main():
         mc_stack=item[0]
         data_hist = item[1]
         hname = item[2]
-        draw_option = ''
+        draw_option = 'hist'
         comparison_plot_v1(mc_stack,data_hist,leg,hname,draw_option)
     # plot charge ratio
     c1 = ROOT.TCanvas()
@@ -82,7 +86,7 @@ def GetSampleColor(itype):
 
 # This is specifically for comparing the stacked MC plots with data adding residule plots too
 
-def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'h',logy=False):
+def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'hist',logy=False):
     global fout,var
     prefix = rundir+'plots'
     # check if plotting dir is made. If not , make it now

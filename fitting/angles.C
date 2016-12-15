@@ -290,7 +290,7 @@ void angles::Loop(int is_for_dist, int neventsgenerated, double crosssection)
 			continue;
 
 		//cut for two bTags
-		if (n_bTags<b_tag_cuts)
+		if (n_bTags!=b_tag_cuts)
 			continue;		
 
 		//cut on chi^2
