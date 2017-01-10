@@ -25,9 +25,24 @@ from Legacy_Afb.Tools.fwlite_boilerplate import *
 from Legacy_Afb.Tools.root_utility import *
 from Legacy_Afb.Tools.python_utility import *
 from Legacy_Afb.Tools.ttbar_utility import *
+import Legacy_Afb.Tools.jetHelper as jetHelper 
 import os
 import glob
 import math
+from array import array
+
+
+#global variables
+#Beam energy
+SQRT_S=8000.0
+BEAM_ENERGY=SQRT_S/2.0
+#PDG ID Numbering scheme http://pdg.lbl.gov/2002/montecarlorpp.pdf
+PROTON_ID = 2212
+TOP_ID    = 6
+W_ID      = 24
+ELECTRON_ID = 11
+TAU_NEUTRINO_ID = 18
+
 
 argv = sys.argv[1:]
 if len(argv) == 0:
@@ -129,6 +144,11 @@ parser.add_option('--makeplots', metavar='F', type='string', action='store',
                   dest='makeplots',
                   help='If we want to make plots directly. This is for testing purpose mostly, which enables plotting directly.')
 
+parser.add_option('--JEC', metavar='F', type='int', action='store',
+                  default = 0,
+                  dest='JEC_type',
+                  help='type of JEC/JES corrections. 0=nominal,1=JEC_up,2=JEC_down,3=JER_up,4=JER_down')
+
 (options, args) = parser.parse_args()
 
 argv = []
@@ -165,10 +185,9 @@ def main():
     global f_index
     f_index = 0
     for ifile in files:
-        if options.inputFiles == '':
-            # find the index of the input file
-            index_ = ifile.split('numEvent')[1].split('.root')[0].split('_')[-1]
-            f_index = int( index_)
+        # find the index of the input file
+        index_ = ifile.split('numEvent')[1].split('.root')[0].split('_')[-1]
+        f_index = int( index_)
         print 'processing file  '+ifile
         print 'current file index is',f_index
         selection(ifile)
@@ -278,7 +297,31 @@ def selection(rootfiles):
     jet_PartonFlavor_hndl = Handle('vector<int> ')
     jet_PartonFlavor_label = ( "jhuAk5","AK5PartonFlavour") 
 
+    # JEC and JES sys
+    AK5JECUncPos_hndl = Handle('vector<double>')
+    AK5JECUncPos_label = ("jhuAk5","AK5JECUncPos")
+    AK5JECUncNeg_hndl = Handle('vector<double>')
+    AK5JECUncNeg_label = ("jhuAk5","AK5JECUncNeg")
 
+    AK5JECcorr_hndl  = Handle('vector<double>')
+    AK5JECcorr_label = ("jhuAk5","AK5JECcorr")
+
+    AK5JECetaScale_hndl = Handle('vector<double>')
+    AK5JECetaScale_label = ("jhuAk5","AK5JECetaScale")
+
+    AK5JECmatchedJetEta_hndl = Handle('vector<double>')
+    AK5JECmatchedJetEta_label = ("jhuAk5","AK5JECmatchedJetEta")
+
+    AK5JECphiScale_hndl = Handle('vector<double>')
+    AK5JECphiScale_label = ("jhuAk5","AK5JECphiScale")
+
+    AK5JECptSmear_hndl = Handle('vector<double>')
+    AK5JECptSmear_label = ("jhuAk5","AK5JECptSmear")
+
+    JEC_hndl = [AK5JECUncPos_hndl,AK5JECUncNeg_hndl,AK5JECcorr_hndl,AK5JECetaScale_hndl]
+    JEC_hndl += [AK5JECmatchedJetEta_hndl,AK5JECphiScale_hndl,AK5JECptSmear_hndl]
+    JEC_label = [AK5JECUncPos_label,AK5JECUncNeg_label,AK5JECcorr_label,AK5JECetaScale_label]
+    JEC_label += [AK5JECmatchedJetEta_label,AK5JECphiScale_label,AK5JECptSmear_label] 
 
     # PU
     dataPileupHandle = Handle('unsigned int')
@@ -290,6 +333,9 @@ def selection(rootfiles):
     # gen info
     gen_hndl = Handle('vector<reco::GenParticle>  ') 
     gen_label = "prunedGenParticles"
+    # MC@NLO only
+    GenEventHandle = Handle("GenEventInfoProduct"); 
+    GenEventLabel  = ("generator","")
 
 
     ## Initialization
@@ -319,6 +365,7 @@ def selection(rootfiles):
     jets_phi = ROOT.vector('float')()
     jets_mass = ROOT.vector('float')()
     jets_csv_vec = ROOT.vector('float')()
+
 
     lep_pt = ROOT.vector('float')()
     lep_eta = ROOT.vector('float')()
@@ -397,6 +444,15 @@ def selection(rootfiles):
 
         # Add MC vectors for intialization
         all_vecs += mc_vecs
+
+        # other corrections
+        br_defs = []
+
+        weight_gen = array('f',[1.])
+        br_defs += [('weight_gen',weight_gen,'weight_gen/F')]
+        # Add branches to the tree
+        for ibr in br_defs:
+            outputtree.Branch(ibr[0],ibr[1],ibr[2])
 
 
     ################################################################
@@ -548,6 +604,22 @@ def selection(rootfiles):
         jets_p4 = jet_p4_hndl.product()
         jets_csv = jet_csv_hndl.product()
 
+        # Apply JEC AND JES for alternative corrections
+        if options.JEC_type != 0 :
+            for i in range(len(JEC_hndl)):
+                evt.getByLabel(JEC_label[i],JEC_hndl[i])
+            if AK5JECcorr_hndl.isValid():
+                jecuncpos = AK5JECUncPos_hndl.product()
+                jecuncneg = AK5JECUncNeg_hndl.product()
+                corr      = AK5JECcorr_hndl.product()
+                ptsmear   = AK5JECptSmear_hndl.product()
+                etascale  = AK5JECetaScale_hndl.product()
+                phiscale  = AK5JECphiScale_hndl.product()
+                matchedJetEta = AK5JECmatchedJetEta_hndl.product()
+                # get corrected jets p4
+                new_jets_p4 = jetHelper.adjustJEC(jets_p4,jecuncpos,jecuncneg,corr,ptsmear,etascale,phiscale,matchedJetEta,jec_type=parser.JEC_type)
+                jets_p4 = new_jets_p4
+
         jets_cand = []
         for i in range(len(jets_p4)):
             if jets_p4[i].pt()>30 and abs(jets_p4[i].eta())<2.5: 
@@ -624,8 +696,6 @@ def selection(rootfiles):
 
         # Informations for MC only     
         if options.mcordata == 'mc' :
-
-
             # Get gen particles and find out the true identy of the PF electron collection
             evt.getByLabel(gen_label,gen_hndl)
             if not gen_hndl.isValid() :
@@ -646,6 +716,12 @@ def selection(rootfiles):
             gen_tau = list(ipar for ipar in final_par if ipar.status() == 3 and abs(ipar.pdgId()) == 15)
             gen_b = list(ipar for ipar in final_par if abs(ipar.pdgId()) == 5)
             gen_jets = list(ipar for ipar in final_par if abs(ipar.pdgId()) in pdg_jets)
+            
+            # get generator weights for MC evts
+            evt.getByLabel(GenEventLabel,GenEventHandle)
+            if GenEventHandle.isValid():
+                GenEvent = GenEventHandle.product()
+                weight_gen[0] = GenEvent.weight()
 
         # Initialize all weights
         w_top_pT = 1.0
@@ -662,8 +738,10 @@ def selection(rootfiles):
                     is_ejets = 1
                 gen_is_ejets.push_back(is_ejets)
 
-                # Another way to determine the status of this signal event  
-                init_pars = []  
+                # Another way to determine the status of this signal event
+                # find all intial partons, and generator level t,w,B,w_daughters
+                init_pars_v2 = [] # to store particles whoes daughters are top quark  
+                init_pars = []  # particles who is daughter of proton
                 gentops = []  
                 genWs = []
                 genBs = []
@@ -702,17 +780,31 @@ def selection(rootfiles):
                         # append to gentop 
                         gentops.append((ig,whichside))
 
+                    # find inital partons in another way
+                    #loop through and find the particles whose daughters include the ttbar pair
+                    if ig.pt()<0 or ig.status()!=3 :
+                        continue
+                    ntopDaus = 0
+                    for i in range(ig.numberOfDaughters()) :
+                        if abs(ig.daughter(i).pdgId()) == TOP_ID :
+                            ntopDaus+=1
+                    if ntopDaus == 2 :
+                        init_pars_v2.append(ig)
+
                 # Analyse the selected gen particles, write into ttree
                 # The sequence of storage in each vector would be :
                 #   0      1     2     3     4     5
                 # init1, init2, thad, tlep, whad, wlep  
 
                 # Initial particles
-                if not len(init_pars) == 2:
-                    print 'Events with ',len(init_pars),'initial partons..'
+                if not (len(init_pars) == 2 or len(init_pars_v2)==2):
+                    print 'Events with ',len(init_pars),'initial partons..',len(init_pars_v2),' init v2'
                     continue
                 for i in range(2):
-                    ig = init_pars[i]
+                    if len(init_pars)==2:
+                        ig = init_pars[i]
+                    else:
+                        ig = init_pars_v2[i]
                     gen_pt.push_back(ig.pt())
                     gen_eta.push_back(ig.eta())
                     gen_phi.push_back(ig.phi())
