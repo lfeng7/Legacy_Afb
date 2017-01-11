@@ -1,1 +1,3 @@
 /eos/uscms/store/user/lfeng7/ntuples/jhu_diffmo_v3/SingleElectron/crab_SingleEl_Run2012C_part2/151118_065305/0000/*.root
+jhutester_numEvent1000_1.root
+jhutester_numEvent1000_2.root

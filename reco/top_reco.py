@@ -4,6 +4,7 @@ from Legacy_Afb.Tools.kinfit import *
 from Legacy_Afb.Tools.ttbar_utility import *
 import glob
 from optparse import OptionParser
+from array import array
 
 # Job steering
 
@@ -148,6 +149,10 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     tmptree.SetBranchStatus('met*',0)
     # tmptree.SetBranchStatus('pileup*',0)
     tmptree.SetBranchStatus('weight_*',0)
+    # keep weight_gen if exist
+    for branch in tmptree.GetListOfBranches():
+        if branch.GetName() == "weight_gen":
+            tmptree.SetBranchStatus('weight_gen',1)
     newtree = tmptree.CloneTree(0)
     tmptree.SetBranchStatus('*',1)
 
@@ -206,10 +211,14 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         vecs += [w_trigger_vec,w_trigger_up,w_trigger_down]
         br_names += ['w_PU','w_PU_up','w_PU_down','w_btag','w_btag_up','w_btag_down','w_eleID','w_eleID_up','w_eleID_down']
         br_names += ['w_trigger','w_trigger_up','w_trigger_down']
+
+        
     # Add branches to the tree
     branches = zip(br_names,vecs)
     for ibr in branches:
         newtree.Branch(ibr[0],ibr[1])
+
+
     # Add cutflow diagrams
     h_cutflow = ROOT.TH1D('cutflow_extra',' cutflow extra;cuts;events',5,0.,5.)
     h_cutflow.SetBit(ROOT.TH1.kCanRebin)
@@ -239,7 +248,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         lep_phis = tmptree.lep_phi
         lep_mass = tmptree.lep_mass
         met_pt = tmptree.met_pt
-        met_phi = tmptree.met_phi         
+        met_phi = tmptree.met_phi    
 
         #print 'iev',iev
 
@@ -319,6 +328,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
             w_btag_vec.push_back(w_btag)
             w_btag_up.push_back(w_btag + err_btag)
             w_btag_down.push_back(w_btag - err_btag)
+
 
         #######################################################
         #          Do reconstruction                          #

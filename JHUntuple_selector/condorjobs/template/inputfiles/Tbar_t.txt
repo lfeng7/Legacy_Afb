@@ -1,1 +1,14 @@
 /eos/uscms/store/user/eminizer/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/Tbar_t_v1/151116_191800/0000/*.root
+jhutester_numEvent10000_1.root
+jhutester_numEvent10000_10.root
+jhutester_numEvent10000_11.root
+jhutester_numEvent10000_12.root
+jhutester_numEvent10000_13.root
+jhutester_numEvent10000_2.root
+jhutester_numEvent10000_3.root
+jhutester_numEvent10000_4.root
+jhutester_numEvent10000_5.root
+jhutester_numEvent10000_6.root
+jhutester_numEvent10000_7.root
+jhutester_numEvent10000_8.root
+jhutester_numEvent10000_9.root

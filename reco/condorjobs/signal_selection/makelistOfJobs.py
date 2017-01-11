@@ -1,8 +1,9 @@
 import ROOT
+import glob
 
 # global constants
 evtsperjob =  2000
-prepend = '/uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v2_trigger_removed/all/'
+prepend = '/uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/all/'
 postfix = '_selected.root'
 
 def make_joblist():
@@ -11,9 +12,13 @@ def make_joblist():
     LoadInputs()
     selected_files = [prepend+ifile[0]+postfix for ifile in flist]
 
+    all_files = glob.glob('%s/*%s'%(prepend,postfix))
+    print all_files
+
     towrite = ''
     # Loop over files
     for ifile in selected_files:
+        if ifile not in all_files: continue
         print 'making jobs for',ifile
         towrite += '\n# '+ifile+'\n'
         tmpfile = ROOT.TFile(ifile)
@@ -53,6 +58,7 @@ def LoadInputs():
     #flist.append(['QCD_Pt-15to3000','qcd',9991674,6662.6,9940092,'qcd'])
     # signal
     flist.append(['TT_CT10_TuneZ2star_8TeV','ttbar',21675970,245.9,21560109,'ttbar'])    
+    flist.append(['TT_8TeV-mcatnlo','ttbar',21675970,245.9,21560109,'ttbar'])
     # data
     flist.append(['SingleEl_Run2012ABCD','data',19748])
 

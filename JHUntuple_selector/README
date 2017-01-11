@@ -16,3 +16,8 @@ What's added in 2.X version:
 (3) selection.py now can make side-band selection, but only newer version of jhu ntuples will work because fake lep is from PFLooseEles
 (4) stacker also add options for fakelep. Some extra cuts can be done in fakelep mode, such as additonal b-tagging and ele iso cuts.
 
+1/2017
+changed selection.py
+(1) Add another way to find initial partons, based on number of top dau, so mc@NLO can work now
+(2) Add gen_w into selected files, which is specifically for mc@NLO. For all other sample, w = 1
+(3) Attemped to add JEC for JES and JER scale, copied snippets from Nick. Have not verified yet.
