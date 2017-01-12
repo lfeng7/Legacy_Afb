@@ -113,9 +113,9 @@ class plotter(object):
 		    else:
                         self.legend.AddEntry(ihist,iprocess_title,"lep")
                 # add total integral of hists into a list for later calculation of R_process
-                if 'x' in stack_key:
+                if 'comb_x' in stack_key:
                     self.process_counts[iprocess] += ihist.Integral()
-                    # print '(info) Add counts of process %s from hist %s into count table'%(iprocess,stack_key)
+                #    print '(info) Add counts of process %s from hist %s into count table'%(iprocess,stack_key)
         self.write_stack_to_auxfile(hist_list=self.stacks.values(),legend=self.legend)
         print '(info) Done stackMaker.'
 
@@ -317,7 +317,7 @@ class plotter(object):
             c.SetName(item.GetName())
             item.Draw('hist')
             # set xaxis title
-            item.GetXaxis().SetTitle('sum of weights')
+            item.GetXaxis().SetTitle('frac error')
             c.Update()
             if len(data_quality_hists)>0:
                 data_quality_hists[i].Draw('same hist')

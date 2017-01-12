@@ -70,6 +70,12 @@ for ifile in input_files:
 	# QCD need another SF to match with data
 	if 'QCD' in sample_info_obj.key:
 		norm_weight *= QCD_SF
+        # check if gen_w is in the tree
+        if tmptree.FindBranch('gen_weight'):
+	        has_genW = True
+		print '(info) Has_genW'
+        else:
+        	has_genW = False
 	# loop over entries and fill
 	n_evt = 0
 	for iev in xrange(0,tmptree.GetEntries()):
@@ -89,6 +95,12 @@ for ifile in input_files:
 		total_weight = [getattr(tmptree,item) for item in all_weights]
 		total_weight.append(norm_weight)
 		total_w[0] = multiply(total_weight)
+                # load genW
+                if has_genW:
+	                gen_weight = tmptree.gen_weight
+                else:
+                	gen_weight = 1.0
+		total_w[0] = total_w[0]*gen_weight
 		# Fill current entry into ttree
 		newtree.Fill()
 	root_file.Close()

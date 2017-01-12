@@ -18,7 +18,7 @@ def GetTTreeName(tfile):
     keys = tfile.GetListOfKeys()
     for ikey in keys:
         if ikey.GetClassName() == 'TTree' : treename = ikey.GetName()
-    print 'Getting ttree',treename
+    #print 'Getting ttree',treename
     return treename
 
 def multiply(_list):

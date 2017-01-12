@@ -6,7 +6,11 @@ import sys
 import glob
 import argparse
 
-parser = argparse.ArgumentParser(description='make theta-templates')
+parser = argparse.ArgumentParser(description="""
+make theta-templates
+Usage: python make_thetaTemplates.py -input "temp_angles/*.root" -output ele_mcNLO -nevts -1 -MC_info temp_angles/MC_input_with_bkg_mcNLO.txt
+or   : python make_thetaTemplates.py -input "temp_angles/*.root" -output ele_mcNLO_mc_data -nevts -1 -MC_info temp_angles/MC_input_with_bkg_mcNLO.txt -mc_data
+""")
 parser.add_argument('-input',type=str, help='input is smoothed histograms')
 parser.add_argument('-output',type=str, default='out', help='input is smoothed histograms')
 parser.add_argument('-MC_info',type=str, default='MC_input_with_bkg.txt', help='path of MC_info.txt')

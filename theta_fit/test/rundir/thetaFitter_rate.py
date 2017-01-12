@@ -24,9 +24,9 @@ class thetaFitter(object):
         self.AFB_sigma = AFB_sigma
 
         self.shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight']
-        #self.shape_sys_gauss_white = 'all'	
 	self.shape_sys_gauss_white = []
-        self.flat_param = ['AFB','R_qq','R_WJets','R_other_bkg']#,'qcd_rate']
+        self.shape_sys_gauss_white = 'all'	
+        self.flat_param = ['AFB','R_qq','R_WJets','R_other_bkg','qcd_rate']
         self.obs = 'f_minus'
         self.pois = ['AFB','R_qq','R_other_bkg','R_WJets','qcd_rate']
 
@@ -683,7 +683,7 @@ class thetaFitter(object):
         for o in self.model.get_observables():
             histos[o]['DATA'] = self.model.get_data_histogram(o)
         # Output to root file
-        write_histograms_to_rootfile(histos,'%s/postfit_histos_%s'%(self.outdir,template_file.split('/')[-1]))
+        write_histograms_to_rootfile(histos,'%s/postfit_histos.root'%self.outdir)#,template_file.split('/')[-1]))
         print '(info) Done savePostFit'
 
 if __name__ == '__main__':
@@ -707,7 +707,7 @@ if __name__ == '__main__':
         outdir = 'runs/%s'%argv.pop(0)    
     # AFB_signma def
     if len(argv)==0:
-        AFB_sigma=0.5
+        AFB_sigma = 1.0
     else:
         AFB_sigma=float(argv.pop(0))
     AFB_range = 2.0/AFB_sigma
@@ -719,4 +719,4 @@ if __name__ == '__main__':
 
     # create a new class instance
     self = thetaFitter(AFB_sigma=AFB_sigma)
-    self.main(template_file_path = template_file,useToys=useToys,outdir=outdir)
+    self.main(template_file_path = template_file,useToys=useToys,outdir='%s_postfit'%outdir)

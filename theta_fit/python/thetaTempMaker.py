@@ -6,6 +6,7 @@ import samples
 import copy
 from array import array
 import sys
+import numpy as np
 
 ROOT.gROOT.SetBatch(True)
 rate_sigma=0.8
@@ -312,6 +313,7 @@ class thetaTemp(object):
 		for item in tmpNames:
 			tmp_objects.append(template.template(name=item,formatted_name=item,bin_type=self.bin_type))
 		if self.verbose: print '(DEBUG) all weights ',weight_list
+
 		# Loop over ttree in list of ttrees
 		for i,ifile in enumerate(file_list):
 			# loading ttree and load branches
@@ -323,7 +325,13 @@ class thetaTemp(object):
 			# check if norm weight is loaded correctly
 			if self.verbose:
 				print '(DEBUG) %s norm weight = %.3f'%(ifile,norm_weights[i])
+			# check if gen_w is in the tree
+			if ttree.FindBranch('gen_weight'):
+				has_genW = True
+			else:
+				has_genW = False
 			# Loop over entries in ttree and fill templates
+	                final_total_w = []
 			n_entries = ttree.GetEntries()
 			for iev in range(n_entries):
                                 if iev == self.nevts:
@@ -336,7 +344,13 @@ class thetaTemp(object):
 				mtt = ttree.ttbar_mass
 				lep_charge = ttree.Q_l
 				n_bTags = ttree.n_bTags
-				if n_bTags!=self.btag_cut: continue
+				# require nbtags>=2. Need to discuss if should include eventes with more than 2 bs
+				if n_bTags < self.btag_cut: continue
+				# load genW
+				if has_genW:
+					gen_weight = ttree.gen_weight
+				else:
+					gen_weight = 1.0
 				# get the weight right by looping over a list of arrays(or float)
 				if process_name=='DATA': # for data, with no weights
 					if self.use_MC_DATA:
@@ -346,14 +360,16 @@ class thetaTemp(object):
 				elif process_name=='qcd':
 					# QCD ttree is a sum of data and MC events in sideband, with MC events having negative weights for substraction purpose
 					norm_weight = ttree.normalization_weight*self.QCD_SF
-					total_weight = norm_weight
+					total_weight = norm_weight*gen_weight
 				else:
-					norm_weight = norm_weights[i]
+					norm_weight = norm_weights[i]*gen_weight
 					total_weight = [getattr(ttree,item) for item in weights]
 					total_weight.append(norm_weight)
 					if self.verbose and iev<1: print '(DEBUG) total_weight=',total_weight
 					total_weight = helper.multiply(total_weight)
 					if self.verbose and iev<1: print '(DEBUG) total_weight=%.3f'%total_weight
+				# keep final weight for every event for sanity checks later
+				final_total_w.append(total_weight)
 				# for added twice case:
 				if add_twice:
 					motherPIDs = ttree.motherPIDs
@@ -386,6 +402,9 @@ class thetaTemp(object):
 				if self.verbose:
 					# print 'cs %.2f,xf %.2f,mtt %.2f,lep_charge %i,total_weight %.2f'%(cs,xf,mtt,lep_charge,total_weight)
 					pass
+			# print out mean and stdev of final total weight
+			final_total_w = np.array(final_total_w)
+			print '(Info) %s total_weight mean = %.3f, stdev = %.3f'%(tfile.GetName(),final_total_w.mean(),final_total_w.std())	
 		# Write proper unrolled 1D templates into thetaTemp file
 		for i,itemp in enumerate(tmp_objects):
 			self.Add_1D_temp(template=tmp_objects[i],tempName=tmpNames[i],tempTitle=tmpNames[i])
