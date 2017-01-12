@@ -219,6 +219,9 @@ class template:
         isMatched = array('i',4*[-1])
         # for qcd_sideband normalizarion
         normalization_weight = array('f',[1.])
+	# for weighted MC
+        gen_weight = array('f',[1.])
+
 
         # names 
         br_defs += [('ttbar_mass',ttbar_mass,'ttbar_mass/F')]
@@ -279,6 +282,7 @@ class template:
         br_defs += [('leadingJet_mass',leadingJet_mass,'leadingJet_mass/F')]
 
         br_defs += [('normalization_weight',normalization_weight,'normalization_weight/F')]
+        br_defs += [('gen_weight',gen_weight,'gen_weight/F')]
 
         # study beta
         beta_v0 = array('f',[-1.])
@@ -336,6 +340,11 @@ class template:
             is_MC = 1
         else:
             is_MC = 0
+        # Check if has_genW
+        if tmptree.FindBranch('weight_gen'):
+            has_genW = True
+        else:
+            has_genW = False
 
         # Loop over entries
         n_evt = 0
@@ -359,6 +368,9 @@ class template:
             if self.ttbar_type=='qq' and not (tmptree.gen_type[0]=='e_jets' and tmptree.init_type[0]=='qqbar'):continue
             if self.ttbar_type=='gg' and not (tmptree.gen_type[0]=='e_jets' and tmptree.init_type[0]!='qqbar'):continue
 
+            # if gen_w is in angles files, copied it over
+            if has_genW:
+                gen_weight[0]=tmptree.weight_gen
             ttbar_mass[0] = tmptree.mtt[0]
             # reco_p4 is a list of tlep_p4,thad_p4,wlep_p4,whad_p4
             tlep_pt = tmptree.reco_pt[0]

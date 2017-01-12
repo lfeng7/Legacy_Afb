@@ -8,6 +8,7 @@ to run, do :
 ./run_makeAngles_sideband.sh for sideband
 ./run_makeAngles_signal.sh for signal
 Need to edit the .sh file with the correct reco file path
+Remember to name signal reco file start with 'TT' so the code knows it is signal MC
 
 # aux plotting scripts:
 # reco_stacker.py
