@@ -33,6 +33,7 @@ class template:
         self.input_file = None
         self.input_ttree_name = 'selected'
         self.ttbar_type = 'none'
+        self.lep_type = 'e_jets'
 
         # for calculating the normalization
         self.totalLumi = 19700
@@ -364,9 +365,9 @@ class template:
             # separate TTbar into qq,gg,other templates
             # qq/gg are qq/gg->ttbar->ljets events
             # tt_other are anythong->ttbar->non ljets events        
-            if self.ttbar_type=='bkg' and tmptree.gen_type[0] == 'e_jets' : continue
-            if self.ttbar_type=='qq' and not (tmptree.gen_type[0]=='e_jets' and tmptree.init_type[0]=='qqbar'):continue
-            if self.ttbar_type=='gg' and not (tmptree.gen_type[0]=='e_jets' and tmptree.init_type[0]!='qqbar'):continue
+            if self.ttbar_type=='bkg' and tmptree.gen_type[0] == self.lep_type : continue
+            if self.ttbar_type=='qq' and not (tmptree.gen_type[0]==self.lep_type and tmptree.init_type[0]=='qqbar'):continue
+            if self.ttbar_type=='gg' and not (tmptree.gen_type[0]==self.lep_type and tmptree.init_type[0]!='qqbar'):continue
 
             # if gen_w is in angles files, copied it over
             if has_genW:
@@ -419,7 +420,7 @@ class template:
             w_s_delta[0],w_s_delta_opp[0],w_a_delta[0],w_a_delta_opp[0] = 1,1,1,1
             # decide if want to use temp reweight
             if is_TT_MC: 
-                if tmptree.gen_type[0] == 'e_jets' and tmptree.init_type[0] == 'qqbar':
+                if tmptree.gen_type[0] == self.lep_type and tmptree.init_type[0] == 'qqbar':
                     weight_is_valid = 1
             beta_v0[0] = -1            
             if weight_is_valid == 1 :
@@ -518,7 +519,7 @@ class template:
             # Match reco t's and w's with gen objects using deltaR for TT semilep events only
             do_Matching = 0
             if is_TT_MC:
-                if tmptree.gen_type[0] == 'e_jets':
+                if tmptree.gen_type[0] == self.lep_type:
                     do_Matching = 1
 
             # initialization

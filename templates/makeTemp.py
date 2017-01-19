@@ -69,6 +69,11 @@ parser.add_option('--ttbar_type', metavar='F', type='string', action='store',
                   dest='ttbar_type',
                   help='type of ttbar templates. gg/qq/bkg')
 
+parser.add_option('--lep_type', metavar='F', type='string', action='store',
+                  default = 'ele',
+                  dest='lep_type',
+                  help='e+jets or mu+jets')
+
 # need special treatment for QCD bkg tempates
 parser.add_option('--sideband', metavar='F', type='string', action='store',
                   default = 'no',
@@ -107,6 +112,8 @@ timer.Start()
 
 # create a template class object
 new_template = template()
+if options.lep_type != 'ele':
+  new_template.lep_type = 'mu_jets'
 # load MC.txt info
 if options.MCinfo=='':
     MCinfo_txt='/uscms_data/d3/lfeng7/Payloads/run1/MC_input_with_bkg.txt'

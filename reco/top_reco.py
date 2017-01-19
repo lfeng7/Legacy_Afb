@@ -2,6 +2,8 @@
 
 from Legacy_Afb.Tools.kinfit import *
 from Legacy_Afb.Tools.ttbar_utility import *
+import Legacy_Afb.Tools.lepHelper as lepHelper
+import Legacy_Afb.Tools.jetHelper as jetHelper 
 import glob
 from optparse import OptionParser
 from array import array
@@ -64,6 +66,16 @@ parser.add_option('--applytrigger', metavar='F', type='string', action='store',
                   dest='applytrigger',
                   help='If apply trigger on MC')
 
+parser.add_option('--lep_type', metavar='F', type='string', action='store',
+                  default = 'ele',
+                  dest='lep_type',
+                  help='e+jets or mu+jets')
+
+parser.add_option('--PDF_name', metavar='F', type='string', action='store',
+                  default = 'ct10',
+                  dest='PDF_name',
+                  help='PDF used in the MC sample. ct10/cteq/gjr')
+
 (options, args) = parser.parse_args()
 
 argv = []
@@ -71,6 +83,8 @@ argv = []
 # Some preset constants
 data_lumi = 19748 
 csvm = 0.679
+
+PDF_branch = {'ct10':weight_pdf_ct10,'cteq':weight_pdf_cteq,'gjr':weight_pdf_gjr}
 
 # Get input files
 if options.fakelep == 'yes':
@@ -194,29 +208,68 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         pu_dists  = LoadPUfiles()
         btagEff_type = sample_type
         eff_hists = LoadBtagEfficiency(btagEff_type)
+        if lep_type == 'mu':
+            muon_helper = lepHelper.muon_helper()
         # Book branches        
-        w_PU_vec = ROOT.vector('float')()
-        w_PU_up = ROOT.vector('float')()
-        w_PU_down = ROOT.vector('float')()
-        w_btag_vec = ROOT.vector('float')()
-        w_btag_up = ROOT.vector('float')()
-        w_btag_down = ROOT.vector('float')()
-        w_eleID_vec = ROOT.vector('float')()
-        w_eleID_up = ROOT.vector('float')()
-        w_eleID_down = ROOT.vector('float')()
-        w_trigger_vec = ROOT.vector('float')()
-        w_trigger_up = ROOT.vector('float')()
-        w_trigger_down = ROOT.vector('float')()
-        vecs += [w_PU_vec,w_PU_up,w_PU_down,w_btag_vec,w_btag_up,w_btag_down,w_eleID_vec,w_eleID_up,w_eleID_down]
-        vecs += [w_trigger_vec,w_trigger_up,w_trigger_down]
-        br_names += ['w_PU','w_PU_up','w_PU_down','w_btag','w_btag_up','w_btag_down','w_eleID','w_eleID_up','w_eleID_down']
-        br_names += ['w_trigger','w_trigger_up','w_trigger_down']
+        w_PU_vec = array('f',[1.])
+        w_PU_up = array('f',[1.])
+        w_PU_down = array('f',[1.])
 
-        
-    # Add branches to the tree
+        w_btag_vec = array('f',[1.])
+        w_btag_up = array('f',[1.])
+        w_btag_down = array('f',[1.])
+
+        w_lepID_vec = array('f',[1.])
+        w_lepID_up = array('f',[1.])
+        w_lepID_down = array('f',[1.])
+
+        w_trigger_vec = array('f',[1.])
+        w_trigger_up = array('f',[1.])
+        w_trigger_down = array('f',[1.])
+
+        w_tracking = array('f',[1.])
+        w_tracking_up = array('f',[1.])
+        w_tracking_down = array('f',[1.])
+
+        w_lepIso = array('f',[1.])
+        w_lepIso_up = array('f',[1.])
+        w_lepIso_down = array('f',[1.])
+
+        w_PDF = array('f',[1.])
+        w_PDF_up = array('f',[1.])
+        w_PDF_down = array('f',[1.])
+
+        br_defs = [('w_PU_vec',w_PU_vec,'w_PU_vec/F')]
+        br_defs = [('w_PU_up',w_PU_up,'w_PU_up/F')]
+        br_defs = [('w_PU_down',w_PU_down,'w_PU_down/F')]
+
+        br_defs = [('w_btag_vec',w_btag_vec,'w_btag_vec/F')]
+        br_defs = [('w_btag_up',w_btag_up,'w_btag_up/F')]
+        br_defs = [('w_btag_down',w_btag_down,'w_btag_down/F')]
+
+        br_defs = [('w_lepID_vec',w_lepID_vec,'w_lepID_vec/F')]
+        br_defs = [('w_lepID_up',w_lepID_up,'w_lepID_up/F')]
+        br_defs = [('w_lepID_down',w_lepID_down,'w_lepID_down/F')]
+
+        br_defs = [('w_trigger_vec',w_trigger_vec,'w_trigger_vec/F')]
+        br_defs = [('w_trigger_up',w_trigger_up,'w_trigger_up/F')]
+        br_defs = [('w_trigger_down',w_trigger_down,'w_trigger_down/F')]
+
+        br_defs = [('w_tracking',w_tracking,'w_tracking/F')]
+        br_defs = [('w_tracking_up',w_tracking_up,'w_tracking_up/F')]
+        br_defs = [('w_tracking_down',w_tracking_down,'w_tracking_down/F')]
+
+        br_defs = [('w_lepIso',w_lepIso,'w_lepIso/F')]
+        br_defs = [('w_lepIso_up',w_lepIso_up,'w_lepIso_up/F')]
+        br_defs = [('w_lepIso_down',w_lepIso_down,'w_lepIso_down/F')]
+    
+    # Add vec branches to the tree
     branches = zip(br_names,vecs)
     for ibr in branches:
         newtree.Branch(ibr[0],ibr[1])
+    # Add float branch into ttree
+    for ibr in br_defs:
+        newtree.Branch(ibr[0],ibr[1],ibr[2])
 
 
     # Add cutflow diagrams
@@ -224,6 +277,25 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     h_cutflow.SetBit(ROOT.TH1.kCanRebin)
     h_cutflow.SetDirectory(fout)
 
+    # arguments for DoReco
+    if options.lep_type in ['ele','el']:
+        lep_type = 'el'
+    else:
+        lep_type = 'mu'
+    if sample_type == 'data': 
+        mcordata = 'data'
+    else : 
+        mcordata = 'mc'
+
+    # check if PDF weight branch in input ttree. also decide which PDF to use
+    has_PDF = False
+    pdf_key = 'ct10'
+    if PDF_branch.get(options.PDF_name,0):
+        tmp_key = PDF_branch[options.PDF_name]
+        if tmptree.FindBranch(tmp_key):
+            print '(info) Found PDF_%s. Will get pdf weights.'%tmp_key
+            has_PDF = True
+            pdf_key = tmp_key
 
     # Loop over entries
     n_evt = 0
@@ -285,36 +357,58 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         #######################################################
         if sample_type != 'data' :
 
-            # Do electron corrections
-            lep_pt_ = lep_pts[0]
-            lep_eta_ = lep_etas[0]
-
-            # Get Ele ID efficiency SF                
-            sf_eleID = GetEleSFs(lep_pt_,lep_eta_,EleID_SFs)
-            w_eleID = sf_eleID[0]
-            err_eleID_up = sf_eleID[1]
-            err_eleID_down = sf_eleID[2]
-            w_eleID_vec.push_back(w_eleID)
-            w_eleID_up.push_back(w_eleID + err_eleID_up)
-            w_eleID_down.push_back(w_eleID - err_eleID_down)
-
-            # Get HLT efficiency SF
-            sf_trigger = GetTriggerSFs(lep_pt_,lep_eta_)
-            w_trigger = sf_trigger[0]
-            err_trigger_up = sf_trigger[1]
-            err_trigger_down = sf_trigger[2]
-            w_trigger_vec.push_back(w_trigger)
-            w_trigger_up.push_back(w_trigger + err_trigger_up)
-            w_trigger_down.push_back(w_trigger - err_trigger_down)
-
-            # Pileup
+           # Pileup
             npvRealTrue = tmptree.mc_pileup_events[0]
             w_PU = GetPUWeights(npvRealTrue,pu_dists)
             err_PU_up = 0
             err_PU_down = 0
-            w_PU_vec.push_back(w_PU)
-            w_PU_up.push_back(w_PU+err_PU_up)
-            w_PU_down.push_back(w_PU+err_PU_down)   
+            w_PU_vec[0] = w_PU
+            w_PU_up[0] =  w_PU+err_PU_up
+            w_PU_down[0] = w_PU+err_PU_down
+
+            # Do lepton corrections
+            lep_pt_ = lep_pts[0]
+            lep_eta_ = lep_etas[0]
+
+            if lep_type == 'el':
+                # Get Ele ID efficiency SF                
+                sf_eleID = GetEleSFs(lep_pt_,lep_eta_,EleID_SFs)
+                w_eleID = sf_eleID[0]
+                err_eleID_up = sf_eleID[1]
+                err_eleID_down = sf_eleID[2]
+
+                w_lepID_vec[0] = w_eleID
+                w_lepID_up[0] = w_eleID + err_eleID_up
+                w_lepID_down[0] = w_eleID - err_eleID_down
+
+                # Get HLT efficiency SF
+                sf_trigger = GetTriggerSFs(lep_pt_,lep_eta_)
+                w_trigger = sf_trigger[0]
+                err_trigger_up = sf_trigger[1]
+                err_trigger_down = sf_trigger[2]
+
+                w_trigger_vec[0] = w_trigger
+                w_trigger_up[0] = w_trigger + err_trigger_up
+                w_trigger_down[0] = w_trigger - err_trigger_down
+            else:
+                muon_helper.getSF(lep_eta_,lep_pt_,npvRealTrue)
+
+                w_trigger_vec[0] = self.weight_trig_eff
+                w_trigger_up[0] = self.weight_trig_eff_hi
+                w_trigger_down[0] = self.weight_trig_eff_low
+
+                w_tracking[0] = self.weight_tracking
+                w_tracking_up[0] = self.weight_tracking_hi
+                w_tracking_down[0] = self.weight_tracking_low
+
+                w_lepID_vec[0] = self.weight_lep_ID
+                w_lepID_up[0] = self.weight_lep_ID_hi
+                w_lepID_down[0] = self.weight_lep_ID_low
+
+                w_lepIso[0] = self.weight_lep_iso
+                w_lepIso_up[0] = self.weight_lep_iso_hi
+                w_lepIso_down[0] = self.weight_lep_iso_low
+
 
             # b-tagging efficiency
             jets_flavor = tmptree.jets_flavor
@@ -325,10 +419,17 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
             w_result = get_weight_btag(selected_jets,eff_hists)
             w_btag   = w_result[0]
             err_btag = w_result[1]
-            w_btag_vec.push_back(w_btag)
-            w_btag_up.push_back(w_btag + err_btag)
-            w_btag_down.push_back(w_btag - err_btag)
+            w_btag_vec[0] =  w_btag 
+            w_btag_up[0] =  w_btag + err_btag 
+            w_btag_down[0] =  w_btag - err_btag
 
+            # PDF weights, if exist the branch
+            if has_PDF:
+                pdf_vec = getattr(tmptree,pdf_key)
+                #   return (pdf.max(),pdf.min())
+                pdf_w = jetHelper.get_PDF_SF(pdf_vec)
+                w_PDF_up = pdf_w[0]
+                w_PDF_down = pdf_w[1]
 
         #######################################################
         #          Do reconstruction                          #
@@ -344,11 +445,6 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
             jets_csv_list.append(jets_csv[i])
         metPt = met_pt[0]; metPhi = met_phi[0]
         # Do reco
-        lep_type = 'el'
-        if sample_type == 'data': 
-            mcordata = 'data'
-        else : 
-            mcordata = 'mc'
         reco_result = DoReco(jets_p4,jets_csv_list,lep_p4,metPt,metPhi,lep_type,mcordata)
         if reco_result == 'none':
             print 'No valid reco done! Will skip this event #',iev

@@ -16,10 +16,16 @@
 # Edit log
 # V3 , 11-13-15
 # Now switch to Nick's ntuple
-# V3.1 4-7-15
+# V3.1 4-7-16
 # Add an new selection criterio for QCD sample only, with a looser b-tag cuts
 # change option.fakelep to option.selection_type
 # A major efficiency improvement by modifying the way to handle trigger bits. Now the speed of running signal MC is 10 times faster!!!
+# v4 1/2017
+# Add mc@NLO compatibility, by adding gen_w, and fix genparticle info 
+# Add muon+jets compatibility
+# Add PDF weights
+# Add JES/JER versions of templates functionality
+
 
 from Legacy_Afb.Tools.fwlite_boilerplate import *
 from Legacy_Afb.Tools.root_utility import *
@@ -132,6 +138,11 @@ parser.add_option('--mctype', metavar='F', type='string', action='store',
                   default = 'test',
                   dest='sampletype',
                   help='type of sample files')
+
+parser.add_option('--lep_type', metavar='F', type='string', action='store',
+                  default = 'el',
+                  dest='lep_type',
+                  help='type of lep+jets templates to make')
 
 parser.add_option('--selection_type', metavar='F', type='string', action='store',
                   default = 'signal',
@@ -277,7 +288,10 @@ def selection(rootfiles):
     mu_isTight_label = ("jhuMuonPFlow","muonistight")
 
     # define label module names here
-    el_prefix = 'jhuElePFlow'
+    if options.lep_type == 'mu':
+        el_prefix = 'jhuElePFlowLoose'
+    else:
+        el_prefix = 'jhuElePFlow'
     el_loose_prefix = 'jhuElePFlowLoose'
     #el_postfix = 'Loose'    
     mu_prefix = 'jhuMuonPFlow'
@@ -336,6 +350,14 @@ def selection(rootfiles):
     # MC@NLO only
     GenEventHandle = Handle("GenEventInfoProduct"); 
     GenEventLabel  = ("generator","")
+
+    # PDF weights
+    PdfHandle_CT10    = Handle('vector<double>')
+    PdfHandle_cteq    = Handle('vector<double>')
+    PdfHandle_GJR     = Handle('vector<double>')
+    PdfLabel_cteq     = ('pdfWeights','cteq66')
+    PdfLabel_CT10     = ('pdfWeights','CT10')
+    PdfLabel_GJR      = ('pdfWeights','GJR08VFnloE')
 
 
     ## Initialization
@@ -432,10 +454,18 @@ def selection(rootfiles):
 
         # Top pT weights
         weight_top_pT = ROOT.vector('float')()
+        # PDF weights
+        weight_pdf_ct10 = ROOT.vector('float')()
+        weight_pdf_cteq = ROOT.vector('float')()
+        weight_pdf_gjr = ROOT.vector('float')()
+        # make a tuple of (vec,hndl,label) for each of pdf
+        pdf_w  = [(weight_pdf_ct10,PdfHandle_CT10,PdfLabel_CT10)]
+        pdf_w += [(weight_pdf_cteq,PdfHandle_cteq,PdfLabel_cteq)]
+        pdf_w += [(weight_pdf_gjr,PdfHandle_GJR,PdfLabel_GJR)]
 
         # Set vectors for corrections
-        mc_vecs += [weight_top_pT]
-        mc_branch_names += ['weight_top_pT']
+        mc_vecs += [weight_top_pT,weight_pdf_ct10,weight_pdf_cteq,weight_pdf_gjr]
+        mc_branch_names += ['weight_top_pT','weight_pdf_ct10','weight_pdf_cteq','weight_pdf_gjr']
 
         # Add MC branches to ttree
         all_mc_branches = zip(mc_branch_names,mc_vecs)
@@ -551,38 +581,55 @@ def selection(rootfiles):
         # extra loose leptons
         el_extra = list( ipar for ipar in el_loose if ipar not in el_cand)
 
-        # Selection on leptons 
-        if options.selection_type in ['sideband','qcd']: 
-            if not len(el_cand)>=1  : continue  # for sideband selection and qcd selection, need at least one electron candidate          
-        elif not len(el_cand)==1 : continue # signal election requires exactly one good ele candidate
-        h_cutflow.Fill('el',1)
+
 
         #### PF muons ####
 
-        evt.getByLabel('jhuMuonPFlow','muon',mu_hndl)
-        evt.getByLabel('jhuMuonPFlow','muoniso',mu_iso_hndl)
-        evt.getByLabel('jhuMuonPFlow','muonisloose',mu_isLoose_hndl)
+        evt.getByLabel(mu_label,mu_hndl)
+        evt.getByLabel(mu_iso_label,mu_iso_hndl)
+        evt.getByLabel(mu_isLoose_label,mu_isLoose_hndl)
+        evt.getByLabel(mu_isTight_label,mu_isTight_hndl)
 
         mu_p4 = mu_hndl.product()
         mu_is_loose = mu_isLoose_hndl.product()
+        mu_is_tight = mu_isTight_hndl.product()
         mu_iso = mu_iso_hndl.product()
 
-        mu_loose = []
+        mu_loose, mu_cand = [],[]
         # https://twiki.cern.ch/twiki/bin/view/CMS/TopMUORun1
         for i in range(len(mu_p4)):
             mu = mu_p4[i]
-            if mu_is_loose[i] and mu_iso[i]< 0.2 and mu.pt()>10 and abs(mu.eta())<2.5: mu_loose.append(mu)
-
+            if mu_is_loose[i] and mu_iso[i]< 0.2 and mu.pt()>10 and abs(mu.eta())<2.4: mu_loose.append(mu)
+            if mu_is_tight[i] and mu_iso[i]< 0.12 and mu.pt()>26 and abs(mu.eta())<2.1: mu_cand.append(mu)
+        mu_extra = set(mu_loose) - set(mu_cand) 
 #       if len(el_cand) >1 :print len(el_cand)
 
-        if len(mu_loose) > 0 : continue
-        h_cutflow.Fill('loose mu veto',1)
 
-        #### Dilep veto ####
-
-        if options.selection_type in ['signal','sideband']: # for both signal and sideband region, no additional "loose" electron is allowed
-            if len(el_extra) > 0 : continue
-            h_cutflow.Fill('dilep veto',1)  
+        # Selection on leptons 
+        if options.lep_type == 'el':
+            if options.selection_type in ['sideband','qcd']: 
+                if not len(el_cand)>=1  : continue  # for sideband selection and qcd selection, need at least one electron candidate          
+            elif not len(el_cand)==1 : continue # signal election requires exactly one good ele candidate
+            h_cutflow.Fill('good el',1)
+            # Loose mu veto
+            if len(mu_loose) > 0 : continue
+            h_cutflow.Fill('loose mu veto',1)
+            #### Dilep veto ####
+            if options.selection_type in ['signal','sideband']: # for both signal and sideband region, no additional "loose" electron is allowed
+                if len(el_extra) > 0 : continue
+                h_cutflow.Fill('dilep veto',1)  
+        elif options.lep_type == 'mu':
+            if options.selection_type in ['sideband','qcd']: 
+                if not len(mu_cand)>=1  : continue  # for sideband selection and qcd selection, need at least one electron candidate          
+            elif not len(mu_cand)==1 : continue # signal election requires exactly one good ele candidate
+            h_cutflow.Fill('good mu',1)
+            # Loose mu veto
+            if len(el_loose) > 0 : continue
+            h_cutflow.Fill('loose el veto',1)
+            #### Dilep veto ####
+            if options.selection_type in ['signal','sideband']: # for both signal and sideband region, no additional "loose" electron is allowed
+                if len(mu_loose) > 1 : continue
+                h_cutflow.Fill('dilep veto',1)  
 
 
         ##### AK5 jets ####
@@ -663,7 +710,11 @@ def selection(rootfiles):
                 iflavor = ijet[3]
                 jets_flavor.push_back(iflavor)
         # lep
-        for iel in el_cand:
+        if options.lep_type == 'el':
+            lep_cand = el_cand
+        else:
+            lep_cand = mu_cand
+        for iel in lep_cand:
             lepp4 = iel[0]
             lepcharge = iel[1]
             lepiso = iel[2]
@@ -689,6 +740,19 @@ def selection(rootfiles):
             npvRealTrue = npvRealTrueHandle.product()
             mc_pileup_events.push_back(1.0*npvRealTrue[0])  
 
+            # PDF weight
+            for item in pdf_w:
+                # pdf_w  = [(weight_pdf_ct10,PdfHandle_CT10,PdfLabel_CT10)]
+                tmp_label = item[2]
+                tmp_hndl = item[1]
+                w_vec = item[0]
+                evt.getByLabel(tmp_label,tmp_hndl)
+                if not tmp_hndl.isValid():
+                    w_vec.push_back(-1)
+                else:
+                    tmp_vec = tmp_hndl.product()
+                    for val in tmp_vec:
+                        w_vec.push_back(val)
 
         ############################################################
         #               Get some correction weights for MC         #
