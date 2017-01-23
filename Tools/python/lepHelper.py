@@ -1,4 +1,5 @@
 import pickle
+import math
 
 # for all lepton related helper functions
 prefix = '/uscms_data/d3/lfeng7/Payloads/run1/SFs'
@@ -66,16 +67,18 @@ class muon_helper(object):
 		#tracking efficiency SFs
 		for i in range(len(tracking_eff_consts)) :
 			if prewiggle_leta > tracking_eff_consts[i][0] and prewiggle_leta < tracking_eff_consts[i][1] :
-				weight_tracking[0]     = tracking_eff_consts[i][2]
-				weight_tracking_hi[0]  = tracking_eff_consts[i][3]
-				weight_tracking_low[0] = tracking_eff_consts[i][3]
+				self.weight_tracking     = tracking_eff_consts[i][2]
+				self.weight_tracking_hi  = self.weight_tracking+tracking_eff_consts[i][3]
+				self.weight_tracking_low = self.weight_tracking-tracking_eff_consts[i][3]
 
 		#Lepton ID, isolation, and trigger scale factors
-
+		muon_id_dict = self.muon_id_dict
+		muon_iso_dict = self.muon_iso_dict		
+		muon_trigger_dict = self.muon_trigger_dict
 		#vertex corrections
 		for vtx_key in muon_id_dict['Tight']['vtxpt20-500'].keys() :
 			#print 'vtx_key = '+vtx_key+'comp 1 = '+vtx_key.split('_')[0]+' comp 2 = '+vtx_key.split('_')[1]+' pileup = '+str(pileup_events[0])
-			if (pileup_events[0] > float(vtx_key.split('_')[0]) and pileup_events[0] < float(vtx_key.split('_')[1])) or (vtx_key == '28.5_30.5' and pileup_events[0] > 30) :
+			if (pileup_events > float(vtx_key.split('_')[0]) and pileup_events < float(vtx_key.split('_')[1])) or (vtx_key == '28.5_30.5' and pileup_events > 30) :
 				muon_id_vtx_weight = muon_id_dict['Tight']['vtxpt20-500'][vtx_key]['data/mc']['efficiency_ratio']
 				muon_id_vtx_weight_low = muon_id_dict['Tight']['vtxpt20-500'][vtx_key]['data/mc']['err_low']
 				muon_id_vtx_weight_hi = muon_id_dict['Tight']['vtxpt20-500'][vtx_key]['data/mc']['err_hi']
@@ -127,13 +130,15 @@ class muon_helper(object):
 				muon_trigger_pt_weight = muon_trigger_dict['IsoMu24']['TightID_IsodB'][nextKey_trig][pt_key]['data']['efficiency']
 				muon_trigger_pt_weight_low = muon_trigger_dict['IsoMu24']['TightID_IsodB'][nextKey_trig][pt_key]['data']['err_low']
 				muon_trigger_pt_weight_hi = muon_trigger_dict['IsoMu24']['TightID_IsodB'][nextKey_trig][pt_key]['data']['err_hi']
-		self.weight_lep_ID[0]       = muon_id_vtx_weight*muon_id_eta_weight*muon_id_pt_weight
-		self.weight_lep_ID_low[0]   = weight_lep_ID[0]*math.sqrt((muon_id_vtx_weight_low/muon_id_vtx_weight)**2+(muon_id_eta_weight_low/muon_id_eta_weight)**2+(muon_id_pt_weight_low/muon_id_pt_weight)**2)
-		self.weight_lep_ID_hi[0]    = weight_lep_ID[0]*math.sqrt((muon_id_vtx_weight_hi/muon_id_vtx_weight)**2+(muon_id_eta_weight_hi/muon_id_eta_weight)**2+(muon_id_pt_weight_hi/muon_id_pt_weight)**2)
-		self.weight_lep_iso[0]      = muon_iso_vtx_weight*muon_iso_eta_weight*muon_iso_pt_weight
-		self.weight_lep_iso_low[0]  = weight_lep_iso[0]*math.sqrt((muon_iso_vtx_weight_low/muon_iso_vtx_weight)**2+(muon_iso_eta_weight_low/muon_iso_eta_weight)**2+(muon_iso_pt_weight_low/muon_iso_pt_weight)**2)
-		self.weight_lep_iso_hi[0]   = weight_lep_iso[0]*math.sqrt((muon_iso_vtx_weight_hi/muon_iso_vtx_weight)**2+(muon_iso_eta_weight_hi/muon_iso_eta_weight)**2+(muon_iso_pt_weight_hi/muon_iso_pt_weight)**2)
-		self.weight_trig_eff[0]     = muon_trigger_vtx_weight*muon_trigger_eta_weight*muon_trigger_pt_weight
-		self.weight_trig_eff_low[0] = weight_trig_eff[0]*math.sqrt((muon_trigger_vtx_weight_low/muon_trigger_vtx_weight)**2+(muon_trigger_eta_weight_low/muon_trigger_eta_weight)**2+(muon_trigger_pt_weight_low/muon_trigger_pt_weight)**2)
-		self.weight_trig_eff_hi[0]  = weight_trig_eff[0]*math.sqrt((muon_trigger_vtx_weight_hi/muon_trigger_vtx_weight)**2+(muon_trigger_eta_weight_hi/muon_trigger_eta_weight)**2+(muon_trigger_pt_weight_hi/muon_trigger_pt_weight)**2)
+		self.weight_lep_ID       = muon_id_vtx_weight*muon_id_eta_weight*muon_id_pt_weight
+		self.weight_lep_ID_low   = self.weight_lep_ID-self.weight_lep_ID*math.sqrt((muon_id_vtx_weight_low/muon_id_vtx_weight)**2+(muon_id_eta_weight_low/muon_id_eta_weight)**2+(muon_id_pt_weight_low/muon_id_pt_weight)**2)
+		self.weight_lep_ID_hi    = self.weight_lep_ID+self.weight_lep_ID*math.sqrt((muon_id_vtx_weight_hi/muon_id_vtx_weight)**2+(muon_id_eta_weight_hi/muon_id_eta_weight)**2+(muon_id_pt_weight_hi/muon_id_pt_weight)**2)
+
+		self.weight_lep_iso      = muon_iso_vtx_weight*muon_iso_eta_weight*muon_iso_pt_weight
+		self.weight_lep_iso_low  = self.weight_lep_iso-self.weight_lep_iso*math.sqrt((muon_iso_vtx_weight_low/muon_iso_vtx_weight)**2+(muon_iso_eta_weight_low/muon_iso_eta_weight)**2+(muon_iso_pt_weight_low/muon_iso_pt_weight)**2)
+		self.weight_lep_iso_hi   = self.weight_lep_iso+self.weight_lep_iso*math.sqrt((muon_iso_vtx_weight_hi/muon_iso_vtx_weight)**2+(muon_iso_eta_weight_hi/muon_iso_eta_weight)**2+(muon_iso_pt_weight_hi/muon_iso_pt_weight)**2)
+
+		self.weight_trig_eff     = muon_trigger_vtx_weight*muon_trigger_eta_weight*muon_trigger_pt_weight
+		self.weight_trig_eff_low = self.weight_trig_eff-self.weight_trig_eff*math.sqrt((muon_trigger_vtx_weight_low/muon_trigger_vtx_weight)**2+(muon_trigger_eta_weight_low/muon_trigger_eta_weight)**2+(muon_trigger_pt_weight_low/muon_trigger_pt_weight)**2)
+		self.weight_trig_eff_hi  = self.weight_trig_eff+self.weight_trig_eff*math.sqrt((muon_trigger_vtx_weight_hi/muon_trigger_vtx_weight)**2+(muon_trigger_eta_weight_hi/muon_trigger_eta_weight)**2+(muon_trigger_pt_weight_hi/muon_trigger_pt_weight)**2)
 

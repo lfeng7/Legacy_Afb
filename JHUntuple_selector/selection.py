@@ -61,7 +61,6 @@ if len(argv) == 0:
 # Some predefined var
 evt_to_run = -1 
 csv_cut = 0.679
-trigger_path='HLT_Ele27_WP80_v'
 lepiso_cut = 0.2
 xrootd = 'root://cmsxrootd.fnal.gov/'
 eosdir = '/eos/uscms/'
@@ -164,6 +163,13 @@ parser.add_option('--JEC', metavar='F', type='int', action='store',
 
 argv = []
 
+# trigger path
+if options.lep_type == 'el':
+    trigger_path='HLT_Ele27_WP80_v'
+else:
+    trigger_path='HLT_IsoMu24_eta2p1_v'
+
+
 def main():
     # Get the file list with all input files.
     if options.inputFiles != '':
@@ -228,14 +234,18 @@ def findTrigIndex(evt):
 # selection is the function to do selection. patfile should be EDM PATtuple files
 def selection(rootfiles):
 
-    if options.selection_type == 'sideband': 
+    if options.lep_type in ['el','ele']:
+        if options.selection_type == 'sideband': 
+            btag_cut = 2
+            el_postfix = 'Loose'
+        elif options.selection_type == 'signal' : 
+            btag_cut = 2
+            el_postfix = ''
+        elif options.selection_type == 'qcd':
+            btag_cut = 1
+            el_postfix = 'Loose'
+    else:
         btag_cut = 2
-        el_postfix = 'Loose'
-    elif options.selection_type == 'signal' : 
-        btag_cut = 2
-        el_postfix = ''
-    elif options.selection_type == 'qcd':
-        btag_cut = 1
         el_postfix = 'Loose'
 
     # Get input files
@@ -280,7 +290,7 @@ def selection(rootfiles):
     mu_label = ("jhuMuonPFlow", "muon")
     mu_iso_hndl = Handle('vector<double>')
     mu_iso_label = ("jhuMuonPFlow","muoniso" )
-    mu_charge_hndl = Handle('vector<double>')
+    mu_charge_hndl = Handle('vector<int>')
     mu_charge_label = ("jhuMuonPFlow","muoncharge")
     mu_isLoose_hndl = Handle('vector<unsigned int>')
     mu_isLoose_label = ("jhuMuonPFlow","muonisloose")
@@ -288,14 +298,8 @@ def selection(rootfiles):
     mu_isTight_label = ("jhuMuonPFlow","muonistight")
 
     # define label module names here
-    if options.lep_type == 'mu':
-        el_prefix = 'jhuElePFlowLoose'
-    else:
-        el_prefix = 'jhuElePFlow'
-    el_loose_prefix = 'jhuElePFlowLoose'
-    #el_postfix = 'Loose'    
+    el_prefix = 'jhuElePFlow'
     mu_prefix = 'jhuMuonPFlow'
-    muloose_prefix = 'jhuMuonPFlowLoose'
 
     # MET
     met_phi_hndl = Handle('double')
@@ -589,18 +593,24 @@ def selection(rootfiles):
         evt.getByLabel(mu_iso_label,mu_iso_hndl)
         evt.getByLabel(mu_isLoose_label,mu_isLoose_hndl)
         evt.getByLabel(mu_isTight_label,mu_isTight_hndl)
+        evt.getByLabel(mu_charge_label,mu_charge_hndl)
 
         mu_p4 = mu_hndl.product()
         mu_is_loose = mu_isLoose_hndl.product()
         mu_is_tight = mu_isTight_hndl.product()
         mu_iso = mu_iso_hndl.product()
+        mu_charge = mu_charge_hndl.product()
 
         mu_loose, mu_cand = [],[]
         # https://twiki.cern.ch/twiki/bin/view/CMS/TopMUORun1
         for i in range(len(mu_p4)):
             mu = mu_p4[i]
-            if mu_is_loose[i] and mu_iso[i]< 0.2 and mu.pt()>10 and abs(mu.eta())<2.4: mu_loose.append(mu)
-            if mu_is_tight[i] and mu_iso[i]< 0.12 and mu.pt()>26 and abs(mu.eta())<2.1: mu_cand.append(mu)
+            icharge = mu_charge[i]
+            tmp_iso = mu_iso[i]
+            if mu_is_loose[i] and mu_iso[i]< 0.2 and mu.pt()>10 and abs(mu.eta())<2.4: 
+                mu_loose.append((mu,icharge,tmp_iso))
+            if mu_is_tight[i] and mu_iso[i]< 0.12 and mu.pt()>26 and abs(mu.eta())<2.1: 
+                mu_cand.append((mu,icharge,tmp_iso))
         mu_extra = set(mu_loose) - set(mu_cand) 
 #       if len(el_cand) >1 :print len(el_cand)
 

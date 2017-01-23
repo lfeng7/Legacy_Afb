@@ -16,6 +16,12 @@ from Legacy_Afb.Tools.angles_tools import *
 # import class that handles MC_info txt file
 from MCinfo_class import MC_info
 
+# a helper function to handle vector and float at the same time
+def take(item):
+    if type(item) in [int,float]: return item
+    elif len(item)!=0: return item[0]
+    else: return None 
+
 class template:
     """
     class to make nicely formatted template files , given a input root angles root file
@@ -94,7 +100,7 @@ class template:
         self.type = entry.type
         self.sample_key = entry.sample_key  
         self.title = entry.title
-        
+
 
     def set_normalizationWeight(self):
         # return normalization weight if MC_info is setup and template_type is MC
@@ -372,7 +378,7 @@ class template:
             # if gen_w is in angles files, copied it over
             if has_genW:
                 gen_weight[0]=tmptree.weight_gen
-            ttbar_mass[0] = tmptree.mtt[0]
+            ttbar_mass[0] = take(tmptree.mtt)
             # reco_p4 is a list of tlep_p4,thad_p4,wlep_p4,whad_p4
             tlep_pt = tmptree.reco_pt[0]
             tlep_eta = tmptree.reco_eta[0]
@@ -390,18 +396,19 @@ class template:
             thad_p4.SetPtEtaPhiM(thad_pt,thad_eta,thad_phi,thad_mass) 
             Q_Data = tlep_p4+thad_p4
             Qt[0] = math.sqrt(Q_Data.Px()*Q_Data.Px()+Q_Data.Py()*Q_Data.Py())
-            cos_theta_cs[0] = tmptree.cos_theta[0]
-            Feynman_x[0] = tmptree.xf[0]
+            cos_theta_cs[0] = take(tmptree.cos_theta)
+            Feynman_x[0] = take(tmptree.xf)
             Q_l[0] = tmptree.lep_charge[0]
+
             cos_theta_mc[0] = -10
             if tmptree.FindBranch('cos_theta_mc'):
-                if tmptree.cos_theta_mc.size()>0 : cos_theta_mc[0] = tmptree.cos_theta_mc[0]
+                if take(tmptree.cos_theta_mc) is not None: cos_theta_mc[0] = take(tmptree.cos_theta_mc) 
             Feynman_x_mc[0] = -10
             if tmptree.FindBranch('xf_mc'):
-                if tmptree.xf_mc.size()>0 : Feynman_x_mc[0] = tmptree.xf_mc[0]
+                if take(tmptree.xf_mc) is not None : Feynman_x_mc[0] = take(tmptree.xf_mc) 
             ttbar_mass_mc[0] = -10
             if tmptree.FindBranch('mtt_mc'):
-                if tmptree.mtt_mc.size()>0 : ttbar_mass_mc[0] = tmptree.mtt_mc[0] 
+                if take(tmptree.mtt_mc) is not None : ttbar_mass_mc[0] = take(tmptree.mtt_mc)
             lnL[0] = tmptree.final_chi2[0]
 
             if has_chi2_new :
@@ -461,18 +468,23 @@ class template:
             # total correction weight and normalization weight
             correction_weight[0],normalization_weight[0] = 1,1
             if is_MC:
-                pileup_reweight[0] = tmptree.w_PU[0]
+                pileup_reweight[0] = take(tmptree.w_PU)
                 if tmptree.FindBranch('weight_top_pT'):
                     top_pT_reweight[0]  = tmptree.weight_top_pT[0]/toppt_scale
-                btag_eff_reweight[0]    = tmptree.w_btag[0]
-                btag_eff_reweight_hi[0] = tmptree.w_btag_up[0]
-                btag_eff_reweight_low[0]= tmptree.w_btag_down[0]
-                lepID_reweight[0]       = tmptree.w_eleID[0]
-                lepID_reweight_hi[0]    = tmptree.w_eleID_up[0]
-                lepID_reweight_low[0]   = tmptree.w_eleID_down[0]
-                trigger_reweight[0]     = tmptree.w_trigger[0]
-                trigger_reweight_hi[0]  = tmptree.w_trigger_up[0]
-                trigger_reweight_low[0] = tmptree.w_trigger_down[0]
+                btag_eff_reweight[0]    = take(tmptree.w_btag)
+                btag_eff_reweight_hi[0] = take(tmptree.w_btag_up)
+                btag_eff_reweight_low[0]= take(tmptree.w_btag_down)
+                if tmptree.FindBranch('w_eleID'):
+                    lepID_reweight[0]       = take(tmptree.w_eleID)
+                    lepID_reweight_hi[0]    = take(tmptree.w_eleID_up)
+                    lepID_reweight_low[0]   = take(tmptree.w_eleID_down)
+                elif tmptree.FindBranch('w_lepID'):
+                    lepID_reweight[0]       = take(tmptree.w_lepID)
+                    lepID_reweight_hi[0]    = take(tmptree.w_lepID_up)
+                    lepID_reweight_low[0]   = take(tmptree.w_lepID_down)
+                trigger_reweight[0]     = take(tmptree.w_trigger)
+                trigger_reweight_hi[0]  = take(tmptree.w_trigger_up)
+                trigger_reweight_low[0] = take(tmptree.w_trigger_down)
                 # PU
                 pileup_real[0] = tmptree.mc_pileup_events[0]
                 # total weight

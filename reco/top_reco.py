@@ -7,6 +7,7 @@ import Legacy_Afb.Tools.jetHelper as jetHelper
 import glob
 from optparse import OptionParser
 from array import array
+import time
 
 # Job steering
 
@@ -84,7 +85,7 @@ argv = []
 data_lumi = 19748 
 csvm = 0.679
 
-PDF_branch = {'ct10':weight_pdf_ct10,'cteq':weight_pdf_cteq,'gjr':weight_pdf_gjr}
+PDF_branch = {'ct10':'weight_pdf_ct10','cteq':'weight_pdf_cteq','gjr':'weight_pdf_gjr'}
 
 # Get input files
 if options.fakelep == 'yes':
@@ -208,7 +209,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         pu_dists  = LoadPUfiles()
         btagEff_type = sample_type
         eff_hists = LoadBtagEfficiency(btagEff_type)
-        if lep_type == 'mu':
+        if options.lep_type == 'mu':
             muon_helper = lepHelper.muon_helper()
         # Book branches        
         w_PU_vec = array('f',[1.])
@@ -239,29 +240,29 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         w_PDF_up = array('f',[1.])
         w_PDF_down = array('f',[1.])
 
-        br_defs = [('w_PU_vec',w_PU_vec,'w_PU_vec/F')]
-        br_defs = [('w_PU_up',w_PU_up,'w_PU_up/F')]
-        br_defs = [('w_PU_down',w_PU_down,'w_PU_down/F')]
+        br_defs = [('w_PU',w_PU_vec,'w_PU/F')]
+        br_defs += [('w_PU_up',w_PU_up,'w_PU_up/F')]
+        br_defs += [('w_PU_down',w_PU_down,'w_PU_down/F')]
 
-        br_defs = [('w_btag_vec',w_btag_vec,'w_btag_vec/F')]
-        br_defs = [('w_btag_up',w_btag_up,'w_btag_up/F')]
-        br_defs = [('w_btag_down',w_btag_down,'w_btag_down/F')]
+        br_defs += [('w_btag',w_btag_vec,'w_btag/F')]
+        br_defs += [('w_btag_up',w_btag_up,'w_btag_up/F')]
+        br_defs += [('w_btag_down',w_btag_down,'w_btag_down/F')]
 
-        br_defs = [('w_lepID_vec',w_lepID_vec,'w_lepID_vec/F')]
-        br_defs = [('w_lepID_up',w_lepID_up,'w_lepID_up/F')]
-        br_defs = [('w_lepID_down',w_lepID_down,'w_lepID_down/F')]
+        br_defs += [('w_lepID',w_lepID_vec,'w_lepID/F')]
+        br_defs += [('w_lepID_up',w_lepID_up,'w_lepID_up/F')]
+        br_defs += [('w_lepID_down',w_lepID_down,'w_lepID_down/F')]
 
-        br_defs = [('w_trigger_vec',w_trigger_vec,'w_trigger_vec/F')]
-        br_defs = [('w_trigger_up',w_trigger_up,'w_trigger_up/F')]
-        br_defs = [('w_trigger_down',w_trigger_down,'w_trigger_down/F')]
+        br_defs += [('w_trigger',w_trigger_vec,'w_trigger/F')]
+        br_defs += [('w_trigger_up',w_trigger_up,'w_trigger_up/F')]
+        br_defs += [('w_trigger_down',w_trigger_down,'w_trigger_down/F')]
 
-        br_defs = [('w_tracking',w_tracking,'w_tracking/F')]
-        br_defs = [('w_tracking_up',w_tracking_up,'w_tracking_up/F')]
-        br_defs = [('w_tracking_down',w_tracking_down,'w_tracking_down/F')]
+        br_defs += [('w_tracking',w_tracking,'w_tracking/F')]
+        br_defs += [('w_tracking_up',w_tracking_up,'w_tracking_up/F')]
+        br_defs += [('w_tracking_down',w_tracking_down,'w_tracking_down/F')]
 
-        br_defs = [('w_lepIso',w_lepIso,'w_lepIso/F')]
-        br_defs = [('w_lepIso_up',w_lepIso_up,'w_lepIso_up/F')]
-        br_defs = [('w_lepIso_down',w_lepIso_down,'w_lepIso_down/F')]
+        br_defs += [('w_lepIso',w_lepIso,'w_lepIso/F')]
+        br_defs += [('w_lepIso_up',w_lepIso_up,'w_lepIso_up/F')]
+        br_defs += [('w_lepIso_down',w_lepIso_down,'w_lepIso_down/F')]
     
     # Add vec branches to the tree
     branches = zip(br_names,vecs)
@@ -300,6 +301,8 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     # Loop over entries
     n_evt = 0
     for iev in range(evt_start,tmptree.GetEntries()):
+        start_time = time.clock()
+
         # Reset all vector containers
         for ivec in vecs: ivec.clear()    
 
@@ -393,21 +396,21 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
             else:
                 muon_helper.getSF(lep_eta_,lep_pt_,npvRealTrue)
 
-                w_trigger_vec[0] = self.weight_trig_eff
-                w_trigger_up[0] = self.weight_trig_eff_hi
-                w_trigger_down[0] = self.weight_trig_eff_low
+                w_trigger_vec[0] = muon_helper.weight_trig_eff
+                w_trigger_up[0] = muon_helper.weight_trig_eff_hi
+                w_trigger_down[0] = muon_helper.weight_trig_eff_low
 
-                w_tracking[0] = self.weight_tracking
-                w_tracking_up[0] = self.weight_tracking_hi
-                w_tracking_down[0] = self.weight_tracking_low
+                w_tracking[0] = muon_helper.weight_tracking
+                w_tracking_up[0] = muon_helper.weight_tracking_hi
+                w_tracking_down[0] = muon_helper.weight_tracking_low
 
-                w_lepID_vec[0] = self.weight_lep_ID
-                w_lepID_up[0] = self.weight_lep_ID_hi
-                w_lepID_down[0] = self.weight_lep_ID_low
+                w_lepID_vec[0] = muon_helper.weight_lep_ID
+                w_lepID_up[0] = muon_helper.weight_lep_ID_hi
+                w_lepID_down[0] = muon_helper.weight_lep_ID_low
 
-                w_lepIso[0] = self.weight_lep_iso
-                w_lepIso_up[0] = self.weight_lep_iso_hi
-                w_lepIso_down[0] = self.weight_lep_iso_low
+                w_lepIso[0] = muon_helper.weight_lep_iso
+                w_lepIso_up[0] = muon_helper.weight_lep_iso_hi
+                w_lepIso_down[0] = muon_helper.weight_lep_iso_low
 
 
             # b-tagging efficiency

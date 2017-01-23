@@ -5,6 +5,7 @@ from Legacy_Afb.Tools.angles_tools import *
 import glob
 from optparse import OptionParser
 import ROOT
+from array import array
 
 # from angles_tools import *
 
@@ -138,17 +139,30 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
     vecs = []
     br_names = []
     # Angles and other template vars
-    cos_theta = ROOT.vector('float')()
-    xf = ROOT.vector('float')() 
-    mtt = ROOT.vector('float')()
+    cos_theta = array('f',[-10.])    
+    xf = array('f',[-10.]) 
+    mtt = array('f',[-10.]) 
 
-    cos_theta_mc = ROOT.vector('float')()
-    xf_mc = ROOT.vector('float')() 
-    mtt_mc = ROOT.vector('float')()
+    cos_theta_mc = array('f',[-10.]) 
+    xf_mc = array('f',[-10.]) 
+    mtt_mc = array('f',[-10.]) 
+
+    br_defs = [('cos_theta',cos_theta,'cos_theta/F')]
+    br_defs += [('xf',xf,'xf/F')]
+    br_defs += [('mtt',mtt,'mtt/F')]
+    br_defs += [('cos_theta_mc',cos_theta_mc,'cos_theta_mc/F')]
+    br_defs += [('xf_mc',xf_mc,'xf_mc/F')]
+    br_defs += [('mtt_mc',mtt_mc,'mtt_mc/F')]
+
+    # Add float branch into ttree
+    for ibr in br_defs:
+        newtree.Branch(ibr[0],ibr[1],ibr[2])
+
+    # Add vec branch
     init_type = ROOT.vector('string')() 
 
-    vecs += [cos_theta,xf,mtt,cos_theta_mc,xf_mc,mtt_mc,init_type]
-    br_names += ['cos_theta','xf','mtt','cos_theta_mc','xf_mc','mtt_mc','init_type']
+    vecs += [init_type]
+    br_names += ['init_type']
 
     # Add branches to the tree
     branches = zip(br_names,vecs)
@@ -218,9 +232,9 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
             continue
         # Do angle calculation
         results = get_angles(t_p4,tbar_p4)
-        xf.push_back(results[0])
-        mtt.push_back(results[1])
-        cos_theta.push_back(results[2])
+        xf[0] = results[0]
+        mtt[0] = results[1]
+        cos_theta[0] = results[2]
     
         # Get true angles for ttbar MC
         # Set default value of true quantities. If the event is not qqbar->ttbar(j) events will pushback the default values.
@@ -271,9 +285,9 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
             true_mtt = true_results[1]
             true_cos_theta = true_results[2]           
             # push back true quantities
-            xf_mc.push_back(true_xf)
-            mtt_mc.push_back(true_mtt)
-            cos_theta_mc.push_back(true_cos_theta)
+            xf_mc[0] = true_xf
+            mtt_mc[0] = true_mtt
+            cos_theta_mc[0] = true_cos_theta
 
         init_type.push_back(tmp_type)
 

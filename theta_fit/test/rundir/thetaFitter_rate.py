@@ -25,7 +25,7 @@ class thetaFitter(object):
 
         self.shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight']
 	self.shape_sys_gauss_white = []
-        self.shape_sys_gauss_white = 'all'	
+        #self.shape_sys_gauss_white = 'all'	
         self.flat_param = ['AFB','R_qq','R_WJets','R_other_bkg','qcd_rate']
         self.obs = 'f_minus'
         self.pois = ['AFB','R_qq','R_other_bkg','R_WJets','qcd_rate']
@@ -325,6 +325,7 @@ class thetaFitter(object):
         """
         # set flat prior for some parameters
         for p in self.flat_param:
+            if (not self.has_qcd) and p=='qcd_rate': continue     
             self.model.distribution.set_distribution_parameters(p,width=inf,range=[-100.0,100.0])
 
         # for Gaussian prior params, set the range to inf
