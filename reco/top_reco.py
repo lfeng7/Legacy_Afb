@@ -244,6 +244,10 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         br_defs += [('w_PU_up',w_PU_up,'w_PU_up/F')]
         br_defs += [('w_PU_down',w_PU_down,'w_PU_down/F')]
 
+        br_defs += [('w_PDF',w_PDF,'w_PDF/F')]
+        br_defs += [('w_PDF_up',w_PDF_up,'w_PDF_up/F')]
+        br_defs += [('w_PDF_down',w_PDF_down,'w_PDF_down/F')]
+
         br_defs += [('w_btag',w_btag_vec,'w_btag/F')]
         br_defs += [('w_btag_up',w_btag_up,'w_btag_up/F')]
         br_defs += [('w_btag_down',w_btag_down,'w_btag_down/F')]

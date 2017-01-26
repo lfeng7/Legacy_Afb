@@ -141,7 +141,7 @@ parser.add_option('--mctype', metavar='F', type='string', action='store',
 parser.add_option('--lep_type', metavar='F', type='string', action='store',
                   default = 'el',
                   dest='lep_type',
-                  help='type of lep+jets templates to make')
+                  help='type of lep+jets templates to make. el or mu')
 
 parser.add_option('--selection_type', metavar='F', type='string', action='store',
                   default = 'signal',
@@ -492,6 +492,15 @@ def selection(rootfiles):
     ################################################################
     #                       Start main event loop                  # 
     ################################################################
+    if events.getByLabel(GenEventLabel,GenEventHandle):
+        has_gen_w = True
+    else: has_gen_w = False
+
+    pdf_w_status = 3*[False]
+    for i,item in enumerate(pdf_w):
+        if events.getByLabel(item[2],item[1]):
+            pdf_w_status[i] = True
+            print '(info) Found PDF %s'%str(item[2])
 
     for evt in events:
         # progrss reporting
@@ -550,7 +559,6 @@ def selection(rootfiles):
         evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'istight',el_isTight_hndl)
         evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'modtight',el_isModTight_hndl)
         evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'charge',el_charge_hndl)
-        evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'ispseudotight',el_isPseudoTight_hndl)
 
         el_p4 = el_hndl.product()
         el_iso = el_iso_hndl.product()
@@ -558,7 +566,10 @@ def selection(rootfiles):
         el_isTight = el_isTight_hndl.product()
         el_isModTight = el_isModTight_hndl.product()
         el_charge = el_charge_hndl.product()
-        el_isPseudoTight = el_isPseudoTight_hndl.product()
+        if options.selection_type == 'sideband':
+            evt.getByLabel(el_prefix+el_postfix,'electron'+el_postfix+'ispseudotight',el_isPseudoTight_hndl)
+            if el_isPseudoTight_hndl.isValid():
+                el_isPseudoTight = el_isPseudoTight_hndl.product()
 
 
         #### PF electrons ####
@@ -751,15 +762,16 @@ def selection(rootfiles):
             mc_pileup_events.push_back(1.0*npvRealTrue[0])  
 
             # PDF weight
-            for item in pdf_w:
-                # pdf_w  = [(weight_pdf_ct10,PdfHandle_CT10,PdfLabel_CT10)]
-                tmp_label = item[2]
-                tmp_hndl = item[1]
+            for i,item in enumerate(pdf_w):
                 w_vec = item[0]
-                evt.getByLabel(tmp_label,tmp_hndl)
-                if not tmp_hndl.isValid():
+                if not pdf_w_status[i]:
                     w_vec.push_back(-1)
                 else:
+                    pdf_w  = [(weight_pdf_ct10,PdfHandle_CT10,PdfLabel_CT10)]
+                    tmp_label = item[2]
+                    tmp_hndl = item[1]
+                    w_vec = item[0]
+                    evt.getByLabel(tmp_label,tmp_hndl)
                     tmp_vec = tmp_hndl.product()
                     for val in tmp_vec:
                         w_vec.push_back(val)
@@ -792,8 +804,8 @@ def selection(rootfiles):
             gen_jets = list(ipar for ipar in final_par if abs(ipar.pdgId()) in pdg_jets)
             
             # get generator weights for MC evts
-            evt.getByLabel(GenEventLabel,GenEventHandle)
-            if GenEventHandle.isValid():
+            if has_gen_w:
+                evt.getByLabel(GenEventLabel,GenEventHandle)
                 GenEvent = GenEventHandle.product()
                 weight_gen[0] = GenEvent.weight()
 
@@ -879,6 +891,8 @@ def selection(rootfiles):
                         ig = init_pars[i]
                     else:
                         ig = init_pars_v2[i]
+                    # decide to use v2 def of init partons
+                    ig = init_pars_v2[i]
                     gen_pt.push_back(ig.pt())
                     gen_eta.push_back(ig.eta())
                     gen_phi.push_back(ig.phi())

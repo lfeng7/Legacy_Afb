@@ -1,4 +1,0 @@
-Total num of files = 282
-Total num of evts = 32345466
-Total weight = 6824179904.45
-Average weight = 210.98
