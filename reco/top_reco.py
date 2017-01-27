@@ -287,6 +287,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         lep_type = 'el'
     else:
         lep_type = 'mu'
+    print '(info) Run %s samples!'%lep_type
     if sample_type == 'data': 
         mcordata = 'data'
     else : 
@@ -435,8 +436,8 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
                 pdf_vec = getattr(tmptree,pdf_key)
                 #   return (pdf.max(),pdf.min())
                 pdf_w = jetHelper.get_PDF_SF(pdf_vec)
-                w_PDF_up = pdf_w[0]
-                w_PDF_down = pdf_w[1]
+                w_PDF_up[0] = pdf_w[0]
+                w_PDF_down[0] = pdf_w[1]
 
         #######################################################
         #          Do reconstruction                          #

@@ -49,7 +49,7 @@ def LoadPUfiles() :
     pu_dists = [data_pu_dist,MC_pu_dist]
     for item in pu_dists: 
         item.SetDirectory(0)
-    print 'NPV distribution loaded!'
+    print '(info) NPV distribution loaded!'
     return pu_dists 
 
 def GetPUWeights(npvRealTrue,pu_dists):
@@ -100,7 +100,7 @@ def LoadEleSFs():
             if item.strip() != '':
                 irow.append(float(item.strip()))
         all_SFs.append(irow)
-    print 'Electron cut based ID efficiency SFs loaded!'
+    print '(info) Electron cut based ID efficiency SFs loaded!'
     return all_SFs
 
 def GetEleSFs(pt,eta,SFtable):
@@ -160,14 +160,14 @@ def LoadBtagEfficiency(sampletype):
             payload_found = 1
 
     if payload_found == 0 :
-        print 'No b tagging efficiency payload found for this sample!' 
+        print ' (debug) No b tagging efficiency payload found for this sample!' 
         return 'None'
 
     file_tmp = ROOT.TFile(F_eff)
     efficiency_b = file_tmp.Get('efficiency_b').Clone()
     efficiency_c = file_tmp.Get('efficiency_c').Clone()
     efficiency_udsg = file_tmp.Get('efficiency_udsg').Clone()  
-    print 'Btagging efficiency loaded for type',sampletype
+    print '(info) Btagging efficiency loaded for type',sampletype
     eff_hists = [efficiency_b,efficiency_c,efficiency_udsg]    
     for item in eff_hists:
         item.SetDirectory(0)

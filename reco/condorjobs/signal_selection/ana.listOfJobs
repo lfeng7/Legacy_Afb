@@ -1,1 +1,0 @@
-python ./tardir/top_reco.py --inputfiles /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/all/TT_8TeV-mcatnlo_selected.root --evtstart 356000 --evtsperjob 2000

@@ -767,7 +767,7 @@ def selection(rootfiles):
                 if not pdf_w_status[i]:
                     w_vec.push_back(-1)
                 else:
-                    pdf_w  = [(weight_pdf_ct10,PdfHandle_CT10,PdfLabel_CT10)]
+                    # pdf_w  = [(weight_pdf_ct10,PdfHandle_CT10,PdfLabel_CT10)]
                     tmp_label = item[2]
                     tmp_hndl = item[1]
                     w_vec = item[0]
