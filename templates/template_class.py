@@ -191,27 +191,39 @@ class template:
         w_a_delta = array('f',[1.])
         w_a_delta_opp = array('f',[1.])
         motherPIDs = array('i',2*[-100])
-        Pdf_weights = array('d',100*[1.])
+
+        Pdf_weights = array('f',[1.])
+        Pdf_weights_low = array('f',[1.])
+        Pdf_weights_hi = array('f',[1.])
+
         pileup_reweight = array('f',[1.])
+        pileup_reweight_low = array('f',[1.])
+        pileup_reweight_hi = array('f',[1.])
+
+
         top_pT_reweight = array('f',[1.])
         GJR_reweight = array('f',[1.])
         CT10_reweight = array('f',[1.])
         cteq_reweight = array('f',[1.])
+
         btag_eff_reweight = array('f',[1.])
         tracking_reweight = array('f',[1.])
         lepID_reweight = array('f',[1.])
         lepIso_reweight = array('f',[1.])
         trigger_reweight = array('f',[1.])
+
         btag_eff_reweight_low = array('f',[1.])
         tracking_reweight_low = array('f',[1.])
         lepID_reweight_low = array('f',[1.])
         lepIso_reweight_low = array('f',[1.])
         trigger_reweight_low = array('f',[1.])
+
         btag_eff_reweight_hi = array('f',[1.])
         tracking_reweight_hi = array('f',[1.])
         lepID_reweight_hi = array('f',[1.])
         lepIso_reweight_hi = array('f',[1.])
         trigger_reweight_hi = array('f',[1.])
+
         pileup = array('f',[0.])
         pileup_real = array('f',[0.])
 
@@ -231,18 +243,23 @@ class template:
 
 
         # names 
-        br_defs += [('ttbar_mass',ttbar_mass,'ttbar_mass/F')]
-        br_defs += [('Qt',Qt,'Qt/F')]
         br_defs += [('cos_theta_cs',cos_theta_cs,'cos_theta_cs/F')]
         br_defs += [('Feynman_x',Feynman_x,'Feynman_x/F')]
-        br_defs += [('Q_l',Q_l,'Q_l/I')]
+        br_defs += [('ttbar_mass',ttbar_mass,'ttbar_mass/F')]
         br_defs += [('cos_theta_mc',cos_theta_mc,'cos_theta_mc/F')]
         br_defs += [('Feynman_x_mc',Feynman_x_mc,'Feynman_x_mc/F')]
         br_defs += [('ttbar_mass_mc',ttbar_mass_mc,'ttbar_mass_mc/F')]
+        br_defs += [('Q_l',Q_l,'Q_l/I')]
+        br_defs += [('n_bTags',n_bTags,'n_bTags/I')]
+
+        br_defs += [('motherPIDs',motherPIDs,'motherPIDs[2]/I')]
+        br_defs += [('Qt',Qt,'Qt/F')]
         br_defs += [('lnL',lnL,'lnL/F')]
         br_defs += [('n_valid_jets',n_valid_jets,'n_valid_jets/I')]
-        br_defs += [('n_bTags',n_bTags,'n_bTags/I')]
-        br_defs += [('fitParValues',fitParValues,'fitParValues/F')]
+        br_defs += [('fit_MET',fitParValues,'fit_MET/F')]
+        br_defs += [('pileup',pileup,'pileup/F')]
+        br_defs += [('pileup_real',pileup_real,'pileup_real/F')]
+
         br_defs += [('w_a',w_a,'w_a/F')]
         br_defs += [('w_a_opp',w_a_opp,'w_a_opp/F')]
         br_defs += [('w_s_xi',w_s_xi,'w_s_xi/F')]
@@ -253,30 +270,40 @@ class template:
         br_defs += [('w_s_delta_opp',w_s_delta_opp,'w_s_delta_opp/F')]
         br_defs += [('w_a_delta',w_a_delta,'w_a_delta/F')]
         br_defs += [('w_a_delta_opp',w_a_delta_opp,'w_a_delta_opp/F')]
-        br_defs += [('motherPIDs',motherPIDs,'motherPIDs[2]/I')]
-        br_defs += [("Pdf_weights",Pdf_weights,"Pdf_weights[100]/D")]
-        br_defs += [('pileup_reweight',pileup_reweight,'pileup_reweight/F')]
+
         br_defs += [('top_pT_reweight',top_pT_reweight,'top_pT_reweight/F')]
         br_defs += [('GJR_reweight',GJR_reweight,'GJR_reweight/F')]
         br_defs += [('CT10_reweight',CT10_reweight,'CT10_reweight/F')]
         br_defs += [('cteq_reweight',cteq_reweight,'cteq_reweight/F')]
+
+        br_defs += [("Pdf_weights",Pdf_weights,"Pdf_weights/F")]
+        br_defs += [("Pdf_weights_low",Pdf_weights_low,"Pdf_weights_low/F")]
+        br_defs += [("Pdf_weights_hi",Pdf_weights_hi,"Pdf_weights_hi/F")]
+
+        br_defs += [('pileup_reweight',pileup_reweight,'pileup_reweight/F')]
+        br_defs += [('pileup_reweight_low',pileup_reweight_low,'pileup_reweight_low/F')]
+        br_defs += [('pileup_reweight_hi',pileup_reweight_hi,'pileup_reweight_hi/F')]
+
+
         br_defs += [('btag_eff_reweight',btag_eff_reweight,'btag_eff_reweight/F')]
-        br_defs += [('tracking_reweight',tracking_reweight,'tracking_reweight/F')]
-        br_defs += [('lepID_reweight',lepID_reweight,'lepID_reweight/F')]
-        br_defs += [('lepIso_reweight',lepIso_reweight,'lepIso_reweight/F')]
-        br_defs += [('trigger_reweight',trigger_reweight,'trigger_reweight/F')]
         br_defs += [('btag_eff_reweight_low',btag_eff_reweight_low,'btag_eff_reweight_low/F')]
-        br_defs += [('tracking_reweight_low',tracking_reweight_low,'tracking_reweight_low/F')]
-        br_defs += [('lepID_reweight_low',lepID_reweight_low,'lepID_reweight_low/F')]
-        br_defs += [('lepIso_reweight_low',lepIso_reweight_low,'lepIso_reweight_low/F')]
-        br_defs += [('trigger_reweight_low',trigger_reweight_low,'trigger_reweight_low/F')]
         br_defs += [('btag_eff_reweight_hi',btag_eff_reweight_hi,'btag_eff_reweight_hi/F')]
+
+        br_defs += [('tracking_reweight',tracking_reweight,'tracking_reweight/F')]
+        br_defs += [('tracking_reweight_low',tracking_reweight_low,'tracking_reweight_low/F')]
         br_defs += [('tracking_reweight_hi',tracking_reweight_hi,'tracking_reweight_hi/F')]
+
+        br_defs += [('lepID_reweight',lepID_reweight,'lepID_reweight/F')]
+        br_defs += [('lepID_reweight_low',lepID_reweight_low,'lepID_reweight_low/F')]
         br_defs += [('lepID_reweight_hi',lepID_reweight_hi,'lepID_reweight_hi/F')]
+
+        br_defs += [('lepIso_reweight',lepIso_reweight,'lepIso_reweight/F')]
+        br_defs += [('lepIso_reweight_low',lepIso_reweight_low,'lepIso_reweight_low/F')]
         br_defs += [('lepIso_reweight_hi',lepIso_reweight_hi,'lepIso_reweight_hi/F')]
+
+        br_defs += [('trigger_reweight',trigger_reweight,'trigger_reweight/F')]        
+        br_defs += [('trigger_reweight_low',trigger_reweight_low,'trigger_reweight_low/F')]
         br_defs += [('trigger_reweight_hi',trigger_reweight_hi,'trigger_reweight_hi/F')]
-        br_defs += [('pileup',pileup,'pileup/F')]
-        br_defs += [('pileup_real',pileup_real,'pileup_real/F')]
 
         # extra stuff not used by template fitter
         br_defs += [('correction_weight',correction_weight,'correction_weight/F')]
@@ -447,7 +474,7 @@ class template:
                         Atop_MC.SetPtEtaPhiM(gen_pt[i],gen_eta[i],gen_phi[i],gen_mass[i])
 
                 # Get weights
-                tmp_w = GetAnglesWeights(top_MC,Atop_MC,tmptree.cos_theta_mc[0])
+                tmp_w = GetAnglesWeights(top_MC,Atop_MC,tmptree.cos_theta_mc)
                 w_a[0],w_a_opp[0],w_s_xi[0],w_s_xi_opp[0] = tmp_w[0],tmp_w[1],tmp_w[2],tmp_w[3]
                 w_a_xi[0],w_a_xi_opp[0],w_s_delta[0],w_s_delta_opp[0] = tmp_w[4],tmp_w[5],tmp_w[6],tmp_w[7]
                 w_a_delta[0],w_a_delta_opp[0] = tmp_w[8],tmp_w[9]
@@ -469,11 +496,20 @@ class template:
             correction_weight[0],normalization_weight[0] = 1,1
             if is_MC:
                 pileup_reweight[0] = take(tmptree.w_PU)
+                pileup_reweight_low[0] = take(tmptree.w_PU_down)
+                pileup_reweight_hi[0] = take(tmptree.w_PU_up)
+
                 if tmptree.FindBranch('weight_top_pT'):
                     top_pT_reweight[0]  = tmptree.weight_top_pT[0]/toppt_scale
+
+                if tmptree.FindBranch('w_PDF_up'):
+                    Pdf_weights_hi[0] = tmptree.w_PDF_up    
+                    Pdf_weights_low[0] = tmptree.w_PDF_down  
+
                 btag_eff_reweight[0]    = take(tmptree.w_btag)
                 btag_eff_reweight_hi[0] = take(tmptree.w_btag_up)
                 btag_eff_reweight_low[0]= take(tmptree.w_btag_down)
+
                 if tmptree.FindBranch('w_eleID'):
                     lepID_reweight[0]       = take(tmptree.w_eleID)
                     lepID_reweight_hi[0]    = take(tmptree.w_eleID_up)
@@ -482,9 +518,22 @@ class template:
                     lepID_reweight[0]       = take(tmptree.w_lepID)
                     lepID_reweight_hi[0]    = take(tmptree.w_lepID_up)
                     lepID_reweight_low[0]   = take(tmptree.w_lepID_down)
+
                 trigger_reweight[0]     = take(tmptree.w_trigger)
                 trigger_reweight_hi[0]  = take(tmptree.w_trigger_up)
                 trigger_reweight_low[0] = take(tmptree.w_trigger_down)
+
+                if tmptree.FindBranch('w_tracking_up'):
+                    tracking_reweight[0] = tmptree.w_tracking
+                    tracking_reweight_hi[0] = tmptree.w_tracking_up
+                    tracking_reweight_low[0] = tmptree.w_tracking_down
+
+                if tmptree.FindBranch('w_lepIso_up'):
+                    lepIso_reweight[0] = tmptree.w_lepIso
+                    lepIso_reweight_hi[0] = tmptree.w_lepIso_up
+                    lepIso_reweight_low[0] = tmptree.w_lepIso_down
+
+
                 # PU
                 pileup_real[0] = tmptree.mc_pileup_events[0]
                 # total weight
