@@ -112,8 +112,10 @@ timer.Start()
 
 # create a template class object
 new_template = template()
-if options.lep_type != 'ele':
+if options.lep_type in ['mu','mu_jets']:
   new_template.lep_type = 'mu_jets'
+else:
+  new_template.lep_type = 'e_jets'
 # load MC.txt info
 if options.MCinfo=='':
     MCinfo_txt='/uscms_data/d3/lfeng7/Payloads/run1/MC_input_with_bkg.txt'

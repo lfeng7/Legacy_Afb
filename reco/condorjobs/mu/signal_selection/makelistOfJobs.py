@@ -64,5 +64,7 @@ def LoadInputs():
     flist.append(['TT_8TeV-mcatnlo','ttbar',21675970,245.9,21560109,'ttbar'])
     # data
     flist.append(['SingleEl_Run2012ABCD','data',19748])
+    flist.append(['SingleMu_Run2012ABCD','data',19748])
+
 
 make_joblist()

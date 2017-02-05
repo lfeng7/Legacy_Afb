@@ -247,6 +247,7 @@ def selection(rootfiles):
     else:
         btag_cut = 2
         el_postfix = 'Loose'
+        postfix = 'Loose'
 
     # Get input files
     if options.grid in ['yes']:
@@ -287,15 +288,15 @@ def selection(rootfiles):
     el_isModTight_hndl = Handle('vector<unsigned int>')
 
     mu_hndl = Handle('vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > >')
-    mu_label = ("jhuMuonPFlow", "muon")
+    mu_label = ('jhuMuonPFlow%s'%postfix, "muon%s"%postfix)
     mu_iso_hndl = Handle('vector<double>')
-    mu_iso_label = ("jhuMuonPFlow","muoniso" )
+    mu_iso_label = ("jhuMuonPFlow%s"%postfix,"muon%siso"%postfix )
     mu_charge_hndl = Handle('vector<int>')
-    mu_charge_label = ("jhuMuonPFlow","muoncharge")
+    mu_charge_label = ("jhuMuonPFlow%s"%postfix,"muon%scharge"%postfix)
     mu_isLoose_hndl = Handle('vector<unsigned int>')
-    mu_isLoose_label = ("jhuMuonPFlow","muonisloose")
+    mu_isLoose_label = ("jhuMuonPFlow%s"%postfix,"muon%sisloose"%postfix)
     mu_isTight_hndl = Handle('vector<unsigned int>')
-    mu_isTight_label = ("jhuMuonPFlow","muonistight")
+    mu_isTight_label = ("jhuMuonPFlow%s"%postfix,"muon%sistight"%postfix)
 
     # define label module names here
     el_prefix = 'jhuElePFlow'
@@ -496,11 +497,12 @@ def selection(rootfiles):
         has_gen_w = True
     else: has_gen_w = False
 
-    pdf_w_status = 3*[False]
-    for i,item in enumerate(pdf_w):
-        if events.getByLabel(item[2],item[1]):
-            pdf_w_status[i] = True
-            print '(info) Found PDF %s'%str(item[2])
+    if options.mcordata == 'mc' :
+        pdf_w_status = 3*[False]
+        for i,item in enumerate(pdf_w):
+            if events.getByLabel(item[2],item[1]):
+                pdf_w_status[i] = True
+                print '(info) Found PDF %s'%str(item[2])
 
     for evt in events:
         # progrss reporting

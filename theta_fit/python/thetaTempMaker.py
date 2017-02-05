@@ -51,16 +51,16 @@ class thetaTemp(object):
 		self.define_process()
 		self.define_sys()
 		if self.isTTree:
-			print '(info) Process template file w/ TTree.'
+			print '\n(info) Process template file w/ TTree.'
 			self.assignFiles()
 			self.GetWeights()
 			# Loop over all processes, e.g., wjets, gg etc
 			for key,value in self.process_files.iteritems():
-				print '(info) Begin process %s samples.'%key
+				print '\n(info) Begin process %s samples.'%key
 				self.TTtreeToTemplates(ttree_file=value, process_name=key)
 			self.get_rate_templates()
 		else:
-			print '(info) Process template file w/ TH3D. '
+			print '\n(info) Process template file w/ TH3D. '
 			self.importTemp(self.template_file)
 		self.makeControlPlots()
 		print '(info) Done thetaTemp.main()'
@@ -216,6 +216,7 @@ class thetaTemp(object):
 		"""
 		print '(info) Process TTtreeToTemplates with file %s'%(ttree_file)
 		# set up template name and weight
+		tmp_type = 'NA'
 		if process_name=='DATA':
 			self.makeTemplates(file_list=ttree_file,process_name=process_name)
 			print '(info) Done TTtreeToTemplates for %s.'%process_name
@@ -229,6 +230,9 @@ class thetaTemp(object):
 				sample_info_obj = self.samples_obj.get_sample_info(ifile)
 				norm_weight = sample_info_obj.weight
 				norm_weights.append(norm_weight)
+				if tmp_type == 'NA':
+					tmp_type = sample_info_obj.type
+			print '(Debug) Process type %s'%tmp_type
 			# prepare for sys weights of each variation 
 			# first make the nominal templates
 			weight = []
@@ -254,7 +258,7 @@ class thetaTemp(object):
 						weight_lists[template_name]=weight
 			# finally make a template for each version of weight list
 			for key,value in weight_lists.iteritems():
-				self.makeTemplates(file_list=ttree_file,process_name=key,weight_list=value,norm_weights=norm_weights)
+				self.makeTemplates(file_list=ttree_file,process_name=key,weight_list=value,norm_weights=norm_weights,tmp_type = tmp_type)
 			print '(info) Done making all templates for MC.'
 	
 
@@ -284,7 +288,7 @@ class thetaTemp(object):
 			self.varied_weight['minus'].append(weight_key_down)
 		print '(info) Done GetWeights'
 
-	def makeTemplates(self,file_list,process_name,weight_list=[1.0],norm_weights = [1.0]):
+	def makeTemplates(self,file_list,process_name,weight_list=[1.0],norm_weights = [1.0],tmp_type='NA'):
 		"""
 		input: list of ttree, list of weight ( a list of 1D arrays ), tmp_name
 		output: a 1D template and control plots of 3d projections
@@ -298,8 +302,11 @@ class thetaTemp(object):
 		# accomodate fqq,fgg specially
 		# Determing if it is gg/qq process, if so , need to addtwice
 		add_twice=False
-		if 'gg' in process_name or 'qq' in process_name:
+		if 'gg' in tmp_type or 'qq' in tmp_type:
 			add_twice = True
+			print '(Debug) Add twice for %s, type %s'%(process_name,tmp_type)
+		else:
+			print '(Debug) Not add twice for %s, type %s'%(process_name,tmp_type)
 		# Add two additional templates for qq, qq__AFB__plus and qq__AFB__minus, but do this only during making nominal qq templates
 		is_qq = False
 		if process_name == 'qq':
@@ -313,9 +320,10 @@ class thetaTemp(object):
 		for item in tmpNames:
 			tmp_objects.append(template.template(name=item,formatted_name=item,bin_type=self.bin_type))
 		if self.verbose: print '(DEBUG) all weights ',weight_list
-
+  
 		# Loop over ttree in list of ttrees
 		for i,ifile in enumerate(file_list):
+			print '\n(DEBUG) Processing %s'%ifile
 			# loading ttree and load branches
 			tfile = ROOT.TFile(ifile)
 			self.outfile.cd()
@@ -333,6 +341,8 @@ class thetaTemp(object):
 			# Loop over entries in ttree and fill templates
 	                final_total_w = []
 			n_entries = ttree.GetEntries()
+
+	                n_fills_plus,n_fills_minus = 0,0
 			for iev in range(n_entries):
                                 if iev == self.nevts:
                                     print '(info) Reach evts %i. Move on next sample!'%iev
@@ -370,18 +380,26 @@ class thetaTemp(object):
 					if self.verbose and iev<1: print '(DEBUG) total_weight=%.3f'%total_weight
 				# keep final weight for every event for sanity checks later
 				final_total_w.append(total_weight)
-				# for added twice case:
+				# for added twice case, which means templates is qq_* or gg_* temp:
+				tmp_add_twice = False
 				if add_twice:
 					motherPIDs = ttree.motherPIDs
-					if 21 in motherPIDs or -21 in motherPIDs : add_twice=False
-					else: total_weight *= 0.5
+					# Do symmetrization only for gg or qq process. Not symmetrize qg process
+					if (motherPIDs[0]==21 and motherPIDs[1]==21) or (motherPIDs[0]+motherPIDs[1]==0):
+                                        	total_weight *= 0.5
+	                                        tmp_add_twice = True
+					else: 
+						tmp_add_twice=False 
+				#		print '(DEBUG) Set add_twice False!'
 					w_a = ttree.w_a
 				# fill templates
 				# special note for qq sample: tmp_obj[2,3,4,5] are f_plus_up,down, f_minus_up,down
 				if lep_charge>0:
 					tmp_objects[0].Fill(cs,abs(xf),mtt,total_weight)
-					if add_twice:
+					n_fills_plus += 1
+					if tmp_add_twice:
 						tmp_objects[1].Fill(-cs,abs(xf),mtt,total_weight)
+						n_fills_minus +=1
 					if is_qq:
 						tmp_objects[2].Fill(cs,abs(xf),mtt,total_weight*(1+self.AFB_sigma*w_a)) # Q>0, fwd
 						tmp_objects[3].Fill(cs,abs(xf),mtt,total_weight*(1-self.AFB_sigma*w_a)) # Q>0, bwd
@@ -389,8 +407,10 @@ class thetaTemp(object):
 						tmp_objects[5].Fill(-cs,abs(xf),mtt,total_weight*(1+self.AFB_sigma*w_a)) # Q<0, bwd
 				elif lep_charge<0:
 					tmp_objects[1].Fill(cs,abs(xf),mtt,total_weight)
-					if add_twice:
+					n_fills_minus +=1
+					if tmp_add_twice:
 						tmp_objects[0].Fill(-cs,abs(xf),mtt,total_weight)
+	                                        n_fills_plus += 1
 					if is_qq:
 						tmp_objects[4].Fill(cs,abs(xf),mtt,total_weight*(1+self.AFB_sigma*w_a)) # Q<0, fwd
 						tmp_objects[5].Fill(cs,abs(xf),mtt,total_weight*(1-self.AFB_sigma*w_a)) # Q<0, bwd
@@ -405,6 +425,8 @@ class thetaTemp(object):
 			# print out mean and stdev of final total weight
 			final_total_w = np.array(final_total_w)
 			print '(Info) %s total_weight mean = %.3f, stdev = %.3f'%(tfile.GetName(),final_total_w.mean(),final_total_w.std())	
+			print '(Debug) Fill plus/minus template %i/%i times'%(n_fills_plus,n_fills_minus)
+			if self.verbose :print '(Debug) Add twice is %s\n'%str(add_twice)
 		# Write proper unrolled 1D templates into thetaTemp file
 		for i,itemp in enumerate(tmp_objects):
 			self.Add_1D_temp(template=tmp_objects[i],tempName=tmpNames[i],tempTitle=tmpNames[i])

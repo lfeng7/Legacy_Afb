@@ -123,7 +123,7 @@ class template:
                     self.norm_w = -1.0*self.norm_w
         else:
             self.norm_w = 1.0
-        print 'normalization weight is %.3f'%self.norm_w    
+        print '(info) sample name %s, normalization weight is %.3f'%(self.sample_key,self.norm_w)    
 
 
     # Main method for template class

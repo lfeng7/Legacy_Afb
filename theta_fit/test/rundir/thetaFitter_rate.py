@@ -26,7 +26,7 @@ class thetaFitter(object):
         self.shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight']
 	self.shape_sys_gauss_white = []
         #self.shape_sys_gauss_white = 'all'	
-        self.flat_param = ['AFB','R_qq','R_WJets','R_other_bkg','qcd_rate']
+        self.flat_param = ['AFB','R_qq','R_WJets','R_other_bkg','qcd_rate','lumi']
         self.obs = 'f_minus'
         self.pois = ['AFB','R_qq','R_other_bkg','R_WJets','qcd_rate']
 
@@ -490,7 +490,7 @@ class thetaFitter(object):
         # NLL scan for AFB
         mle_nllscan = nll_scan(model, 'data', 1, npoints=100, range=[-AFB_range, AFB_range], signal_process_groups = {'': [] }, parameter='AFB',adaptive_startvalues=False)
         mle_nllscan = mle_nllscan[''][0]
-        # print mle_nllscan 
+        print mle_nllscan 
         # plot nll_scan result
         plotutil.plot(mle_nllscan,'AFB(sigma=%.1f)'%self.AFB_sigma,'NLL','%s/AFB_nll.png'%self.outdir)
 
