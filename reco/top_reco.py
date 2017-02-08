@@ -156,6 +156,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     fout_name = sample_name+'_reco_'+str(evt_start)+'_'+str(evt_end)+'.root'
     fout = ROOT.TFile(fout_name,'recreate')
     # Make output ttree
+    exist_brs = [br.GetName() for br in tmptree.GetListOfBranches()]
     #tmptree.SetBranchStatus('jets*',0)
     tmptree.SetBranchStatus('lep*',0)
     tmptree.SetBranchStatus('lep_charge',1)
@@ -163,7 +164,8 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         tmptree.SetBranchStatus('lep_iso',1)
     tmptree.SetBranchStatus('met*',0)
     # tmptree.SetBranchStatus('pileup*',0)
-    tmptree.SetBranchStatus('weight_*',0)
+    if 'weight' in exist_brs:
+        tmptree.SetBranchStatus('weight_*',0)
     # keep weight_gen if exist
     for branch in tmptree.GetListOfBranches():
         if branch.GetName() == "weight_gen":
@@ -202,6 +204,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     vecs+=[total_chi2,chi2_mass,chi2_scale,chi2_csv,chi2_mass_terms]
     br_names+=['total_chi2','chi2_mass','chi2_scale','chi2_csv','chi2_mass_terms']
 
+    br_defs = []
     # Corrections
     if sample_type != 'data':
         # Load some SFs
@@ -359,6 +362,11 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
                 if ilep < options.lepisocut : toskip = 1
             if toskip == 1 : continue 
         h_cutflow.Fill('lep_iso',1)
+        # cut on lep eta , for sanity check
+        if abs(lep_etas[0])>2.4:
+            continue
+        h_cutflow.Fill('lep_eta<2.4',1)
+
 
         #######################################################
         #          Calculate correction SFs for MC            #
@@ -452,6 +460,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
             jets_p4.append(tmp_p4)
             jets_csv_list.append(jets_csv[i])
         metPt = met_pt[0]; metPhi = met_phi[0]
+        #continue #debug
         # Do reco
         reco_result = DoReco(jets_p4,jets_csv_list,lep_p4,metPt,metPhi,lep_type,mcordata)
         if reco_result == 'none':

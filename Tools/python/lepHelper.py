@@ -75,10 +75,12 @@ class muon_helper(object):
 		muon_id_dict = self.muon_id_dict
 		muon_iso_dict = self.muon_iso_dict		
 		muon_trigger_dict = self.muon_trigger_dict
+		# check if keys are found for this event
+		vtx_,eta_,pt_,trigger_ = False , False, False, False
 		#vertex corrections
 		for vtx_key in muon_id_dict['Tight']['vtxpt20-500'].keys() :
 			#print 'vtx_key = '+vtx_key+'comp 1 = '+vtx_key.split('_')[0]+' comp 2 = '+vtx_key.split('_')[1]+' pileup = '+str(pileup_events[0])
-			if (pileup_events > float(vtx_key.split('_')[0]) and pileup_events < float(vtx_key.split('_')[1])) or (vtx_key == '28.5_30.5' and pileup_events > 30) :
+			if (pileup_events > float(vtx_key.split('_')[0]) and pileup_events < float(vtx_key.split('_')[1])) or (vtx_key == '28.5_30.5' and pileup_events > 30) or (vtx_key == '0.5_2.5' and pileup_events <= 0.5):
 				muon_id_vtx_weight = muon_id_dict['Tight']['vtxpt20-500'][vtx_key]['data/mc']['efficiency_ratio']
 				muon_id_vtx_weight_low = muon_id_dict['Tight']['vtxpt20-500'][vtx_key]['data/mc']['err_low']
 				muon_id_vtx_weight_hi = muon_id_dict['Tight']['vtxpt20-500'][vtx_key]['data/mc']['err_hi']
@@ -88,6 +90,7 @@ class muon_helper(object):
 				muon_trigger_vtx_weight = muon_trigger_dict['IsoMu24']['TightID_IsodB']['VTX'][vtx_key]['data']['efficiency']
 				muon_trigger_vtx_weight_low = muon_trigger_dict['IsoMu24']['TightID_IsodB']['VTX'][vtx_key]['data']['err_low']
 				muon_trigger_vtx_weight_hi = muon_trigger_dict['IsoMu24']['TightID_IsodB']['VTX'][vtx_key]['data']['err_hi']
+				vtx_ = True
 		#eta corrections
 		for eta_key in muon_id_dict['Tight']['etapt20-500'].keys() :
 			if prewiggle_leta > float(eta_key.split('_')[0]) and prewiggle_leta < float(eta_key.split('_')[1]) :
@@ -100,6 +103,7 @@ class muon_helper(object):
 				muon_trigger_eta_weight = muon_trigger_dict['IsoMu24']['TightID_IsodB']['ETA'][eta_key]['data']['efficiency']
 				muon_trigger_eta_weight_low = muon_trigger_dict['IsoMu24']['TightID_IsodB']['ETA'][eta_key]['data']['err_low']
 				muon_trigger_eta_weight_hi = muon_trigger_dict['IsoMu24']['TightID_IsodB']['ETA'][eta_key]['data']['err_hi']
+				eta_ = True
 		#pt corrections
 		nextKey = ''
 		nextKey_trig = ''
@@ -125,11 +129,23 @@ class muon_helper(object):
 				muon_iso_pt_weight = muon_iso_dict['combRelIsoPF04dBeta<012_Tight'][nextKey][pt_key]['data/mc']['efficiency_ratio']
 				muon_iso_pt_weight_low = muon_iso_dict['combRelIsoPF04dBeta<012_Tight'][nextKey][pt_key]['data/mc']['err_low']
 				muon_iso_pt_weight_hi = muon_iso_dict['combRelIsoPF04dBeta<012_Tight'][nextKey][pt_key]['data/mc']['err_hi']
+				pt_ = True
+
 		for pt_key in muon_trigger_dict['IsoMu24']['TightID_IsodB'][nextKey_trig].keys() :
-			if prewiggle_lpt > float(pt_key.split('_')[0]) and prewiggle_lpt < float(pt_key.split('_')[1]) :
+			if (prewiggle_lpt > float(pt_key.split('_')[0]) and prewiggle_lpt < float(pt_key.split('_')[1])) or (pt_key == '140_500' and prewiggle_lpt > 500):
 				muon_trigger_pt_weight = muon_trigger_dict['IsoMu24']['TightID_IsodB'][nextKey_trig][pt_key]['data']['efficiency']
 				muon_trigger_pt_weight_low = muon_trigger_dict['IsoMu24']['TightID_IsodB'][nextKey_trig][pt_key]['data']['err_low']
 				muon_trigger_pt_weight_hi = muon_trigger_dict['IsoMu24']['TightID_IsodB'][nextKey_trig][pt_key]['data']['err_hi']
+				trigger_ = True
+		# validate keys
+		if not (pt_ and eta_ and trigger_ and vtx_):
+			print 'pt_key %s, eta_key %s, trigger_key %s, vtx_key %s'%(pt_,eta_,trigger_,vtx_)
+			print 'pt = %.2f, eta = %.2f, pileup_events = %i'%(prewiggle_lpt,prewiggle_leta,pileup_events)
+			print 'muon_id_dict: '+ str(muon_id_dict['Tight'][nextKey].keys())
+			print 'muon_trigger_dict:' + str(muon_trigger_dict['IsoMu24']['TightID_IsodB'][nextKey_trig].keys() )
+			print 'vtx_key: '+ str(muon_id_dict['Tight']['vtxpt20-500'].keys() )
+			print 'eta_key: '+str(muon_id_dict['Tight']['etapt20-500'].keys() )
+
 		self.weight_lep_ID       = muon_id_vtx_weight*muon_id_eta_weight*muon_id_pt_weight
 		self.weight_lep_ID_low   = self.weight_lep_ID-self.weight_lep_ID*math.sqrt((muon_id_vtx_weight_low/muon_id_vtx_weight)**2+(muon_id_eta_weight_low/muon_id_eta_weight)**2+(muon_id_pt_weight_low/muon_id_pt_weight)**2)
 		self.weight_lep_ID_hi    = self.weight_lep_ID+self.weight_lep_ID*math.sqrt((muon_id_vtx_weight_hi/muon_id_vtx_weight)**2+(muon_id_eta_weight_hi/muon_id_eta_weight)**2+(muon_id_pt_weight_hi/muon_id_pt_weight)**2)

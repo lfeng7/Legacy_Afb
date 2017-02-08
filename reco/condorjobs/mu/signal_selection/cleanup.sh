@@ -17,4 +17,5 @@ hadd all_reco/DY3JetsToLL_M_reco.root DY3JetsToLL_M*.root
 hadd all_reco/DY4JetsToLL_M_reco.root DY4JetsToLL_M*.root
 hadd all_reco/TT_CT10_TuneZ2star_8TeV_reco.root TT_CT10_TuneZ2star_8TeV*.root
 hadd all_reco/SingleEl_Run2012ABCD_reco.root SingleEl_Run2012ABCD*.root
+hadd all_reco/SingleMu_Run2012ABCD_reco.root SingleMu_Run2012ABCD*.root
 END
