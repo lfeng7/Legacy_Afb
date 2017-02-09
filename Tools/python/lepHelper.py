@@ -87,9 +87,9 @@ class muon_helper(object):
 				muon_iso_vtx_weight = muon_iso_dict['combRelIsoPF04dBeta<012_Tight']['vtxpt20-500'][vtx_key]['data/mc']['efficiency_ratio']
 				muon_iso_vtx_weight_low = muon_iso_dict['combRelIsoPF04dBeta<012_Tight']['vtxpt20-500'][vtx_key]['data/mc']['err_low']
 				muon_iso_vtx_weight_hi = muon_iso_dict['combRelIsoPF04dBeta<012_Tight']['vtxpt20-500'][vtx_key]['data/mc']['err_hi']
-				muon_trigger_vtx_weight = muon_trigger_dict['IsoMu24']['TightID_IsodB']['VTX'][vtx_key]['data']['efficiency']
-				muon_trigger_vtx_weight_low = muon_trigger_dict['IsoMu24']['TightID_IsodB']['VTX'][vtx_key]['data']['err_low']
-				muon_trigger_vtx_weight_hi = muon_trigger_dict['IsoMu24']['TightID_IsodB']['VTX'][vtx_key]['data']['err_hi']
+				muon_trigger_vtx_weight = muon_trigger_dict['IsoMu24']['TightID_IsodB']['VTX'][vtx_key]['data/mc']['efficiency_ratio']
+				muon_trigger_vtx_weight_low = muon_trigger_dict['IsoMu24']['TightID_IsodB']['VTX'][vtx_key]['data/mc']['err_low']
+				muon_trigger_vtx_weight_hi = muon_trigger_dict['IsoMu24']['TightID_IsodB']['VTX'][vtx_key]['data/mc']['err_hi']
 				vtx_ = True
 		#eta corrections
 		for eta_key in muon_id_dict['Tight']['etapt20-500'].keys() :
@@ -100,9 +100,9 @@ class muon_helper(object):
 				muon_iso_eta_weight = muon_iso_dict['combRelIsoPF04dBeta<012_Tight']['etapt20-500'][eta_key]['data/mc']['efficiency_ratio']
 				muon_iso_eta_weight_low = muon_iso_dict['combRelIsoPF04dBeta<012_Tight']['etapt20-500'][eta_key]['data/mc']['err_low']
 				muon_iso_eta_weight_hi = muon_iso_dict['combRelIsoPF04dBeta<012_Tight']['etapt20-500'][eta_key]['data/mc']['err_hi']
-				muon_trigger_eta_weight = muon_trigger_dict['IsoMu24']['TightID_IsodB']['ETA'][eta_key]['data']['efficiency']
-				muon_trigger_eta_weight_low = muon_trigger_dict['IsoMu24']['TightID_IsodB']['ETA'][eta_key]['data']['err_low']
-				muon_trigger_eta_weight_hi = muon_trigger_dict['IsoMu24']['TightID_IsodB']['ETA'][eta_key]['data']['err_hi']
+				muon_trigger_eta_weight = muon_trigger_dict['IsoMu24']['TightID_IsodB']['ETA'][eta_key]['data/mc']['efficiency_ratio']
+				muon_trigger_eta_weight_low = muon_trigger_dict['IsoMu24']['TightID_IsodB']['ETA'][eta_key]['data/mc']['err_low']
+				muon_trigger_eta_weight_hi = muon_trigger_dict['IsoMu24']['TightID_IsodB']['ETA'][eta_key]['data/mc']['err_hi']
 				eta_ = True
 		#pt corrections
 		nextKey = ''
@@ -133,9 +133,9 @@ class muon_helper(object):
 
 		for pt_key in muon_trigger_dict['IsoMu24']['TightID_IsodB'][nextKey_trig].keys() :
 			if (prewiggle_lpt > float(pt_key.split('_')[0]) and prewiggle_lpt < float(pt_key.split('_')[1])) or (pt_key == '140_500' and prewiggle_lpt > 500):
-				muon_trigger_pt_weight = muon_trigger_dict['IsoMu24']['TightID_IsodB'][nextKey_trig][pt_key]['data']['efficiency']
-				muon_trigger_pt_weight_low = muon_trigger_dict['IsoMu24']['TightID_IsodB'][nextKey_trig][pt_key]['data']['err_low']
-				muon_trigger_pt_weight_hi = muon_trigger_dict['IsoMu24']['TightID_IsodB'][nextKey_trig][pt_key]['data']['err_hi']
+				muon_trigger_pt_weight = muon_trigger_dict['IsoMu24']['TightID_IsodB'][nextKey_trig][pt_key]['data/mc']['efficiency_ratio']
+				muon_trigger_pt_weight_low = muon_trigger_dict['IsoMu24']['TightID_IsodB'][nextKey_trig][pt_key]['data/mc']['err_low']
+				muon_trigger_pt_weight_hi = muon_trigger_dict['IsoMu24']['TightID_IsodB'][nextKey_trig][pt_key]['data/mc']['err_hi']
 				trigger_ = True
 		# validate keys
 		if not (pt_ and eta_ and trigger_ and vtx_):
