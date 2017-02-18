@@ -130,7 +130,7 @@ for ifile in allfiles:
     evt_to_run = options.evtsperjob
     tfile = ROOT.TFile(ifile)
     # Do make templates
-    print 'run options:',tfile.GetName(),sample_name,evt_start,evt_to_run
+    print 'run options:',tfile.GetName(),sample_name,evt_start,evt_to_run,options.ttbar_type
 
     # Set template class attributes
     new_template.sample_name = sample_name

@@ -26,7 +26,7 @@ def make_joblist():
     towrite = 'mv *.log logs \nrm *.tgz  *.cmd condor-*\n'
     # Loop over files
     for ifile in recos:
-        towrite += 'hadd '+outputdir+'/'+ifile[1]+' '+ifile[0]+'\n'
+        towrite += 'hadd '+outputdir+'/'+ifile[1]+' tmp/'+ifile[0]+'\n'
     fout.write(towrite)
     fout.close()
 
@@ -56,6 +56,11 @@ def LoadInputs():
 #    flist.append(['QCD_Pt-15to3000','qcd',9991674,6662.6,9940092,'qcd'])
     # signal
     flist.append(['TT_CT10_TuneZ2star_8TeV','ttbar',21675970,245.9,21560109,'ttbar'])    
+    flist.append(['TT_SC_CT10_TuneZ2star_8TeV','ttbar',21675970,245.9,21560109,'ttbar'])
+    flist.append(['TT_8TeV-mcatnlo','ttbar',21675970,245.9,21560109,'ttbar'])
+
     # data
     flist.append(['SingleEl_Run2012ABCD','data',19748])
+    flist.append(['SingleMu_Run2012ABCD','data',19748])
+
 make_joblist()

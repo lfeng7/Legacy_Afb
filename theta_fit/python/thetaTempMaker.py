@@ -121,8 +121,8 @@ class thetaTemp(object):
 		"""
 		define types of systematic variation
 		"""
-		self.systematics_vary = ['btag_eff_reweight','lepID_reweight','trigger_reweight']
-		self.systematics_fixed = ['top_pT_reweight','tracking_reweight','lepIso_reweight','pileup_reweight']
+		self.systematics_vary = [] # ['btag_eff_reweight','lepID_reweight','trigger_reweight','tracking_reweight','lepIso_reweight']
+		self.systematics_fixed = ['btag_eff_reweight','lepID_reweight','trigger_reweight','tracking_reweight','lepIso_reweight','top_pT_reweight','pileup_reweight']
 		self.systematics_all = self.systematics_fixed+self.systematics_vary
 		self.sys_versions = ['plus','minus'] # naming conventions for theta
 		self.sys_names =['up','down'] # naming coventions for legacy ttree
