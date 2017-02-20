@@ -90,6 +90,10 @@ parser.add_option('--overflow', metavar='F', type='string', action='store',
                   dest='overflow',
                   help='If you want to plot overflow bin')
 
+parser.add_option('--MCinfo', metavar='F', type='string', action='store',
+              default = 'MC_input.txt',
+                  dest='MCinfo',
+                  help='MCinfo.txt file')
 
 (options, args) = parser.parse_args()
 
@@ -134,7 +138,7 @@ def main():
     data_lumi = 19700
 
     # Get input MC and data files according to txt file
-    txt_MC = open(rundir+'/MC_input_with_bkg.txt')
+    txt_MC = open(options.MCinfo)
     mc_samples = []
     for line in txt_MC:
         items = line.split()
@@ -220,7 +224,7 @@ def main():
         nevts_gen = isample[2]
         w_scale = data_lumi*cross_section_NLO/nevts_gen 
         # here w_scale uncertainty can be implemented
-        
+
         # special normalization for QCD MC. 
         if sample_type == 'qcd':
             w_scale *=  QCD_SF
