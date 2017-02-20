@@ -7,7 +7,9 @@ import ROOT
 from optparse import OptionParser
 import os
 import glob
-from plot_tools import *
+from helper.plot_tools import overflow
+import helper.helper as helper 
+
 
 # pavetex.SetShadowColor(0)
 # Job steering
@@ -96,6 +98,8 @@ argv = []
 #canvas_title = 'CMS Private Work, 19.7 fb^{-1} at #sqrt{s} = 8 TeV'
 
 h_qcd = []
+
+QCD_SF = 0.13
 
 def main():
     global xaxis_name , fout , canvas_title, h_qcd
@@ -192,12 +196,13 @@ def main():
             if isample[0] in ifile  : mc_path = ifile   
         if mc_path == '':
             print isample[0],'cannot be found! Will skip this sample!'
-            continue
-        tmpf = ROOT.TFile(mc_path)
-        keys = tmpf.GetListOfKeys()
-        for ikey in keys:
-            if ikey.GetClassName() == 'TTree' : treename = ikey.GetName()   
+            continue   
+        treename = helper.GetTTreeName(tmpf)
         ttree_mc = tmpf.Get(treename)
+        # Get nominal correction weights
+        corr_w = helper.GetWeightNames(ttree_mc)
+        weight = '%s*%s'%(weight,corr_w)
+        print '(info) weight: %s'%weight
         # Make histogram
         hname_mc = hname+'_'+isample[0]
         if xmin!=xmax:
@@ -214,14 +219,16 @@ def main():
         cross_section_NLO = isample[3]
         nevts_gen = isample[2]
         w_scale = data_lumi*cross_section_NLO/nevts_gen 
-        # special normalization for QCD MC. Normalize to data integral
+        # here w_scale uncertainty can be implemented
+        
+        # special normalization for QCD MC. 
         if sample_type == 'qcd':
-            w_scale = data_integral/h_mc.Integral()
+            w_scale *=  QCD_SF
         h_mc.Scale(w_scale)
         print '%s, norm_w = %.3f'%(isample[0],w_scale)
 
         # Add into stack
-        icolor = GetSampleColor(sample_type)
+        icolor = helper.getColors(sample_type)
         h_mc.SetFillColor(icolor)
         if sample_type == 'qcd':
             h_mc.SetFillColor(0)
@@ -283,7 +290,7 @@ def main():
     # Make data/MC comparison plot
     leg.AddEntry(h_data,'data')
     if var != 'charge_ratio':
-        c_plot = comparison_plot_v1(mc_stack,h_data,leg,hname)
+        c_plot = helper.comparison_plot_v1(mc_stack,h_data,leg,hname)
     else :
         fout = ROOT.TFile('plots/'+hname+'_'+var+'_plots.root','recreate')        
         c_plot = ROOT.TCanvas()
@@ -311,17 +318,6 @@ def main():
     fout.Write()
     # fout.Close()
 
-def GetSampleColor(itype):
-    if itype in ['gg','w1jet','z1jet']                          : return 38
-    if itype in ['qq','signal','w2jet','z2jet']             : return 46
-    if itype in ['bck','bkg','w3jet','z3jet']               : return 41
-    if itype in ['singletop','T+x','w4jet','z4jet']         : return 41
-    if itype=='WJets'                       : return ROOT.kGreen-3
-    if itype=='tt_bkg'                      : return ROOT.kMagenta
-    if itype=='qcd'                         : return ROOT.kMagenta+2
-    if itype in ['zjets','DY']              : return ROOT.kBlue
-    return 0
-
 def GetSampleName(itype):
     if itype=='gg'                  : return 'gg/qg->t#bar{t}'
     if itype=='qq'                  : return 'q#bar{q}->t#bar{t}'
@@ -334,135 +330,7 @@ def GetSampleName(itype):
     if itype in ['zjets','DY']      : return 'z+jets'
     return 0
 
-# This is specifically for comparing the stacked MC plots with data adding residule plots too
-import math
-def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'h',logy=False):
-    global fout,var
-    prefix = 'plots'
-    # check if plotting dir is made. If not , make it now
-    if not os.path.exists(prefix):
-        os.mkdir(prefix)
-        print 'Making '+prefix
-    # Set the dir to put all plots
-    plotdir = prefix+'/'
-    fout = ROOT.TFile(plotdir+event_type+'_plots.root','recreate')
 
-    # plotting
-    c1 = ROOT.TCanvas(data_.GetName()+'_compare')
-    if logy == "log" : 
-        c1.SetLogy()
-        name = plotdir+event_type+'_compare_log.png'
-    else :
-        name = plotdir+event_type+'_compare.png'
-    # Find the max of both histograms
-    max_mc = mc_.GetMaximum()
-    max_data = data_.GetMaximum()
-    max_ = max(max_mc,max_data)*1.1
-    data_.SetMaximum(max_)
-    mc_.SetMaximum(max_)
-    # Calculating the residual of each bin
-    h_data = data_
-    if mc_.ClassName() == 'THStack':
-        h_stack = mc_.GetStack().Last() # This is the combined histogram in stack
-    else : 
-        h_stack = mc_
-    # Make residual histogram
-    h_res = ROOT.TH1D(event_type+'_residuals',';; Data/MC',h_data.GetNbinsX(),h_data.GetXaxis().GetXmin(),h_data.GetXaxis().GetXmax())
-    # h_res.GetXaxis().SetName(h_data.GetXaxis().GetName())
-    # h_res.SetXTitle(h_data.GetXaxis().GetName())
-
-    maxxdeviations = 0.0
-    for ibin in range(h_data.GetNbinsX()):
-        databin = h_data.GetBinContent(ibin)
-        mcbin = h_stack.GetBinContent(ibin)
-        # Calculate residual
-        if mcbin != 0 and databin != 0:
-            res = databin*1.0/mcbin
-            # Calculate error of residual, delta(res) = residual*sqrt(1/data+1/mc)
-            res_err = res*math.sqrt(1.0/databin+1.0/mcbin)
-            # Find maximum residual
-            maxxdeviations = max(maxxdeviations,max(abs(res+res_err-1.0),abs(res-res_err-1.0)))
-        else :
-            res = 0 ; res_err = 0
-        # Set residual histograms
-        h_res.SetBinContent(ibin,res)
-        h_res.SetBinError(ibin,res_err)
-    # print 'maxxdeviations',maxxdeviations
-    # Setup residual histograms
-    h_res.SetStats(0)
-    h_res.GetXaxis().SetLabelSize((0.05*0.72)/0.28); h_res.GetXaxis().SetTitleOffset(0.8)
-    h_res.GetYaxis().SetLabelSize((0.05*0.72)/0.28); h_res.GetYaxis().SetTitleOffset(0.4)
-    h_res.GetXaxis().SetTitleSize((0.72/0.28)*h_res.GetXaxis().GetTitleSize())
-    h_res.GetYaxis().SetTitleSize((0.72/0.28)*h_res.GetYaxis().GetTitleSize())
-    maxx = 1.0+1.1*maxxdeviations
-    minx = 1.0-1.1*maxxdeviations
-    h_res.GetYaxis().SetRangeUser(minx,maxx)
-    h_res.GetYaxis().SetNdivisions(503)
-    h_res.GetXaxis().SetTitle(xaxis_name)
-    # cosmetics
-    h_res.SetLineStyle(0)
-    h_res.SetMarkerStyle(20)
-    h_res.SetMarkerSize(0.5) 
-
-    # Some cosmetics for data
-    data_.GetYaxis().SetTitle('Events')
-    data_.GetYaxis().SetTitleOffset(1.2)
-    data_.SetMarkerStyle(20)
-    data_.SetMarkerSize(0.5)
-    data_.SetLineStyle(0)
-
-    #Build the lines that go at 1 on the residuals plots
-    xline = ROOT.TLine(h_res.GetXaxis().GetXmin(),1.0,h_res.GetXaxis().GetXmax(),1.0); xline.SetLineWidth(2); xline.SetLineStyle(2)
-    #plot stacks with data overlaid and residuals. Totally stole from Nick :)
-    c1.cd()
-    channame = event_type
-    # Make and adjust pads
-    x_histo_pad=ROOT.TPad(channame+'_x_histo_pad',channame+'_x_histo_pad',0,0.25,1,1)
-    if logy == 'log': x_histo_pad.SetLogy()
-    x_resid_pad=ROOT.TPad(channame+'_x_residuals_pad',channame+'_x_residuals_pad',0,0,1.,0.25)
-    x_histo_pad.SetCanvas(c1); x_resid_pad.SetCanvas(c1)
-    x_histo_pad.SetLeftMargin(0.16); x_histo_pad.SetRightMargin(0.05) 
-    x_histo_pad.SetTopMargin(0.11);  x_histo_pad.SetBottomMargin(0.02)
-    x_histo_pad.SetBorderMode(0)
-    x_resid_pad.SetLeftMargin(0.16); x_resid_pad.SetRightMargin(0.05)
-    x_resid_pad.SetTopMargin(0.0);   x_resid_pad.SetBottomMargin(0.3)
-    x_resid_pad.SetBorderMode(0)
-    x_resid_pad.Draw(); x_histo_pad.Draw()
-    x_histo_pad.cd(); 
-    mc_.Draw(draw_option);
-    mc_.GetYaxis().SetTitle("events")
-    mc_.GetYaxis().SetTitleOffset(1.0)
-    mc_.GetXaxis().SetLabelOffset(999)   
-    mc_.SetTitle(canvas_title)
-    data_.Draw('SAME PE1X0'); 
-    # make style of QCD sample as points
-    for item in h_qcd:
-        item.Draw('SAME')
-    # Draw data stat box
-    ROOT.gStyle.SetOptStat("e");
-    data_.SetStats(1)
-    data_.Draw('SAMEs PE1X0'); 
-    x_histo_pad.Update()
-    statbox1 = data_.FindObject("stats")
-    statbox1.SetLineColor(0)
-    statbox1.Draw('sames')
-
-    legend.SetShadowColor(0)
-    legend.SetLineColor(0)
-    legend.Draw()
-    x_resid_pad.cd(); 
-    h_res.Draw('PE1X0 '); xline.Draw()
-    h_res.GetXaxis().SetTitle(xaxis_name)
-
-    obj_title = c1.FindObject("title")
-    obj_title.SetShadowColor(0)
-    obj_title.SetLineColor(0)
-    c1.Update()    
-    # Saving
-    c1.SaveAs(name)
-    c1.Write()
-    # fout.Close()
-    return (c1)
 
 main()
 

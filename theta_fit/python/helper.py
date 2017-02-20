@@ -13,6 +13,36 @@ ZBINS = template.ZBINS
 ROOT.TH1.SetDefaultSumw2(True)
 print '(info) ROOT.TH1.SetDefaultSumw2(True)'
 
+def GetListBanches(ttree):
+    """
+    input: a ttree
+    output: List[br_names]
+    """
+    brs = ttree.GetListOfBranches()
+    return  [item.GetName() for item in br]
+
+def Check_if_nominal_weight(w_name):
+    """
+    input: a string
+    output: bool, if it is a norminal weight
+    """
+    if w_name.startwith('w_') or 'reweight' in w_name:
+        if w_name.endswith('_down') or w_name.endswith('_up') or w_name.endswith('_low') or w_name.endswith('_hi'):
+            return False
+        else:
+            return True
+    else:
+        return False 
+
+def GetWeightNames(ttree):
+    """
+    input: a ttree
+    output: a string contains all weights for quick TTree.Draw
+    """
+    all_brs = GetListBanches(ttree)
+    w_brs = [item for item in all_brs if Check_if_nominal_weight(item)]
+    return '*'.join(w_brs)
+
 def GetTTreeName(tfile):
     # Find the name of the ttree
     keys = tfile.GetListOfKeys()
