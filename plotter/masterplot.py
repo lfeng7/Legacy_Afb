@@ -75,6 +75,7 @@ plot = ""
 weight = ""
 yields = ""
 mode = ""
+verbose = ''
 
 # find the input arguments
 for i,item in enumerate(argv):
@@ -110,7 +111,7 @@ for i,item in enumerate(argv):
 	if word in ['weight']: weight = item[0]
 	if word in ['yields']: yields = item[0]
 	if word in ['mode']: mode = item[0]
-	if word in ['MCinfo']: MCinfo = item[0]
+	if word in ['mcinfo']: MCinfo = item[0]
 
 # Determine what kind of plot to make
 plotting_code = ''
@@ -163,6 +164,8 @@ if label1!="": cmd+=' --label \"%s\"'%label1
 if label2!="": cmd+=' --label2 \"%s\"'%label2
 if weight!="": cmd+=' --weight \"%s\"'%weight
 if yields!="": cmd+=' --yields %s'%yields
+if verbose!="": cmd+=' --verbose '
+
 
 # check if some key arguments are provided
 if Minx == "":

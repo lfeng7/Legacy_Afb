@@ -13,20 +13,30 @@ ZBINS = template.ZBINS
 ROOT.TH1.SetDefaultSumw2(True)
 print '(info) ROOT.TH1.SetDefaultSumw2(True)'
 
+def GetValidWeight(ttree,weights):
+    """
+    input: ttree and str ( "w1*w2*w3" )
+    output: string
+    """
+    weights = weights.split('*')
+    new_ws = [ w for w in weights if ttree.FindBranch(w)]
+    return '*'.join(new_ws)
+    
+
 def GetListBanches(ttree):
     """
     input: a ttree
     output: List[br_names]
     """
     brs = ttree.GetListOfBranches()
-    return  [item.GetName() for item in br]
+    return  [item.GetName() for item in brs]
 
-def Check_if_nominal_weight(w_name):
+def Check_if_nominal_weight(w_name,tag):
     """
     input: a string
     output: bool, if it is a norminal weight
     """
-    if w_name.startwith('w_') or 'reweight' in w_name:
+    if ('w_' in tag and  w_name.startswith('w_')) or ('w_' not in tag and 'reweight' in w_name):
         if w_name.endswith('_down') or w_name.endswith('_up') or w_name.endswith('_low') or w_name.endswith('_hi'):
             return False
         else:
@@ -39,8 +49,11 @@ def GetWeightNames(ttree):
     input: a ttree
     output: a string contains all weights for quick TTree.Draw
     """
+    blacklist = ['top_pT_reweight','GJR_reweight','CT10_reweight','cteq_reweight']
     all_brs = GetListBanches(ttree)
-    w_brs = [item for item in all_brs if Check_if_nominal_weight(item)]
+    if [item for item in all_brs if 'reweight' in item]!=[] : tag = 'reweight' 
+    else: tag = 'w_'
+    w_brs = [item for item in all_brs if Check_if_nominal_weight(item,tag) and item not in blacklist]
     return '*'.join(w_brs)
 
 def GetTTreeName(tfile):
@@ -157,7 +170,7 @@ def GetQualityPlots_MC(hist,verbose=True):
     return hist_quality
 
 def getColors(name):
-    colors = {'qq':ROOT.kRed+1,'gg':ROOT.kRed-7,'tt_bkg':ROOT.kBlue+3,'other_bkg':ROOT.kMagenta,'singleT':ROOT.kMagenta,'WJets':ROOT.kGreen-3,'qcd':ROOT.kYellow-3,'zjets':ROOT.kAzure-2 }
+    colors = {'qq':ROOT.kRed+1,'gg':ROOT.kRed-7,'ttbar':ROOT.kRed-7,'signal':ROOT.kRed-7,'tt_bkg':ROOT.kBlue+3,'other_bkg':ROOT.kMagenta,'singleT':ROOT.kMagenta,'WJets':ROOT.kGreen-3,'qcd':ROOT.kYellow-3,'zjets':ROOT.kAzure-2 }
     icolor = colors.get(name,0)
     return icolor
     
@@ -188,6 +201,8 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
     if bin_type == 'fixed':
         # print 'Making fixed bin res plot'
         h_res = ROOT.TH1D(event_type+'_residuals',';; Data/MC',h_data.GetNbinsX(),h_data.GetXaxis().GetXmin(),h_data.GetXaxis().GetXmax())
+        h_ref = ROOT.TH1D(event_type+'_reference',';; Data/MC',h_data.GetNbinsX(),h_data.GetXaxis().GetXmin(),h_data.GetXaxis().GetXmax())
+
     else:
         data_hname = data_.GetName()
         # print 'Making variable bins res plot for %s'%data_hname
@@ -288,7 +303,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
     final_hist.SetFillColor(ROOT.kBlue)
     final_hist.SetMarkerColor(final_hist.GetFillColor())
     final_hist.SetFillStyle(3002)
-    final_hist.Draw('SAMEs E2')
+    #final_hist.Draw('SAMEs E2')
     # Draw data points 
     data_.Draw('SAME PE1X0'); 
 
@@ -322,7 +337,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
     latex2.SetTextFont(22)
     latex2.SetTextSize(0.05587301);
     latex2.SetLineWidth(2);
-    latex2.DrawLatex(-0.8250709,2726.119, "e+jets")
+#    latex2.DrawLatex(-0.8250709,2726.119, "e+jets")
 
     x_resid_pad.cd(); 
     h_res.Draw('PE1X0 '); xline.Draw()

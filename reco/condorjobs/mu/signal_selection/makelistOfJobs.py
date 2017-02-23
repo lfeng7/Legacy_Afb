@@ -62,7 +62,7 @@ def LoadInputs():
     # signal
     flist.append(['TT_CT10_TuneZ2star_8TeV','ttbar',21675970,245.9,21560109,'ttbar'])    
     flist.append(['TT_SC_CT10_TuneZ2star_8TeV','ttbar',21675970,245.9,21560109,'ttbar'])
-    flist.append(['TT_8TeV-mcatnlo','ttbar',21675970,245.9,21560109,'ttbar'])
+    flist.append(['TT_8TeV-mcatnlo','ttbar',6824179904,245.9,6824179904,'ttbar'])
     # data
     flist.append(['SingleEl_Run2012ABCD','data',19748])
     flist.append(['SingleMu_Run2012ABCD','data',19748])
