@@ -19,6 +19,8 @@ parser.add_argument('-nevts', type=int, default=1000, help='nevts to run on each
 parser.add_argument('-fixed', help='use fixed binning', action='store_true')
 parser.add_argument('-verbose', help='if verbose', action='store_true')
 parser.add_argument('-mc_data', help='use mc data sample for theoretical prediction.', action='store_true')
+parser.add_argument('-top_weight', help='use top_pT_reweighting', action='store_true')
+
 
 args = parser.parse_args()
 
@@ -42,9 +44,9 @@ def bool_to_str(var):
     else:
         return 'false'
 
-print 'options: thetaTemp(outputName=%s, use_smoothed_temp=%s, bin_type=%s, use_MC_Data=%s, MC_info=%s)'%(output_name,bool_to_str(args.smoothed),bin_type,bool_to_str(args.mc_data),args.MC_info)
+print 'options: thetaTemp(outputName=%s, use_smoothed_temp=%s, bin_type=%s, use_MC_Data=%s,top_weight=%s, MC_info=%s)'%(output_name,bool_to_str(args.smoothed),bin_type,bool_to_str(args.mc_data),bool_to_str(args.top_weight), args.MC_info)
 
-self = thetaTempMaker.thetaTemp(outputName=output_name, inputFile=inputfile, isTTree=(not args.smoothed), txtfile=args.MC_info, bin_type=bin_type, use_MC_DATA=args.mc_data, verbose = args.verbose, nevts=args.nevts)
+self = thetaTempMaker.thetaTemp(outputName=output_name, inputFile=inputfile, isTTree=(not args.smoothed), txtfile=args.MC_info, bin_type=bin_type, use_MC_DATA=args.mc_data, top_weight=args.top_weight, verbose = args.verbose, nevts=args.nevts)
 self.main()
 print 'All finished.'
 
