@@ -16,7 +16,7 @@ class thetaTemp(object):
 	Take a root file w/ ttree (for Data) or smoothed 3D templates (for MC) 
 	and create a single root file with all templates 
 	"""
-	def __init__(self, outputName, inputFile, isTTree=False, txtfile=None, use_MC_DATA=False, top_reweight=False, verbose = False, bin_type = 'fixed', nevts = -1):
+	def __init__(self, outputName, inputFile, lep_type, isTTree=False, txtfile=None, use_MC_DATA=False, top_reweight=False, use_sys = True, verbose = False, bin_type = 'fixed', nevts = -1):
 		"""
 		inputFile is a list of path of input template root files (for ttree) or a single file for MC
 		outputName is the name for output thetaTemp.root file
@@ -38,6 +38,8 @@ class thetaTemp(object):
 		self.bin_type = bin_type
 		self.use_MC_DATA =use_MC_DATA
 		self.top_reweight = top_reweight
+		self.lep_type = lep_type
+		self.use_sys = use_sys
 		self.AFB_sigma=1.0 # one sigma deviation of AFB from zero
 		if txtfile is None:
 			txtfile = 'MC_input_with_bkg.txt'
@@ -57,6 +59,7 @@ class thetaTemp(object):
 			self.GetWeights()
 			# Loop over all processes, e.g., wjets, gg etc
 			for key,value in self.process_files.iteritems():
+				print '###############################################################'
 				print '\n(info) Begin process %s samples.'%key
 				self.TTtreeToTemplates(ttree_file=value, process_name=key)
 			self.get_rate_templates()
@@ -122,10 +125,23 @@ class thetaTemp(object):
 		"""
 		define types of systematic variation
 		"""
-		self.systematics_vary = [] # ['btag_eff_reweight','lepID_reweight','trigger_reweight','tracking_reweight','lepIso_reweight']
-		self.systematics_fixed = ['btag_eff_reweight','lepID_reweight','trigger_reweight','tracking_reweight','lepIso_reweight','pileup_reweight']
+		if self.lep_type == 'mu':
+			if self.use_sys:
+				self.systematics_vary = ['btag_eff_reweight','lepID_reweight','trigger_reweight','tracking_reweight','lepIso_reweight']
+				self.systematics_fixed = ['pileup_reweight']
+			else:
+				self.systematics_vary = []
+				self.systematics_fixed = ['btag_eff_reweight','lepID_reweight','trigger_reweight','tracking_reweight','lepIso_reweight','pileup_reweight']
+                elif self.lep_type == 'el':
+                        if self.use_sys:
+                                self.systematics_vary = ['btag_eff_reweight','lepID_reweight','trigger_reweight','tracking_reweight','lepIso_reweight']
+                                self.systematics_fixed = ['tracking_reweight','lepIso_reweight','pileup_reweight']
+                        else:
+                                self.systematics_vary = []
+                                self.systematics_fixed = ['btag_eff_reweight','lepID_reweight','trigger_reweight','tracking_reweight','lepIso_reweight','pileup_reweight']
 		if self.top_reweight:
 			self.systematics_fixed.append('top_pT_reweight')
+
 		self.systematics_all = self.systematics_fixed+self.systematics_vary
 		self.sys_versions = ['plus','minus'] # naming conventions for theta
 		self.sys_names =['up','down'] # naming coventions for legacy ttree

@@ -1,22 +1,22 @@
 
 # /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/W1JetsToLNu_TuneZ2Star_8TeV_selected.root
-python ./tardir/top_reco.py --lep_type mu --PDF_name ct10  --inputfiles /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/W1JetsToLNu_TuneZ2Star_8TeV_selected.root --evtstart 0 --evtsperjob 2000 
+python ./tardir/top_reco.py --lep_type mu --PDF_name cteq  --inputfiles /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/W1JetsToLNu_TuneZ2Star_8TeV_selected.root --evtstart 0 --evtsperjob 2000 
 
 # /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/W2JetsToLNu_TuneZ2Star_8TeV_selected.root
-python ./tardir/top_reco.py --lep_type mu --PDF_name ct10  --inputfiles /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/W2JetsToLNu_TuneZ2Star_8TeV_selected.root --evtstart 0 --evtsperjob 2000 
+python ./tardir/top_reco.py --lep_type mu --PDF_name cteq  --inputfiles /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/W2JetsToLNu_TuneZ2Star_8TeV_selected.root --evtstart 0 --evtsperjob 2000 
 
 # /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/W3JetsToLNu_TuneZ2Star_8TeV_selected.root
-python ./tardir/top_reco.py --lep_type mu --PDF_name ct10  --inputfiles /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/W3JetsToLNu_TuneZ2Star_8TeV_selected.root --evtstart 0 --evtsperjob 2000 
+python ./tardir/top_reco.py --lep_type mu --PDF_name cteq  --inputfiles /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/W3JetsToLNu_TuneZ2Star_8TeV_selected.root --evtstart 0 --evtsperjob 2000 
 
 # /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/DY1JetsToLL_M_selected.root
-python ./tardir/top_reco.py --lep_type mu --PDF_name ct10  --inputfiles /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/DY1JetsToLL_M_selected.root --evtstart 0 --evtsperjob 2000 
+python ./tardir/top_reco.py --lep_type mu --PDF_name cteq  --inputfiles /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/DY1JetsToLL_M_selected.root --evtstart 0 --evtsperjob 2000 
 
 # /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/DY2JetsToLL_M_selected.root
-python ./tardir/top_reco.py --lep_type mu --PDF_name ct10  --inputfiles /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/DY2JetsToLL_M_selected.root --evtstart 0 --evtsperjob 2000 
+python ./tardir/top_reco.py --lep_type mu --PDF_name cteq  --inputfiles /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/DY2JetsToLL_M_selected.root --evtstart 0 --evtsperjob 2000 
 
 # /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/DY3JetsToLL_M_selected.root
-python ./tardir/top_reco.py --lep_type mu --PDF_name ct10  --inputfiles /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/DY3JetsToLL_M_selected.root --evtstart 0 --evtsperjob 2000 
+python ./tardir/top_reco.py --lep_type mu --PDF_name cteq  --inputfiles /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/DY3JetsToLL_M_selected.root --evtstart 0 --evtsperjob 2000 
 
 # /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/DY4JetsToLL_M_selected.root
-python ./tardir/top_reco.py --lep_type mu --PDF_name ct10  --inputfiles /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/DY4JetsToLL_M_selected.root --evtstart 0 --evtsperjob 2000 
-python ./tardir/top_reco.py --lep_type mu --PDF_name ct10  --inputfiles /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/DY4JetsToLL_M_selected.root --evtstart 2000 --evtsperjob 2000 
+python ./tardir/top_reco.py --lep_type mu --PDF_name cteq  --inputfiles /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/DY4JetsToLL_M_selected.root --evtstart 0 --evtsperjob 2000 
+python ./tardir/top_reco.py --lep_type mu --PDF_name cteq  --inputfiles /uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/mu/all/DY4JetsToLL_M_selected.root --evtstart 2000 --evtsperjob 2000 

@@ -22,7 +22,7 @@ def make_joblist():
         if ifile not in all_files: continue
         print 'making jobs for',ifile
         if 'mcatnlo' in ifile: pdf_name = 'cteq'
-        else: pdf_name = 'ct10'
+        else: pdf_name = 'cteq'
         towrite += '\n# '+ifile+'\n'
         tmpfile = ROOT.TFile(ifile)
         nev = tmpfile.Get('selected').GetEntries()
