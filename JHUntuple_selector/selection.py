@@ -244,6 +244,7 @@ def selection(rootfiles):
         elif options.selection_type == 'qcd':
             btag_cut = 1
             el_postfix = 'Loose'
+	postfix = 'Loose'
     else:
         btag_cut = 2
         el_postfix = 'Loose'
@@ -687,16 +688,19 @@ def selection(rootfiles):
                 phiscale  = AK5JECphiScale_hndl.product()
                 matchedJetEta = AK5JECmatchedJetEta_hndl.product()
                 # get corrected jets p4
-                new_jets_p4 = jetHelper.adjustJEC(jets_p4,jecuncpos,jecuncneg,corr,ptsmear,etascale,phiscale,matchedJetEta,jec_type=parser.JEC_type)
+		new_jets_p4 = []
+		for i in range(len(jets_p4)):
+	                tmp_p4 = jetHelper.adjustJEC(jets_p4[i],jecuncpos[i],jecuncneg[i],corr[i],ptsmear[i],etascale[i],phiscale[i],matchedJetEta[i],jec_type=options.JEC_type)
+			new_jets_p4.append(tmp_p4)
                 jets_p4 = new_jets_p4
 
         jets_cand = []
         for i in range(len(jets_p4)):
-            if jets_p4[i].pt()>30 and abs(jets_p4[i].eta())<2.5: 
+            if jets_p4[i].Pt()>30 and abs(jets_p4[i].Eta())<2.5: 
                 if options.mcordata == 'mc' : 
-                    jets_cand.append((jets_p4[i].pt(),jets_p4[i],jets_csv[i],jets_PartonFlavor[i]))
+                    jets_cand.append((jets_p4[i].Pt(),jets_p4[i],jets_csv[i],jets_PartonFlavor[i]))
                 elif options.mcordata == 'data' :
-                    jets_cand.append((jets_p4[i].pt(),jets_p4[i],jets_csv[i]))
+                    jets_cand.append((jets_p4[i].Pt(),jets_p4[i],jets_csv[i]))
                 else :
                     print 'The sample is neither mc or data! Serious bug!'
                     break
@@ -728,7 +732,7 @@ def selection(rootfiles):
             icsv = ijet[2]
             ip4 = ijet[1]
             jets_csv_vec.push_back(icsv)
-            jets_pt.push_back(ip4.pt()); jets_eta.push_back(ip4.eta()); jets_phi.push_back(ip4.phi()); jets_mass.push_back(ip4.mass())                        
+            jets_pt.push_back(ip4.Pt()); jets_eta.push_back(ip4.Eta()); jets_phi.push_back(ip4.Phi()); jets_mass.push_back(ip4.M())                        
             if options.mcordata == 'mc' :
                 iflavor = ijet[3]
                 jets_flavor.push_back(iflavor)

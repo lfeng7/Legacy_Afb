@@ -5,7 +5,7 @@ import glob
 evtsperjob =  2000
 #prepend = '/uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/all/'
 prepend = '/uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/el/all/'
-postfix = '_selected.root'
+postfix = '.root'
 
 def make_joblist():
     fout = open('ana.listOfJobs','w')
@@ -13,18 +13,19 @@ def make_joblist():
     LoadInputs()
     selected_files = [prepend+ifile[0]+postfix for ifile in flist]
 
-    all_files = glob.glob('%s/*%s'%(prepend,postfix))
+    all_files = glob.glob('%s/*.root'%prepend)
     print all_files
 
     towrite = ''
     # Loop over files
-    for ifile in selected_files:
-        if ifile not in all_files: continue
+    for ifile in all_files:
+#        if ifile not in all_files: continue
         print 'making jobs for',ifile
         towrite += '\n# '+ifile+'\n'
         tmpfile = ROOT.TFile(ifile)
         nev = tmpfile.Get('selected').GetEntries()
         evtstart = 0
+	print '%i events'%nev
         while evtstart<nev:
             towrite += 'python ./tardir/top_reco.py --inputfiles '+ifile+' --evtstart '+str(evtstart)+' --evtsperjob '+str(evtsperjob)+'\n'
             evtstart += evtsperjob

@@ -18,8 +18,8 @@ def make_joblist():
 
     towrite = ''
     # Loop over files
-    for ifile in selected_files:
-        if ifile not in all_files: continue
+    for ifile in all_files:
+        #if ifile not in all_files: continue
         print 'making jobs for',ifile
         if 'mcatnlo' in ifile: pdf_name = 'cteq'
         else: pdf_name = 'cteq'
