@@ -5,6 +5,7 @@ import os
 import copy
 import ROOT
 import numpy as np
+import pandas as pd
 from collections import OrderedDict
 execfile("helper.py")
 execfile("common.py")
@@ -15,6 +16,9 @@ theta fitting code
 """
 epsilon = 1E-8
 
+def print_dist(dist):
+    print str(pd.DataFrame(dist).T)
+
 class thetaFitter(object):
     """docstring for thetaFitter"""
     def __init__(self, AFB_sigma=1.0):
@@ -23,10 +27,11 @@ class thetaFitter(object):
         self.AFB_CENTRAL_VALUE = 0
         self.AFB_sigma = AFB_sigma
 
-        self.shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight']
-	self.shape_sys_gauss_white = []
-        #self.shape_sys_gauss_white = 'all'	
-        self.flat_param = ['AFB','R_qq','R_WJets','R_other_bkg','qcd_rate','lumi']
+        self.shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight','tracking_reweight','lepIso_reweight','lumi']
+        self.shape_sys_gauss_white = []
+        self.sys_list = ['Nominal','btag_eff_reweight','trigger_reweight']
+        self.shape_sys_gauss_white = 'all'	
+        self.flat_param = ['AFB','R_qq','R_WJets','R_other_bkg','qcd_rate']
         self.obs = 'f_minus'
         self.pois = ['AFB','R_qq','R_WJets','R_other_bkg','qcd_rate']
 
@@ -152,6 +157,10 @@ class thetaFitter(object):
         if useToys:
             self.doToys()
 
+        # do sys eval
+        if do_sys:
+            self.eval_sys(self.model,self.shape_sys_gauss)
+
         # Save post fit hists to root file
         self.savePostFit(self.postfit_histos)
 
@@ -219,7 +228,7 @@ class thetaFitter(object):
         """
         Filter out any histgrams in black list
         """
-	if self.shape_sys_gauss_white == 'all': return True
+        if self.shape_sys_gauss_white == 'all': return True
         blacklist = [item for item in self.shape_sys_gauss if item not in self.shape_sys_gauss_white]
         toReturn = True
         for item in blacklist:
@@ -229,11 +238,9 @@ class thetaFitter(object):
 
     def report_model(self,_model,txt_output):
         dist = _model.distribution.distributions
-        str_out = ''
-        for key in dist:
-            str_out += '%s:%s\n'%(key,str(dist[key]))
-        print str_out
-        txt_output.write(str_out)
+	self.dist_df = pd.DataFrame(dist)
+        print str(self.dist_df.T) 
+        txt_output.write(str(self.dist_df))
         print '(info) Done report_model.'
         
 
@@ -341,6 +348,7 @@ class thetaFitter(object):
         output: write all kinds of mle fit results into output txt file
         """
         str_result = ''
+        fit_result_dict = {}
         n = len(result[sp]['__nll'])
         # fit parameters of interests
         for p in self.pois:
@@ -409,17 +417,23 @@ class thetaFitter(object):
         prefit_R = '(info) R_process prefit\n'
         prefit_R += self.R_proc_to_str(self.R_process_MC)
 
+        to_return = []
         # Next add post fit R_process from mle fit results
         # >>> self.parVals['']['R_qq'][0] = (0.805501721611904, 0.12242412236195577)
         postfit_R = '\n(info) R_process postfit from MLE output\n'
-        fit_AFB_mean = self.parVals['']['AFB'][0][0]*self.sigma_values['AFB']
-        fit_AFB_err = self.parVals['']['AFB'][0][1]*self.sigma_values['AFB']
+        fit_AFB_mean = result['']['AFB'][0][0]*self.sigma_values['AFB']
+        fit_AFB_err = result['']['AFB'][0][1]*self.sigma_values['AFB']
         postfit_R += 'AFB = %.3f +/- %.3f\n\n'%(fit_AFB_mean,fit_AFB_err)
         R_tt,R_tt_err_sq = 1.,0.
         fit_R = {}
         temp_str = {}
+
+        fit_result_dict['AFB'] = fit_AFB_mean
+        fit_result_dict['AFB_err'] = fit_AFB_err 
+
+        to_return += [fit_AFB_mean,fit_AFB_err]
         for key,val in self.R_process_MC.iteritems():
-            param_name = [par for par in self.parVals[''] if key in par]
+            param_name = [par for par in result[''] if key in par]
             if param_name : 
                 param_name = param_name[0]
             else:
@@ -430,12 +444,17 @@ class thetaFitter(object):
             # e.g., R_qq_MC = 0.067, fit 'R_qq' = 0.8 +/- 0.12, sigma_Rqq = 0.8
             # fianl fit R_qq_fit = 0.067(1+0.8*0.8) +/- 0.067*(0.12*0.8)
             fit_R_mean = self.R_postfit[key]
-            fit_R_err  = val*(self.parVals[''][param_name][0][1]*self.sigma_values[param_name])
+            fit_R_err  = val*(result[''][param_name][0][1]*self.sigma_values[param_name])
             temp_str[key] = '%s = %.3f +/- %.3f\n'%(param_name,fit_R_mean,fit_R_err)
             fit_R[key] = [fit_R_mean,fit_R_err]
             if 'qq' not in key:
                 R_tt -= fit_R_mean
                 R_tt_err_sq += fit_R_err*fit_R_err
+            # Add into a dict
+            fit_result_dict[param_name] = fit_R_mean
+            fit_result_dict['%s_err'%param_name] = fit_R_err
+            # add return
+            to_return += [fit_R_mean,fit_R_err]
 
         R_tt_err = numpy.sqrt(R_tt_err_sq)
         R_qq = fit_R['qq'][0]; R_qq_err = fit_R['qq'][1]
@@ -443,6 +462,15 @@ class thetaFitter(object):
         R_gg_err = numpy.sqrt(  numpy.power(R_gg*R_tt_err/R_tt,2)+numpy.power(R_tt*R_qq_err,2) )
         temp_str['gg'] = 'R_gg = %.3f +/- %.3f\n'%( R_gg,R_gg_err )
         temp_str['tt'] = 'R_tt = %.3f +/- %.3f\n'%( R_tt,R_tt_err )
+
+        fit_result_dict['R_gg'] =  R_gg
+        fit_result_dict['R_gg_err'] = R_gg_err
+        fit_result_dict['R_tt'] = R_tt
+        fit_result_dict['R_tt_err'] = R_tt_err
+
+        # add return
+        to_return += [R_gg,R_gg_err,R_tt,R_tt_err]
+
         # Insert fit results with same order as counter
         for key in self.R_process_MC:
             postfit_R += temp_str[key]
@@ -452,6 +480,41 @@ class thetaFitter(object):
         print str_result
         self.txtfile.write(str_result)
         print '(info) Done mle_result_print'
+
+        # Make a pandas dataframe      
+        return pd.Series(fit_result_dict)
+
+
+    def eval_sys(self,model,sys_list):
+        # find all legit sys in current model
+        new_prior = self.model.distribution.copy()
+        all_par = new_prior.get_parameters()
+        sys_list += ['Nominal']
+        sys_list = [item for item in sys_list if item in all_par or item=='Nominal']
+        all_sys = [item for item in all_par if item in self.shape_sys_gauss]
+        print '(info) all sys to eval are:',sys_list
+        # loop over all sys, turn on each at a time, and do mle fit, write result in csv
+        sys_results = {}
+
+        # turn off all but the sys in the white list
+        for i,p in enumerate(sys_list):
+            new_prior = self.model.distribution.copy()
+            tmp_list = [(i+1)*1.0]
+            for item in all_sys:
+                if item != p:
+                    new_prior.set_distribution(item,typ='gauss',mean=0.0,width=0.0,range=[0.0,0.0])
+            # do mle fit
+            print '(info) MLE for sys %s'%p
+            print_dist(new_prior.distributions)
+            parVals = mle(model, 'data', 1,nuisance_constraint=new_prior,signal_process_groups = {'': [] },options = self.theta_options) 
+            sys_results[p] = self.mle_result_print(parVals)
+
+        # make a dataframe, print out, and save as csv
+        sys_df = pd.DataFrame(sys_results)
+        self.sys_df = sys_df
+        print str(sys_df.round(4).T)
+        sys_df.to_csv('sys_table.csv')
+	# calculate sys uncertainty, sigma_poi_sys =  sqrt(sigma_poi_include_sys^2-sigma_poi_nom^2)
 
     def mleFit(self,model):
         """
@@ -463,6 +526,7 @@ class thetaFitter(object):
         options.set('global','debug','True')
         options.set('minimizer','strategy','robust')
         options.set('minimizer','minuit_tolerance_factor','10')
+
 
         # Do mle fit here
         """
@@ -717,6 +781,10 @@ if __name__ == '__main__':
         useToys = True
     else:
         useToys = False
+    if 'sys' in argv:
+        do_sys = True
+    else:
+        do_sys = False
 
     # create a new class instance
     self = thetaFitter(AFB_sigma=AFB_sigma)
