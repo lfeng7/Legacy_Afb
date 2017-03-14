@@ -27,11 +27,11 @@ class thetaFitter(object):
         self.AFB_CENTRAL_VALUE = 0
         self.AFB_sigma = AFB_sigma
 
-        self.shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight','tracking_reweight','lepIso_reweight','lumi']
+        self.shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight','tracking_reweight','lepIso_reweight']
         self.shape_sys_gauss_white = []
         self.sys_list = ['Nominal','btag_eff_reweight','trigger_reweight']
         self.shape_sys_gauss_white = 'all'	
-        self.flat_param = ['AFB','R_qq','R_WJets','R_other_bkg','qcd_rate']
+        self.flat_param = ['AFB','R_qq','R_WJets','R_other_bkg','qcd_rate','lumi']
         self.obs = 'f_minus'
         self.pois = ['AFB','R_qq','R_WJets','R_other_bkg','qcd_rate']
 
@@ -160,9 +160,9 @@ class thetaFitter(object):
         # do sys eval
         if do_sys:
             self.eval_sys(self.model,self.shape_sys_gauss)
-
-        # Save post fit hists to root file
-        self.savePostFit(self.postfit_histos)
+        else:
+            # Save post fit hists to root file
+            self.savePostFit(self.postfit_histos)
 
         # Write as html+
         report.write_html('%s/htmlout'%self.outdir)
@@ -397,6 +397,7 @@ class thetaFitter(object):
                     else:
                         res = result[sp][p][i]
                     str_result += " %5.3f\n"%res
+                    fit_result_dict['chi2'] = res
                 else:
                     # This is the cov matrix
                     cov_matrix = result[sp][p][i]
@@ -420,6 +421,13 @@ class thetaFitter(object):
         to_return = []
         # Next add post fit R_process from mle fit results
         # >>> self.parVals['']['R_qq'][0] = (0.805501721611904, 0.12242412236195577)
+        # First recalculate post fit R_proc
+        parameter_values = {}
+        for p in self.model.get_parameters([]):
+            parameter_values[p] = result[''][p][0][0]
+	histos = evaluate_prediction(self.model,parameter_values,include_signal = False)
+	R_postfit = self.simple_counter(histos)
+
         postfit_R = '\n(info) R_process postfit from MLE output\n'
         fit_AFB_mean = result['']['AFB'][0][0]*self.sigma_values['AFB']
         fit_AFB_err = result['']['AFB'][0][1]*self.sigma_values['AFB']
@@ -443,7 +451,7 @@ class thetaFitter(object):
             # R_process = R_process_MC*(1+N_sigma*sigma)
             # e.g., R_qq_MC = 0.067, fit 'R_qq' = 0.8 +/- 0.12, sigma_Rqq = 0.8
             # fianl fit R_qq_fit = 0.067(1+0.8*0.8) +/- 0.067*(0.12*0.8)
-            fit_R_mean = self.R_postfit[key]
+            fit_R_mean = R_postfit[key]
             fit_R_err  = val*(result[''][param_name][0][1]*self.sigma_values[param_name])
             temp_str[key] = '%s = %.3f +/- %.3f\n'%(param_name,fit_R_mean,fit_R_err)
             fit_R[key] = [fit_R_mean,fit_R_err]
@@ -482,7 +490,7 @@ class thetaFitter(object):
         print '(info) Done mle_result_print'
 
         # Make a pandas dataframe      
-        return pd.Series(fit_result_dict)
+        return pd.Series(fit_result_dict), histos
 
 
     def eval_sys(self,model,sys_list):
@@ -498,6 +506,7 @@ class thetaFitter(object):
 
         # turn off all but the sys in the white list
         for i,p in enumerate(sys_list):
+            print '\n################ Evaluate fit result for %s ############\n'%p
             new_prior = self.model.distribution.copy()
             tmp_list = [(i+1)*1.0]
             for item in all_sys:
@@ -506,8 +515,11 @@ class thetaFitter(object):
             # do mle fit
             print '(info) MLE for sys %s'%p
             print_dist(new_prior.distributions)
-            parVals = mle(model, 'data', 1,nuisance_constraint=new_prior,signal_process_groups = {'': [] },options = self.theta_options) 
-            sys_results[p] = self.mle_result_print(parVals)
+            parVals = mle(model, 'data', 1,nuisance_constraint=new_prior,signal_process_groups = {'': [] },options = self.theta_options,chi2=True) 
+            sys_results[p],postfit_histo = self.mle_result_print(parVals)
+            if p=='Nominal':
+                 print '(info) Save nominal histos into root file'
+                 self.savePostFit(postfit_histo)
 
         # make a dataframe, print out, and save as csv
         sys_df = pd.DataFrame(sys_results)
