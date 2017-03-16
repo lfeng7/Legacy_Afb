@@ -27,11 +27,12 @@ class thetaFitter(object):
         self.AFB_CENTRAL_VALUE = 0
         self.AFB_sigma = AFB_sigma
 
-        self.shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight','tracking_reweight','lepIso_reweight']
+        self.shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight','tracking_reweight','lepIso_reweight','Pdf_weights','JER','JES']
         self.shape_sys_gauss_white = []
         self.sys_list = ['Nominal','btag_eff_reweight','trigger_reweight']
         self.shape_sys_gauss_white = 'all'	
         self.flat_param = ['AFB','R_qq','R_WJets','R_other_bkg','qcd_rate','lumi']
+        self.non_inf_sys = ['JER','JES','Pdf_weights']
         self.obs = 'f_minus'
         self.pois = ['AFB','R_qq','R_WJets','R_other_bkg','qcd_rate']
 
@@ -240,7 +241,7 @@ class thetaFitter(object):
         dist = _model.distribution.distributions
 	self.dist_df = pd.DataFrame(dist)
         print str(self.dist_df.T) 
-        txt_output.write(str(self.dist_df))
+        txt_output.write(str(self.dist_df.T))
         print '(info) Done report_model.'
         
 
@@ -339,7 +340,10 @@ class thetaFitter(object):
         for p in self.model.distribution.get_parameters():
             d = self.model.distribution.get_distribution(p)
             if d['width'] == 1.0: # i.e, non-flat prior parameters
-                self.model.distribution.set_distribution_parameters(p, range = [-inf, inf])
+                if p in self.non_inf_sys:
+                    self.model.distribution.set_distribution_parameters(p, range = [-5.0, 5.0])
+                else:
+                    self.model.distribution.set_distribution_parameters(p, range = [-inf, inf])
         print '(info) Done resetModel for finer control of model parameter priors.'
 
     def mle_result_print(self,result,sp='',n=None):
@@ -547,28 +551,13 @@ class thetaFitter(object):
         parVals = mle(model, 'data', 1,with_covariance=True, signal_process_groups = {'': [] },chi2=True,options = options)
         mle_LL = parVals['']['__nll'][0] 
         mle_chi2 = parVals['']['__chi2'][0]
-
-        # Get 1sigma and 2 sigma interval of AFB
-        afb_interval = pl_interval(model, 'data', 1,signal_process_groups = {'': [] }, parameter='AFB')
-        afb_interval = afb_interval['']
-        str_write = 'profile likelihood AFB significance interval:\n'
-        for key,value in afb_interval.iteritems():
-            str_write += 'confidence level = %.3f\n'%key 
-            for item in value: 
-                if key==0.0:
-                    str_write += '[%.3f]\n'%item
-                else:
-                    str_write += '[%.3f,%.3f]\n'%(item[0],item[1])
-
-        self.txtfile.write(str_write)
-        print str_write
-
+        
         # NLL scan for AFB
-        mle_nllscan = nll_scan(model, 'data', 1, npoints=100, range=[-AFB_range, AFB_range], signal_process_groups = {'': [] }, parameter='AFB',adaptive_startvalues=False)
-        mle_nllscan = mle_nllscan[''][0]
+        #mle_nllscan = nll_scan(model, 'data', 1, npoints=100, range=[-AFB_range, AFB_range], signal_process_groups = {'': [] }, parameter='AFB',adaptive_startvalues=False)
+        #mle_nllscan = mle_nllscan[''][0]
         #print mle_nllscan 
         # plot nll_scan result
-        plotutil.plot(mle_nllscan,'AFB(sigma=%.1f)'%self.AFB_sigma,'NLL','%s/AFB_nll.png'%self.outdir)
+        #plotutil.plot(mle_nllscan,'AFB(sigma=%.1f)'%self.AFB_sigma,'NLL','%s/AFB_nll.png'%self.outdir)
 
         # Get postfit histo object for later plotting
         parameter_values = {}
@@ -787,7 +776,7 @@ if __name__ == '__main__':
         AFB_sigma = 1.0
     else:
         AFB_sigma=float(argv.pop(0))
-    AFB_range = 2.0/AFB_sigma
+    AFB_range = 1.5/AFB_sigma
     argv = ' '.join(argv)
     if 'toy' in argv:
         useToys = True

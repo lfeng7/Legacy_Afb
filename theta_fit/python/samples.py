@@ -55,6 +55,10 @@ class samples(object):
         output: a sample_info object associate with that sample
         """
         key = [ikey for ikey in self.info if '%s.root'%ikey in filepath ] # this is hardcoded due to the existence of T_t anf T_tW
+        # accomodate other form of keys, such as angles_TT_8TeV-mcatnlo_bkg__JES__plus.root
+        if len(key)==0:
+            key = [ikey for ikey in self.info if '%s'%ikey in filepath ] 
+
         if len(key)==0:
             if self.verbose:
                 print 'Cannot find information for file %s in txt file %s! Will stop.'%(filepath,self.txtfile)
