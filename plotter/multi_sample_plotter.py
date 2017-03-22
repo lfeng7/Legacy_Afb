@@ -168,7 +168,7 @@ for i,ifile in enumerate(files):
     newhist1.GetXaxis().SetTitleSize(0.04)
     if scale:
         newhist1.Scale(1/newhist1.Integral())
-        newhist1.SetMinimum(0)
+    newhist1.SetMinimum(0)
     ymax = max(ymax,newhist1.GetMaximum())
     newhist1.SetTitle(title)
     hists.append(newhist1)

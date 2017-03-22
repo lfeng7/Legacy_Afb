@@ -157,7 +157,7 @@ parser.add_option('--makeplots', metavar='F', type='string', action='store',
 parser.add_option('--JEC', metavar='F', type='int', action='store',
                   default = 0,
                   dest='JEC_type',
-                  help='type of JEC/JES corrections. 0=nominal,1=JEC_up,2=JEC_down,3=JER_up,4=JER_down')
+                  help='type of JES/JES corrections. 0=nominal,1=JES_up,2=JES_down,3=JER_up,4=JER_down')
 
 (options, args) = parser.parse_args()
 
