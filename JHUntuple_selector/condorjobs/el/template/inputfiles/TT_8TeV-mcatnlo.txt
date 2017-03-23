@@ -1,4 +1,4 @@
-/eos/uscms/store/user/eminizer/TT_8TeV-mcatnlo/TTBar_MCatNLO_v3/160608_184637/0000/*.root
+/eos/uscms/store/user/canyou/run1_ntuples/TT_8TeV-mcatnlo/TTBar_MCatNLO_v3/160608_184637/0000/*.root
 jhutester_numEvent10000_1.root
 jhutester_numEvent10000_10.root
 jhutester_numEvent10000_100.root

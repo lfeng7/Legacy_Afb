@@ -1,4 +1,4 @@
-/eos/uscms/store/user/eminizer/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/Tbar_t_v1/151116_191800/0000/*.root
+/eos/uscms/store/user/canyou/run1_ntuples/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/Tbar_t_v1/151116_191800/0000/*.root
 jhutester_numEvent10000_1.root
 jhutester_numEvent10000_10.root
 jhutester_numEvent10000_11.root

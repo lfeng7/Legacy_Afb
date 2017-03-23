@@ -244,7 +244,7 @@ def selection(rootfiles):
         elif options.selection_type == 'qcd':
             btag_cut = 1
             el_postfix = 'Loose'
-	postfix = 'Loose'
+        postfix = 'Loose'
     else:
         btag_cut = 2
         el_postfix = 'Loose'
@@ -264,13 +264,12 @@ def selection(rootfiles):
     event_type = options.evtType
 
     # Make a output root file
-    if options.grid == 'yes' :
-        print '\nRunning in grid mode. Creating outputfile in current dir\n'
-        outname = gridsaving([],event_type,f_index,'recreate')
-    else :
-        print '\nRunning in interactive mode. Creating outputfile to the output dir \n'
-        outname = saving([],event_type,f_index,'recreate')
-    fout = ROOT.TFile(outname,'update')
+    if options.JEC_type != 0:
+        outname = '%s_selection__JEC_%i__file_%i.root'%(event_type,options.JEC_type,f_index)
+    else:
+        outname = '%s_%i.root'%(event_type,f_index)
+
+    fout = ROOT.TFile(outname,'recreate')
 
     ######## Define handles here ########
 
@@ -688,10 +687,10 @@ def selection(rootfiles):
                 phiscale  = AK5JECphiScale_hndl.product()
                 matchedJetEta = AK5JECmatchedJetEta_hndl.product()
                 # get corrected jets p4
-		new_jets_p4 = []
-		for i in range(len(jets_p4)):
-	                tmp_p4 = jetHelper.adjustJEC(jets_p4[i],jecuncpos[i],jecuncneg[i],corr[i],ptsmear[i],etascale[i],phiscale[i],matchedJetEta[i],jec_type=options.JEC_type)
-			new_jets_p4.append(tmp_p4)
+                new_jets_p4 = []
+                for i in range(len(jets_p4)):
+                    tmp_p4 = jetHelper.adjustJEC(jets_p4[i],jecuncpos[i],jecuncneg[i],corr[i],ptsmear[i],etascale[i],phiscale[i],matchedJetEta[i],jec_type=options.JEC_type)
+                    new_jets_p4.append(tmp_p4)
                 jets_p4 = new_jets_p4
 
         jets_cand = []
