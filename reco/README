@@ -1,3 +1,8 @@
+# Update
+# 3-23-2017
+Handles both e/mu, calculate PDF weights
+
+# older logs
 Take selected root files and do top pair reconstruction
 # top_reco.py
 Do reconstruction. Output is *_reco.root
@@ -18,3 +23,4 @@ Plot MC/data comparison of model vars and some reconstructed vars, ie, reco_mass
 
 # to-do list for future improvement
 Merge reco and cs angle calculation and template formatting into a single step for convinience
+

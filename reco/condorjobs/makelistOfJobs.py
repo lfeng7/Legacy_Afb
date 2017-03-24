@@ -1,19 +1,26 @@
 import ROOT
 import glob
+import sys
 
 # global constants
 evtsperjob =  2000
-#prepend = '/uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/all/'
-prepend = '/uscms_data/d3/lfeng7/B2G_FW/CMSSW_7_2_0/src/Legacy_Afb/JHUntuple_selector/selected_files/v4_JEC/el/all/'
 postfix = '.root'
+
+argv = sys.argv[1:]
+if argv ==[]:
+    print 'Usage: python makelistofjobs.py el/mu ct10/cteq dir/to/selected/files/'
+    sys.exit(1)
+lep_type = argv.pop(0)
+pdf_name = argv.pop(0)
+prepend = argv.pop(0)
+print 'Dir of selected files: %s'%prepend
+print 'Lep type:',lep_type
+print 'Pdf: %s'%pdf_name
 
 def make_joblist():
     fout = open('ana.listOfJobs','w')
 
-    LoadInputs()
-    selected_files = [prepend+ifile[0]+postfix for ifile in flist]
-
-    all_files = glob.glob('%s/*.root'%prepend)
+    all_files = glob.glob(prepend)
     print all_files
 
     towrite = ''
@@ -27,7 +34,7 @@ def make_joblist():
         evtstart = 0
 	print '%i events'%nev
         while evtstart<nev:
-            towrite += 'python ./tardir/top_reco.py --inputfiles '+ifile+' --evtstart '+str(evtstart)+' --evtsperjob '+str(evtsperjob)+'\n'
+            towrite += 'python ./tardir/top_reco.py --lep_type %s --PDF_name %s --inputfiles %s --evtstart %i --evtsperjob %i \n'%(lep_type, pdf_name, ifile, evtstart, evtsperjob)
             evtstart += evtsperjob
         tmpfile.Close()
 

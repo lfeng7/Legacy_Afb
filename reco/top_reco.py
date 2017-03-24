@@ -68,7 +68,7 @@ parser.add_option('--applytrigger', metavar='F', type='string', action='store',
                   help='If apply trigger on MC')
 
 parser.add_option('--lep_type', metavar='F', type='string', action='store',
-                  default = 'ele',
+                  default = 'el',
                   dest='lep_type',
                   help='e+jets or mu+jets')
 
