@@ -16,7 +16,7 @@ class thetaTemp(object):
     Take a root file w/ ttree (for Data) or smoothed 3D templates (for MC) 
     and create a single root file with all templates 
     """
-    def __init__(self, outputName, inputFile, lep_type, isTTree=False, txtfile=None, use_MC_DATA=False, top_reweight=False,JEC_sys='nominal', use_sys = True, verbose = False, bin_type = 'fixed', nevts = -1):
+    def __init__(self, outputName, inputFile, lep_type, isTTree=False, txtfile=None, use_MC_DATA=False, top_reweight=True,JEC_sys='nominal', use_sys = True, verbose = False, bin_type = 'fixed', nevts = -1):
         """
         inputFile is a list of path of input template root files (for ttree) or a single file for MC
         outputName is the name for output thetaTemp.root file

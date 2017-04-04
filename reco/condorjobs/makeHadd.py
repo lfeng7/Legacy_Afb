@@ -3,7 +3,7 @@ from glob import glob
 
 argv = sys.argv[1:]
 if argv == []:
-    print 'Usage:'
+    print 'Usage: python thisfile.py input_files output_dir'
     sys.exit(1)
 path = argv.pop(0)
 output_dir = argv.pop(0)

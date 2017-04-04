@@ -240,7 +240,7 @@ def selection(rootfiles):
             el_postfix = 'Loose'
         elif options.selection_type == 'signal' : 
             btag_cut = 2
-            el_postfix = ''
+            el_postfix = 'Loose'
         elif options.selection_type == 'qcd':
             btag_cut = 1
             el_postfix = 'Loose'

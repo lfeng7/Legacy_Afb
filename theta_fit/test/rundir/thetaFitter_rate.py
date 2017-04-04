@@ -762,7 +762,7 @@ if __name__ == '__main__':
     if len(argv)==0:
         print """
         Usage:
-        python ../../theta-auto.py thetaFitter_rate.py templates/final_test.root test 1.0 toy
+        python ../../theta-auto.py thetaFitter_rate.py templates/final_test.root test 1.0 toy sys
         """
         sys.exit(1)
     template_file = argv.pop(0)

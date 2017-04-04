@@ -54,17 +54,17 @@ class samples(object):
         input: a string of sample file path
         output: a sample_info object associate with that sample
         """
-        key = [ikey for ikey in self.info if '%s.root'%ikey in filepath ] # this is hardcoded due to the existence of T_t anf T_tW
-        # accomodate other form of keys, such as angles_TT_8TeV-mcatnlo_bkg__JES__plus.root
-        if len(key)==0:
-            key = [ikey for ikey in self.info if '%s'%ikey in filepath ] 
+        key = [ikey for ikey in self.info if ikey in filepath ] # this is hardcoded due to the existence of T_t anf T_tW
+        key.sort()
+#        print '(Debug) filepath:',filepath
+#        print 'key,',key
 
         if len(key)==0:
             if self.verbose:
                 print 'Cannot find information for file %s in txt file %s! Will stop.'%(filepath,self.txtfile)
             return None
         else:
-            key = key[0]
+            key = key[-1]
             info_obj = self.info[key]
             info_obj.print_out()
             return info_obj
