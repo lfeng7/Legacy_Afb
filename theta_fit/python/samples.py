@@ -54,7 +54,21 @@ class samples(object):
         input: a string of sample file path
         output: a sample_info object associate with that sample
         """
-        key = [ikey for ikey in self.info if ikey in filepath ] # this is hardcoded due to the existence of T_t anf T_tW
+#        key = [ikey for ikey in self.info if ikey in filepath ] # this is hardcoded due to the existence of T_t anf T_tW
+        # check all keys in MC_info that matches the file name of input root file
+        key = []
+        ttbar_type = ['qq','gg','bkg']
+        for ikey in self.info: # TT_CT10_qq
+            is_TT = False
+            for itype in ttbar_type: # qq
+                if itype in ikey: # qq in TT_CT10_qq
+                    if itype in filepath and ikey.split('_%s'%itype)[0] in filepath: # qq in TT_CT10_qq_selected.root and TT_CT10 in TT_CT10_qq_selected.root
+                        key.append(ikey)
+                    is_TT = True
+            if not is_TT:
+                if ikey in filepath:
+                    key.append(ikey)
+                    
         key.sort()
 #        print '(Debug) filepath:',filepath
 #        print 'key,',key

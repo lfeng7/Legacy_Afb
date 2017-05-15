@@ -136,7 +136,7 @@ class thetaTemp(object):
                 self.systematics_fixed = ['btag_eff_reweight','lepID_reweight','trigger_reweight','tracking_reweight','lepIso_reweight','pileup_reweight']
         elif self.lep_type == 'el':
             if self.use_sys:
-                    self.systematics_vary = ['btag_eff_reweight','lepID_reweight','trigger_reweight','tracking_reweight','lepIso_reweight']
+                    self.systematics_vary = ['btag_eff_reweight','lepID_reweight','trigger_reweight','Pdf_weights']
                     self.systematics_fixed = ['tracking_reweight','lepIso_reweight','pileup_reweight']
             else:
                     self.systematics_vary = []

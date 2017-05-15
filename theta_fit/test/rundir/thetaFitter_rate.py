@@ -31,7 +31,7 @@ class thetaFitter(object):
         self.shape_sys_gauss_white = []
         self.sys_list = ['Nominal','btag_eff_reweight','trigger_reweight']
         self.shape_sys_gauss_white = 'all'	
-        self.flat_param = ['AFB','R_qq','R_WJets','R_other_bkg','qcd_rate','lumi']
+        self.flat_param = ['AFB','R_qq','R_WJets','R_other_bkg','qcd_rate']
         self.non_inf_sys = ['JER','JES','Pdf_weights']
         self.obs = 'f_minus'
         self.pois = ['AFB','R_qq','R_WJets','R_other_bkg','qcd_rate']
@@ -152,7 +152,7 @@ class thetaFitter(object):
         # keep a copy of parVals and theta_options in global var
         self.parVals,self.theta_options = parVals,theta_options
         # print fit result
-        self.mle_result_print(parVals)
+#        self.mle_result_print(parVals)
 
         # Toy experiments for determination of error of POI
         if useToys:
@@ -510,7 +510,9 @@ class thetaFitter(object):
 
         # turn off all but the sys in the white list
         for i,p in enumerate(sys_list):
-            print '\n################ Evaluate fit result for %s ############\n'%p
+            header_str = '\n################ Evaluate fit result for %s ############\n'%p
+            self.txtfile.write(header_str)
+            print header_str
             new_prior = self.model.distribution.copy()
             tmp_list = [(i+1)*1.0]
             for item in all_sys:
@@ -529,7 +531,8 @@ class thetaFitter(object):
         sys_df = pd.DataFrame(sys_results)
         self.sys_df = sys_df
         print str(sys_df.round(4).T)
-        sys_df.to_csv('sys_table.csv')
+        tmp_str = self.outdir.split('/')[-1]
+        sys_df.to_csv('sys_table_%s.csv'%tmp_str)
 	# calculate sys uncertainty, sigma_poi_sys =  sqrt(sigma_poi_include_sys^2-sigma_poi_nom^2)
 
     def mleFit(self,model):
@@ -542,7 +545,7 @@ class thetaFitter(object):
         options.set('global','debug','True')
         options.set('minimizer','strategy','robust')
         options.set('minimizer','minuit_tolerance_factor','10')
-
+        if do_sys: return None,options
 
         # Do mle fit here
         """

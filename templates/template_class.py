@@ -158,9 +158,9 @@ class template:
             
         # Make output file
         if self.ttbar_type == 'none':
-            fout_name = '%s_template_%i.root'%(self.sample_name,self.evt_start)
+            fout_name = '%s__template_%i.root'%(self.sample_name,self.evt_start)
         else :
-            fout_name = '%s_%s_template_%i.root'%(self.sample_name,self.ttbar_type,self.evt_start)
+            fout_name = '%s_%s__template_%i.root'%(self.sample_name,self.ttbar_type,self.evt_start)
         fout = ROOT.TFile(fout_name,'recreate')
         # Make output ttree
         newtree = ROOT.TTree(self.newtree_name,self.newtree_name)
