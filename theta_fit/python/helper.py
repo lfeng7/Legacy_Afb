@@ -176,7 +176,7 @@ def getColors(name):
     
 # This is specifically for comparing the stacked MC plots with data adding residule plots too
 import math
-def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',logy=False,draw_option = 'hist'):
+def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',logy=False,draw_option = 'hist',outputdir=''):
     # Def axis title
     xaxis_name = data_.GetXaxis().GetTitle()
 #    canvas_title = data_.GetTitle()
@@ -352,6 +352,6 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
     obj_title.SetShadowColor(0)
     obj_title.SetLineColor(0)
     c1.Update()    
-    c1.SaveAs('%s.png'%event_type)
-    c1.SaveAs('%s_source.root'%event_type)
+    c1.SaveAs('%s.pdf'%event_type)
+    c1.SaveAs('%s_source.root'%(event_type))
     return c1,final_hist
