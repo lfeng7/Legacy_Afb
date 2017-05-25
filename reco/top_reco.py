@@ -157,54 +157,84 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     fout = ROOT.TFile(fout_name,'recreate')
     # Make output ttree
     exist_brs = [br.GetName() for br in tmptree.GetListOfBranches()]
-    #tmptree.SetBranchStatus('jets*',0)
-    tmptree.SetBranchStatus('lep*',0)
-    tmptree.SetBranchStatus('lep_charge',1)
-    if isFakeLep == 'yes':
-        tmptree.SetBranchStatus('lep_iso',1)
-    tmptree.SetBranchStatus('met*',0)
-    # tmptree.SetBranchStatus('pileup*',0)
-    if 'weight' in exist_brs:
-        tmptree.SetBranchStatus('weight_*',0)
+    tmptree.SetBranchStatus('*',0)
+    tmptree.SetBranchStatus('jets*',1)
     # keep weight_gen if exist
     for branch in tmptree.GetListOfBranches():
         if branch.GetName() == "weight_gen":
             tmptree.SetBranchStatus('weight_gen',1)
+    # keep gen_* branches
+    if 'gen_pt' in exist_brs:
+        tmptree.SetBranchStatus('gen_*',1)
     newtree = tmptree.CloneTree(0)
     tmptree.SetBranchStatus('*',1)
 
+    # convert current branches in vector format to new branches in array format to save place
+    br_convert = ['lep_pt','lep_eta','lep_phi','lep_mass','lep_charge','met_pt','met_phi','pileup_events','lep_iso','mc_pileup_events']
+    br_convert = ['weight_top_pT']
+    converted_brs = {}
+    #  br_defs = [('w_PU',w_PU_vec,'w_PU/F')]
+    br_defs = []
+    for ibr in br_convert:
+        try:
+            tmp_br = getattr(tmptree,ibr)
+        except AttributeError:
+            print '(bug) Cannot find branch',ibr
+        else:
+            type_str = str(type(tmp_br))
+            if all(x in type_str for x in ['vector','int']): # check if this is a vector <int> branch
+                tmp_array = array('i',[-10])
+                br_defs+=[(ibr,tmp_array,'%s/I'%ibr)]
+                converted_brs[ibr] = tmp_array
+                # print '(info) Adding exisiting branch:',str((ibr,tmp_array,'%s/I'%ibr))
+            elif all(x in type_str for x in ['vector','float']): # check if this is a vector <int> branch
+                tmp_array = array('f',[-1000.])
+                br_defs+=[(ibr,tmp_array,'%s/F'%ibr)]
+                converted_brs[ibr] = tmp_array
+                # print '(info) Adding exisiting branch:',str((ibr,tmp_array,'%s/F'%ibr))
+            else:
+                print '(info) %s is not a vector of float or int. Not adding to the new tree!'%ibr
+        finally:
+            print '(info) Finish processing branch',ibr
+         
     # Add new branches to the output tree
     vecs = []
     br_names = []
+    new_brs_to_add = []
     # Reconstruction results
     # reco momenta: t_lep, t_had, w_lep, w_had
     reco_pt = ROOT.vector('float')()
     reco_eta = ROOT.vector('float')()
     reco_phi = ROOT.vector('float')()
     reco_mass = ROOT.vector('float')()
-    N_btag = ROOT.vector('int')()
-    N_jets = ROOT.vector('int')()        
-    vecs += [reco_pt,reco_eta,reco_phi,reco_mass,N_btag,N_jets]
-    br_names += ['reco_pt','reco_eta','reco_phi','reco_mass','N_btag','N_jets']
-    # kinfit results 
+    new_brs_to_add += [('N_btag','i'),('N_jets','i')]       
+    vecs += [reco_pt,reco_eta,reco_phi,reco_mass]
+    br_names += ['reco_pt','reco_eta','reco_phi','reco_mass']
+    # kinfit results
+    new_brs_to_add +=[('final_chi2','f'),('final_nv_pz','f')]
+    new_brs_to_add +=[('N_combos','i'),('N_combo_errs','i'),('final_errflags','i')] 
     kinfit_results = ROOT.vector('float')() #'pZv','scaleLep','scaleblep','scalebhad','scaleWsub1','scaleWsub2'
-    final_chi2 = ROOT.vector('float')()
-    final_nv_pz = ROOT.vector('float')()
-    N_combos = ROOT.vector('int')() 
-    N_combo_errs = ROOT.vector('int')()
-    final_errflags = ROOT.vector('int')()
-    vecs += [final_chi2,kinfit_results,final_nv_pz,N_combos,N_combo_errs,final_errflags]
-    br_names += ['final_chi2','kinfit_results','final_nv_pz','N_combos','N_combo_errs','final_errflags']
+    vecs += [kinfit_results]
+    br_names += ['kinfit_results']
     # for chi2 study
-    total_chi2 =  ROOT.vector('float')()
-    chi2_mass = ROOT.vector('float')()
-    chi2_scale = ROOT.vector('float')()
-    chi2_csv = ROOT.vector('float')()
+    new_brs_to_add += [('total_chi2','f'),('chi2_mass','f'),('chi2_scale','f'),('chi2_csv','f')]
     chi2_mass_terms = ROOT.vector('float')()
-    vecs+=[total_chi2,chi2_mass,chi2_scale,chi2_csv,chi2_mass_terms]
-    br_names+=['total_chi2','chi2_mass','chi2_scale','chi2_csv','chi2_mass_terms']
+    vecs+=[chi2_mass_terms]
+    br_names+=['chi2_mass_terms']
 
-    br_defs = []
+    # add non-vector new branches
+    added_brs = {}
+    for item in new_brs_to_add:
+        name,br_type = item
+        if br_type == 'f':
+            tmp_array = array('f',[-1000.])
+            br_defs+=[(name,tmp_array,'%s/F'%name)]
+            added_brs[name] = tmp_array            
+        elif br_type == 'i':
+            tmp_array = array('i',[-10])
+            br_defs+=[(name,tmp_array,'%s/I'%name)]
+            added_brs[name] = tmp_array
+
     # Corrections
     if sample_type != 'data':
         # Load some SFs
@@ -243,7 +273,11 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         w_PDF_up = array('f',[1.])
         w_PDF_down = array('f',[1.])
 
-        br_defs = [('w_PU',w_PU_vec,'w_PU/F')]
+        w_all_corr = array('f',[1.])
+
+        br_defs += [('w_all_corr',w_all_corr,'w_all_corr/F')]
+
+        br_defs += [('w_PU',w_PU_vec,'w_PU/F')]
         br_defs += [('w_PU_up',w_PU_up,'w_PU_up/F')]
         br_defs += [('w_PU_down',w_PU_down,'w_PU_down/F')]
 
@@ -276,6 +310,7 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
     for ibr in branches:
         newtree.Branch(ibr[0],ibr[1])
     # Add float branch into ttree
+    print '(info) Adding these branches:',[item[2] for item in br_defs]
     for ibr in br_defs:
         newtree.Branch(ibr[0],ibr[1],ibr[2])
 
@@ -320,6 +355,11 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
         if iev == evt_end : print 'Finish processing. Quit at event',evt_end; break ;
         
         tmptree.GetEntry(iev)
+
+        # first fill the converted branches:
+        for key in converted_brs:
+            converted_brs[key][0] = getattr(tmptree,key)[0]
+
         # Book the branches from input ttree
         jets_pt = tmptree.jets_pt
         jets_eta = tmptree.jets_eta
@@ -447,6 +487,12 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
                 w_PDF_up[0] = pdf_w[0]
                 w_PDF_down[0] = pdf_w[1]
 
+            # store the total correction into w_corr_all
+            all_cors = [w_btag_vec,w_lepIso,w_tracking,w_lepID_vec,w_trigger_vec,w_PU_vec]
+            w_all_corr[0] = 1.0
+            for item in all_cors:
+                w_all_corr[0] *= item[0]
+
         #######################################################
         #          Do reconstruction                          #
         #######################################################
@@ -467,16 +513,16 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
             print 'No valid reco done! Will skip this event #',iev
             continue
         # Add reco quantity to the tree
-        N_btag.push_back(nbtags)
-        N_jets.push_back(n_selected_jets)
+        added_brs['N_btag'][0]=nbtags
+        added_brs['N_jets'][0]=n_selected_jets
         plot_final_chi = reco_result[0]
         reco_p4s = reco_result[1]
         bestFitParValues = reco_result[2]
-        N_combos.push_back(reco_result[3])
-        N_combo_errs.push_back(reco_result[4])
-        final_errflags.push_back(reco_result[5])
+        added_brs['N_combos'][0] = reco_result[3]
+        added_brs['N_combo_errs'][0] = reco_result[4]
+        added_brs['final_errflags'][0] = reco_result[5]
 
-        final_chi2.push_back(plot_final_chi)
+        added_brs['final_chi2'][0] = plot_final_chi
         for ip4 in reco_p4s:
             reco_pt.push_back(ip4.Pt())
             reco_eta.push_back(ip4.Eta())
@@ -484,19 +530,15 @@ def reconstruction(tfile,sample_name,sample_type,evt_start=0,evt_to_run=1000,isF
             reco_mass.push_back(ip4.M())
         for i in range(1,len(bestFitParValues)):
             kinfit_results.push_back(bestFitParValues[i])
-        final_nv_pz.push_back(bestFitParValues[0])
+        added_brs['final_nv_pz'][0]= bestFitParValues[0]
         # study of chi2
         all_chis1 = reco_result[6]
         all_chis2 = reco_result[7]
-        total_chi2.push_back(all_chis1[0])
-        chi2_mass.push_back(all_chis1[1])
-        chi2_scale.push_back(all_chis1[2])
-        chi2_csv.push_back(all_chis1[3])
-        if len(all_chis2)>0:
-            total_chi2.push_back(all_chis2[0])
-            chi2_mass.push_back(all_chis2[1])
-            chi2_scale.push_back(all_chis2[2])
-            chi2_csv.push_back(all_chis2[3])    
+        added_brs['total_chi2'][0] = all_chis1[0]
+        added_brs['chi2_mass'][0] = all_chis1[1]
+        added_brs['chi2_scale'][0] = all_chis1[2]
+        added_brs['chi2_csv'][0] = all_chis1[3]
+   
         # chi2 mass constraint terms: thad,tlep,whad,wlep
         for i in [4,5,6,7]:
             chi2_mass_terms.push_back(all_chis1[i])
