@@ -9,6 +9,12 @@ import os
 import numpy as np
 from collections import OrderedDict
 
+DEBUG_RUNS = -1
+SYS_debug = 'all'
+
+DEBUG_RUNS = 1
+SYS_debug = 'JER'
+
 class plotter(object):
     """docstring for plotter"""
     def __init__(self, template_file , verbose = False,bin_type='fixed'):
@@ -94,8 +100,8 @@ class plotter(object):
             for i in range(len(self.stack_lists)):
                 var = self.stack_lists[i] # like x
                 ihist = value[i]
-		# set xaxis title
-		ihist.GetXaxis().SetTitle(self.stack_xaxis[i])
+                # set xaxis title
+                ihist.GetXaxis().SetTitle(self.stack_xaxis[i])
                 stack_key = '%s_%s'%(iobs,var)
                 if iprocess != 'DATA':
                     # Add to proper THStack if it is not DATA
@@ -108,9 +114,9 @@ class plotter(object):
                 # add to legend
                 if stack_key=='plus_x':
                     print '(info) Adding %s into stack'%iprocess_title
-		    if iprocess != 'DATA':
+                    if iprocess != 'DATA':
                         self.legend.AddEntry(ihist,iprocess_title,"F")
-		    else:
+                    else:
                         self.legend.AddEntry(ihist,iprocess_title,"lep")
                 # add total integral of hists into a list for later calculation of R_process
                 if 'comb_x' in stack_key:
@@ -124,16 +130,31 @@ class plotter(object):
         input_name = self.input_file.split('/')[-1]
         input_name = input_name.split('.root')[0]
         self.input_name = input_name
-        self.output_dir = input_name+'_plots'
+        self.output_dir = 'plots_'+input_name
+        self.output_src_dir = self.output_dir+'/src'
+        self.output_extra_dir = self.output_dir+'/extra' # store other formats of plots, say, pdf
+        print '(info) self.output_dir:',self.output_dir
+        print '(info) self.output_src_dir:',self.output_src_dir
+        print '(info) self.output_extra_dir:',self.output_extra_dir
+
         # make sure output dir exists
         if not os.path.exists(self.output_dir):
             os.mkdir(self.output_dir)
             print '(info) Making new dir %s'%self.output_dir
-        output_rootfile = '%s/control_%s.root'%(self.output_dir,input_name)
+        if not os.path.exists(self.output_src_dir):
+            os.mkdir(self.output_src_dir)
+            print '(info) Making new dir',self.output_src_dir
+        if not os.path.exists(self.output_extra_dir):
+            os.mkdir(self.output_extra_dir)
+            print '(info) Making new dir',self.output_extra_dir
+        # create output files for hists and plots
+        output_rootfile = '%s/control_%s.root'%(self.output_src_dir,input_name)
         self.outfile_aux = ROOT.TFile(output_rootfile,'recreate')
         self.outfile_aux.mkdir('hists/')
         self.outfile_aux.mkdir('plots/')
         print '(info) Making aux output file %s.'%output_rootfile
+        plots_file = '%s/plots.root'%self.output_src_dir
+        self.plots_file = ROOT.TFile(plots_file,'recreate')
         # Create a txt file for counts
         self.txt_file = open('%s/counts_%s.txt'%(self.output_dir,input_name),'w')
 
@@ -147,22 +168,22 @@ class plotter(object):
             # find process names 
             # template name: f_plus__DATA
             temp_name = itemp.GetName()
-            if len(temp_name.split('__'))>2:continue
-            proc_name = temp_name.split('__')[-1]
+            proc_name = '__'.join(temp_name.split('__')[1:])
             combined_key = 'f_comb__%s'%proc_name
             if comb_temps.get(combined_key,0)==0:
                 print '(info) Making combined temp %s'%combined_key
                 tmp_hist = itemp.Clone(combined_key)
                 tmp_hist.SetDirectory(0)
                 comb_temps[combined_key]=tmp_hist
+                # add nominal temp combined to the corresponding list
+                if len(temp_name.split('__'))<=2:
+                    self.nominal_templates.append(tmp_hist)
             else:
                 comb_temps[combined_key].Add(itemp)
         # Append comb templates into self.templates
         tmp_hists = [val for key,val in comb_temps.iteritems()]
         self.all_templates.extend(tmp_hists)
         print '(info) Done combineCharge!'
-
-
 
     def makeControlPlots(self):
         """
@@ -171,91 +192,160 @@ class plotter(object):
         """ 
         all_templates_names = helper.GetListTH1D(self.template_file)
         self.all_templates = []
-        print '(info) Keeping these hists.'
+        self.nominal_templates = []
+        # print '(info) Keeping these hists.'
         for name in all_templates_names:
             # only keep nominal templates for simplicity
-            if len(name.split('__'))>2: continue
-            self.all_templates.append(self.template_file.Get(name))
-            print name
+            if len(name.split('__'))<=2:
+                 self.nominal_templates.append(self.template_file.Get(name))
+            if SYS_debug in name or len(name.split('__'))<=2 or SYS_debug == 'all' : # just for debugging purpose 
+                self.all_templates.append(self.template_file.Get(name))
+            # print name
 
         # make charge combined templates here
         self.combineCharge()
 
-        # for every 1D templates, get 3D original and 3 1D projection histograms
-        tmp_projections = {}
+        # for every 1D templates, get 3D original and 3 1D projection histograms, and put into a new dict
+        tmp_proj_all = {} # has all template projections
+        tmp_projections = {} # only has nominal template projections
         for ihist in self.all_templates:
             # get 3 projections from 1D templates and write in aux file
             hname = ihist.GetName()+'_proj'
             template_obj =  template.template(name=hname,formatted_name=hname+' projected back from 1D hist',bin_type=self.bin_type)
             #   getTemplateProjections  return [self.histo_3D,self.histo_x,self.histo_y,self.histo_z]
             hist_proj = template_obj.getTemplateProjections(ihist)
-            self.write_templates_to_auxfile(hist_list=hist_proj)
+            self.write_templates_to_auxfile(hist_list=hist_proj[1:])
+            tmp_proj_all[hname] = hist_proj[1:]
             del(template_obj)
             # write 1D templates into aux file
             self.write_templates_to_auxfile([ihist])
-            # assign projections to corresponding MC processes
+            # assign projections to corresponding MC processes, for nominal templates only
+            if ihist not in self.nominal_templates: continue
             for key,value in self.process.iteritems():
                 for iobs in self.observables:
                     newkey = '%s__%s'%(key,iobs) # wjets_plus etc
                     if key in hname and iobs in hname:
                         tmp_projections[newkey] = hist_proj[1:]
 
-        # re-arrange projections with the same order or self.process
+        # re-arrange projections with the same order or self.process, only add nominal templates for plot stacks later
         for iprocess in self.process:
             for key,value in tmp_projections.iteritems():
                 if iprocess in key:
                     self.projections[key]=value
 
-        print '(info) Done makeControlPlots.'
+        # loop over all templates, assign [up,down,nominal] 3d hist triples and plot templates comparison plots
+        # key: f_plus__gg__JES__minus_proj, val:[proj_x,proj_y,proj_z]
+        # key form: channel__process__SYS__plus/minus_proj
+        tmp_index = 0
+        for key in tmp_proj_all:
+            try:
+                channel,process,SYS,pm = key.split('__')
+            except ValueError:
+                continue
+            if 'plus' not in pm or 'comb' not in channel: continue
+            if tmp_index==DEBUG_RUNS:
+                print 'End debug run for sys plotter!'
+                break
+            tmp_index += 1
+            proj_plus = tmp_proj_all['%s__%s__%s__plus_proj'%(channel,process,SYS)]
+            proj_nom = tmp_proj_all['%s__%s_proj'%(channel,process)]
+            proj_minus = tmp_proj_all['%s__%s__%s__minus_proj'%(channel,process,SYS)]
+            for i in range(len(tmp_proj_all[key])):
+                # loop over proj x,y,z
+                hlist = [ proj_plus[i],proj_nom[i],proj_minus[i] ]
+                self.plot_sys_temp(hlist,'__'.join([channel, process, SYS]),axis=i)
+
+
+    def plot_sys_temp(self,hlist,title,axis):
+        """
+        input: hlist=[h_sys_up,h_nom,h_sys_down]
+        output: plot systematics templates comparison plots
+        """
+        self.shape_hists = []
+        tmp_legend = ROOT.TLegend(0.67,0.25,0.83,0.40)
+        axis_name = ['cstar','xf','mtt']
+        title = title+'__'+axis_name[axis]
+        #  ['cos#theta*','|x_{F}|','M_{tt}(GeV)']
+        c = ROOT.TCanvas()
+        c.SetName(title)
+        colors = [ROOT.kRed,ROOT.kBlack,ROOT.kBlue]
+        leg_entry = ['up','nominal','down']
+        # first get ymax
+        ymax = 1.1*max(item.GetMaximum() for item in hlist)
+        for i in range(len(hlist)):
+            h1 = hlist[i]
+            h1.SetMaximum(ymax)
+            h1.SetMinimum(0)
+            # draw histogram
+            h1.SetTitle(' '.join(title.split('__')))
+            h1.SetFillColor(0)
+            h1.SetLineColor(colors[i])
+            tmp_legend.AddEntry(h1,leg_entry[i],"L")
+            if i==0:
+                h1.Draw("hist e0")
+                h1.GetXaxis().SetTitle(self.stack_xaxis[axis])
+            else:
+                h1.Draw("hist e0 same")            
+        tmp_legend.Draw("same")
+        tmp_legend.SetFillColor
+        c.SetTitle(' '.join(title.split('__')))
+        # save
+        # c.SaveAs('%s/%s_sys.png'%(self.output_dir,title))
+        c.SaveAs('%s/%s_sys.pdf'%(self.output_extra_dir,title))
+        self.plots_file.cd()
+        c.Write()       
+        del(c)
 
     def plotShapes(self):
         """
         input: self.temp_shapes
         output: plot hist and save in output dir
         """
-	self.shape_hists = []
+        self.shape_hists = []
         tmp_legend = ROOT.TLegend(0.7,0.7,0.9,0.9)
 
-	has_leg = False
+        has_leg = False
         for key,hist_list in self.temp_shapes.iteritems():
             c = ROOT.TCanvas()
             isFirstHist=True
-	    # first get ymax
-	    ymax= 0
+            # first get ymax
+            ymax= 0
             for i,ihist_0 in enumerate(hist_list):
                 ihist = ihist_0.Clone()
                 ihist.Scale(1.0/ihist.Integral())
-		ymax = max(ymax,ihist.GetMaximum())
-	    ymax *= 1.1
-	    # draw histogram
+                ymax = max(ymax,ihist.GetMaximum())
+            ymax *= 1.1
+            # draw histogram
             for i,ihist_0 in enumerate(hist_list):
                 if 'other_bkg' in ihist_0.GetName():
 #                    continue
-		    pass
-		# Need to find correct color first....
-		# f_plus__qcd_proj_x 
-		proc_name = ihist_0.GetName().split('__')[-1].split('_proj')[0]
-		icolor = helper.getColors(proc_name)
-		ihist = ihist_0.Clone()
-#		ihist.SetDirectory(0)
-		ihist.SetFillColor(0)
-		ihist.SetLineColor(icolor)
-		# normalize to 1
-		ihist.Scale(1.0/ihist.Integral())
-		ihist.SetMaximum(ymax)
+                    pass
+                # Need to find correct color first....
+                # f_plus__qcd_proj_x 
+                proc_name = ihist_0.GetName().split('__')[-1].split('_proj')[0]
+                icolor = helper.getColors(proc_name)
+                ihist = ihist_0.Clone()
+#                ihist.SetDirectory(0)
+                ihist.SetFillColor(0)
+                ihist.SetLineColor(icolor)
+                # normalize to 1
+                ihist.Scale(1.0/ihist.Integral())
+                ihist.SetMaximum(ymax)
                 ihist.SetMinimum(0)
-		self.shape_hists.append(ihist)
-		if not has_leg:
+                self.shape_hists.append(ihist)
+                if not has_leg:
                     tmp_legend.AddEntry(ihist,proc_name,"L")
                 if isFirstHist:
                     ihist.Draw("hist e0")
                     isFirstHist=False
                 else:
                     ihist.Draw("hist same e0")
-	    print '%s done'%key
-	    has_leg = True
+            print '%s done'%key
+            has_leg = True
             self.legend.Draw("same")
-            c.SaveAs('%s/%s_shapes.png'%(self.output_dir,key))
+            # c.SaveAs('%s/%s_shapes.png'%(self.output_dir,key))
+            c.SaveAs('%s/%s_shapes.pdf'%(self.output_dir,key))
+
             del(c)
         print '(info) Done plotShapes!'
 
@@ -263,7 +353,7 @@ class plotter(object):
     def makeQualityPlots(self):
         """
         take the 1D templates and make a 1D hist with number of events in each bin
-        input: self.all_templates
+        input: self.nominal_templates
         output: add hists h_quality_plus and h_quality_minus to aux file
         """
         # Get all MC templates
@@ -274,7 +364,7 @@ class plotter(object):
         for iobs in self.observables:
             total_temp = None
             # Loop over all templates
-            for ihist in self.all_templates:
+            for ihist in self.nominal_templates:
                 hname = ihist.GetName()
                 # pick exactly the process and observable from the templates
                 if iobs not in hname: continue
@@ -323,7 +413,7 @@ class plotter(object):
                 data_quality_hists[i].Draw('same hist')
             tmp_legend.Draw('Same')
             c.Write()
-            c.SaveAs('%s/%s.png'%(self.output_dir,c.GetName()))
+            c.SaveAs('%s/%s.pdf'%(self.output_dir,c.GetName()))
         print '(info) Done makeQualityPlots.'
 
 
@@ -341,6 +431,7 @@ class plotter(object):
             c.SetName(item.GetName())
             item.Draw('hist')
             # set xaxis title
+            print item.GetName()
             ititle = item.GetHists()[0].GetXaxis().GetTitle()
             item.GetXaxis().SetTitle(ititle)
             c.Update()
@@ -363,11 +454,8 @@ class plotter(object):
             istack = self.stacks[key]
             data_hist = value
             # def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'h',logy=False):
-            c_compare,h_err = helper.comparison_plot_v1(mc_=istack,data_=data_hist,legend=self.legend,event_type='%s/%s'%(self.output_dir,key),bin_type = self.bin_type)
-            self.outfile_aux.cd('hists/')
-            h_err.Write()
-            self.outfile_aux.cd('plots/')
-            c_compare.Write()
+            c_compare,h_err = helper.comparison_plot_v1(mc_=istack,data_=data_hist,outputdir=self.output_src_dir,legend=self.legend,event_type='%s/%s'%(self.output_dir,key),bin_type = self.bin_type)
+
         print '(info) Done making data/mc comparison plots.'
 
 
@@ -380,7 +468,7 @@ class plotter(object):
             if i!=0:
                 item.SetMinimum(0)
             self.outfile_aux.cd('hists/')
-            item.Write()
+            # item.Write()
             # make nicer plots and write into another dir
             c = ROOT.TCanvas()
             c.SetName(item.GetName())
@@ -415,7 +503,7 @@ class plotter(object):
             N_bwd += ihist.Integral(bin_edge1,bin_edge2)
             N_fwd += ihist.Integral(bin_edge3,bin_edge4)
         AFB = (N_fwd-N_bwd)/(N_fwd+N_bwd)
-        towrite += '		Data AFB=%.3f\n'%AFB
+        towrite += '                Data AFB=%.3f\n'%AFB
         # write into file
         self.txt_file.write(towrite)
         print '(info) Done write_counts_to_file .'
@@ -425,6 +513,7 @@ class plotter(object):
         self.template_file.Close()
         self.outfile_aux.Close()
         self.txt_file.close()
+        self.plots_file.Close()
         print '(info) Closeup output file.'
 
 

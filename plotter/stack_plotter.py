@@ -191,6 +191,7 @@ def main():
         h_data = overflow(h_data) 
 
     h_data.SetDirectory(0)
+    h_data.GetXaxis().SetTitle(xaxis_name)
     data_integral = h_data.Integral()
     fdata.Close()
 
@@ -200,6 +201,7 @@ def main():
     leg = ROOT.TLegend(0.7550143,0.4991304,0.9054441,0.8469565)
     leg.SetName('legend')
     hlist_mc = []
+    print_weight = True
     for i,isample in enumerate(mc_samples):
         sample_type = isample[1]
         # find input root file
@@ -225,8 +227,10 @@ def main():
             if ttree_mc.FindBranch('top_pT_reweight'):
                 tmp_weight = '%s*top_pT_reweight'%tmp_weight
             if ttree_mc.FindBranch('weight_top_pT'):
-                tmp_weight = '%s*weight_top_pT'%tmp_weight            
-        if verbose: print '(info) weight: %s'%tmp_weight
+                tmp_weight = '%s*weight_top_pT'%tmp_weight 
+        if print_weight:           
+            print '(info) weight: %s'%tmp_weight
+            print_weight = False
         # Make histogram
         hname_mc = hname+'_'+isample[0]
         if xmin!=xmax:
@@ -249,7 +253,6 @@ def main():
         if sample_type == 'qcd':
             w_scale *=  QCD_SF
         h_mc.Scale(w_scale)
-        print '%s, norm_w = %.3f'%(isample[0],w_scale)
 
         # Add into stack
         icolor = helper.getColors(sample_type)
@@ -270,10 +273,13 @@ def main():
         mc_samples[i] += (h_mc,)
         # Determine if we want to add an entry to legend
         if sample_type not in sample_types: 
-            print '(info)Adding %s\n'%sample_type 
+            print '\n(info) Adding %s'%sample_type 
             leg.AddEntry(h_mc,GetSampleName(sample_type),"F")
             sample_types.append(sample_type)
         tmpf.Close()
+
+        print '%s, norm_w = %.3f'%(isample[0],w_scale)
+
     # Add hists into stack in certain order
     alltypes = ['bck','zjets','WJets','singletop','tt_bkg','other_bkg','gg','qq','signal','ttbar']
     for itype in alltypes :

@@ -49,7 +49,7 @@ def GetWeightNames(ttree):
     input: a ttree
     output: a string contains all weights for quick TTree.Draw
     """
-    blacklist = ['top_pT_reweight','GJR_reweight','CT10_reweight','cteq_reweight']
+    blacklist = ['top_pT_reweight','GJR_reweight','CT10_reweight','cteq_reweight','w_all_corr']
     all_brs = GetListBanches(ttree)
     if [item for item in all_brs if 'reweight' in item]!=[] : tag = 'reweight' 
     else: tag = 'w_'
@@ -176,7 +176,7 @@ def getColors(name):
     
 # This is specifically for comparing the stacked MC plots with data adding residule plots too
 import math
-def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',logy=False,draw_option = 'hist'):
+def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',logy=False,draw_option = 'hist',outputdir='',lep_type = 'mu'):
     # Def axis title
     xaxis_name = data_.GetXaxis().GetTitle()
 #    canvas_title = data_.GetTitle()
@@ -323,10 +323,14 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
     legend.Draw()
     legend.SetFillColor(0)   
 
-#    x_histo_pad.cd();
-#    label1 = ROOT.TPaveLabel(-3.5,700,-1,800,'e+jets');
-#    label1.SetTextSize(0.05);
-#    label1.Draw("sames")
+    x_histo_pad.cd();
+    if lep_type == 'mu':
+        pt = ROOT.TLatex(.2,.84,"#mu + Jets");  
+    else:
+        pt = ROOT.TLatex(.15,.82,"e + Jets");
+
+    pt.SetNDC(ROOT.kTRUE);
+    pt.Draw();
 
     latex2 = ROOT.TLatex()
     # latex2.SetNDC()
@@ -348,10 +352,12 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
     h_ref.SetFillStyle(3002)
     h_ref.Draw('SAMEs E2')
 
+    print 'xaxis_name',xaxis_name
+
     obj_title = c1.FindObject("title")
     obj_title.SetShadowColor(0)
     obj_title.SetLineColor(0)
     c1.Update()    
-    c1.SaveAs('%s.png'%event_type)
-    c1.SaveAs('%s_source.root'%event_type)
+    c1.SaveAs('%s.pdf'%event_type)
+    c1.SaveAs('%s_source.root'%(event_type))
     return c1,final_hist
