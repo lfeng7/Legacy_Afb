@@ -285,9 +285,9 @@ class plotter(object):
                 h1.Draw("hist e0")
                 h1.GetXaxis().SetTitle(self.stack_xaxis[axis])
             else:
-                h1.Draw("hist e0 same")            
+                h1.Draw("hist e0 same")  
+        tmp_legend.SetFillColor(0)          
         tmp_legend.Draw("same")
-        tmp_legend.SetFillColor
         c.SetTitle(' '.join(title.split('__')))
         # save
         # c.SaveAs('%s/%s_sys.png'%(self.output_dir,title))
