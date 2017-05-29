@@ -1,4 +1,5 @@
 #! /usr/bin/python
+common_text = 'CMS Simulation, 19.7 fb^{-1} at #sqrt{s} = 8 TeV' 
 
 import os
 import glob
@@ -78,6 +79,12 @@ parser.add_option('--plot', action='store_true', default=False,
                   dest='plot',
                   help='plot interactively')
 
+parser.add_option('--weight', metavar='F', type='string', action='store',
+              default = "",
+                  dest='weight',
+                  help='')
+
+
 (options, args) = parser.parse_args()
 
 if options.config:
@@ -95,6 +102,7 @@ if options.config:
   label = ""
   save = False
   name = ""
+  weight = "1.0"
 
 else:
   scale = options.scale
@@ -114,6 +122,7 @@ else:
   cut2 = options.cut2
   label2 = options.label2
   plot = options.plot
+  weight = options.weight
 
 
 # Set root interactive or not
@@ -158,7 +167,19 @@ if save.lower() in ['true','yes']:
     print 'Save into rootfile %s'%fout_name
 
 # Making histograms
+make_two_hist = (cut2!=cut and cut2!='')
+
+if weight!='':
+  if cut!='':
+    cut = '%s*%s'%(cut,weight)
+  else:
+    cut = weight
+  if cut2!='':
+    cut2 = '%s*%s'%(cut,weight)
+  else:
+    cut2 = weight
 if x!=y:
+
   newhist1 = ROOT.TH1F(name, name, bin, x, y)
   chain.Draw(var+">>"+name,""+ cut, "goff")
 else:
@@ -166,7 +187,7 @@ else:
   newhist1 = gDirectory.Get(name)  
 hists = [newhist1]
 all_cuts = [cut]
-if cut2!=cut and cut2!='':
+if make_two_hist:
     if x!=y:
       newhist2 = ROOT.TH1F(name+'2', name+'2', bin, x, y)  
       chain.Draw(var+">>"+name+'2',""+ cut2, "goff")
@@ -234,9 +255,9 @@ gPad.Update()
 statbox1 = newhist1.FindObject("stats")
 statbox1.SetTextColor(icolor[0])
 statbox1.SetX1NDC(0.8)
-statbox1.SetY1NDC(0.83)
-statbox1.SetX2NDC(1)
-statbox1.SetY2NDC(1)
+statbox1.SetY1NDC(0.7)
+statbox1.SetX2NDC(0.95)
+statbox1.SetY2NDC(0.85)
 # Draw second hists if there's a second cut
 if len(hists)>1: 
   hist2 = hists[1]
@@ -246,12 +267,17 @@ if len(hists)>1:
   statbox2 = hist2.FindObject("stats")  
   statbox2.SetTextColor(icolor[1])
   statbox2.SetX1NDC(0.8)
-  statbox2.SetY1NDC(0.67)
+  statbox2.SetY1NDC(0.55)
   statbox2.SetX2NDC(1)
-  statbox2.SetY2NDC(0.83)
+  statbox2.SetY2NDC(0.8)
   statbox2.Draw('sames')
 
 statbox1.Draw('sames')
+
+pt = ROOT.TLatex(.23,.80,common_text);
+pt.SetNDC(ROOT.kTRUE);
+pt.SetTextSize(0.03)
+pt.Draw();
 
 
 labels=[label,label2]
@@ -273,7 +299,9 @@ if label != "" or len(all_cuts)>1:
 print "entries: %i, integral %i "%(newhist.GetEntries(),newhist.Integral())
 
 # save into files
-c.SaveAs(plotdir+name + ".png")
+c.SaveAs(plotdir+name + ".pdf")
+c.SaveAs(plotdir+name + ".root")
+
 
 if save.lower() in ['true','yes']:
   c.Write()

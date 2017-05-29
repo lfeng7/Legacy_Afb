@@ -177,6 +177,10 @@ def getColors(name):
 # This is specifically for comparing the stacked MC plots with data adding residule plots too
 import math
 def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',logy=False,draw_option = 'hist',outputdir='',lep_type = 'mu'):
+    # reset some tdrStyle
+    ROOT.tdrStyle.SetTitleY(0.9);
+    ROOT.tdrStyle.SetStatY(0.97);
+
     # Def axis title
     xaxis_name = data_.GetXaxis().GetTitle()
 #    canvas_title = data_.GetTitle()
@@ -327,7 +331,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
     if lep_type == 'mu':
         pt = ROOT.TLatex(.2,.84,"#mu + Jets");  
     else:
-        pt = ROOT.TLatex(.15,.82,"e + Jets");
+        pt = ROOT.TLatex(.2,.84,"e + Jets");
 
     pt.SetNDC(ROOT.kTRUE);
     pt.Draw();

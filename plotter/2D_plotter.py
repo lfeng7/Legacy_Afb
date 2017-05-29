@@ -7,6 +7,10 @@ import sys
 
 from optparse import OptionParser
 
+
+common_text = 'CMS Simulation, 19.7 fb^{-1} at #sqrt{s} = 8 TeV'
+
+
 parser = OptionParser()
 
 parser.add_option('--plot', action='store_true', default=False,
@@ -126,6 +130,12 @@ chain = ROOT.TChain(treename)
 for ifile in all_files:
   chain.Add(ifile)
 
+# Print out cut efficiency
+total_data = chain.GetEntries()
+selected_data = chain.GetEntries(cut)
+data_cut_eff = selected_data*1.0/total_data
+print 'Num Entries in data: %i, selected entries %i, cut efficiency %.3f'%(total_data,selected_data,data_cut_eff)
+
 newhist = ROOT.TH2F(name, name, bin, x, y, bin2, x2, y2)	
 chain.Draw(var2+":"+var1+">>"+name,""+ cut, "Colz")
 if scale:
@@ -136,6 +146,11 @@ newhist.SetLineWidth(2)
 newhist.SetLineStyle(2)	
 newhist.SetStats(0)
 #f.Write()
+
+pt = ROOT.TLatex(.23,.80,common_text);
+pt.SetNDC(ROOT.kTRUE);
+pt.SetTextSize(0.03)
+pt.Draw();
 
 newhist.SetTitle(options.title)
 if options.xaxis == "blank":
@@ -157,7 +172,7 @@ if not os.path.exists(plotdir):
     os.mkdir(plotdir)
     print 'Creating new dir '+plotdir
 
-c.SaveAs(plotdir+name + ".png")
+c.SaveAs(plotdir+name + ".pdf")
 
 if save.lower() in ['true','yes']:
     rootdir = plotdir+'root/'
