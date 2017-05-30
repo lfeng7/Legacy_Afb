@@ -36,8 +36,9 @@ for ifile in input_files:
     new_file = rt.TFile('%s_sideband.root'%old_fname,'recreate')
     newtree = old_tree.CloneTree(0)
     # add new branches
-    w_norm = array('f',[1.0])
+    w_norm,weight_gen = array('f',[1.0]),array('f',[1.0])
     newtree.Branch('w_norm',w_norm,'w_norm/F')
+    newtree.Branch('weight_gen',weight_gen,'weight_gen/F')
     # for data only add some w_corr branches
     new_brs_to_add = []
     new_brs_to_add += [('weight_top_pT','f'),('w_PU','f'),('w_PDF','f'),('w_btag','f')\

@@ -100,6 +100,11 @@ parser.add_option('--verbose', action='store_true',
                   dest='verbose',
                   help='addional output')
 
+parser.add_option('--lep_type', metavar='F', type='string', action='store',
+              default = 'mu',
+                  dest='lep_type',
+                  help='el or mu')
+
 
 (options, args) = parser.parse_args()
 
@@ -228,7 +233,7 @@ def main():
                 tmp_weight = '%s*top_pT_reweight'%tmp_weight
             if ttree_mc.FindBranch('weight_top_pT'):
                 tmp_weight = '%s*weight_top_pT'%tmp_weight 
-        if print_weight:           
+        if print_weight or sample_type == 'qcd':           
             print '(info) weight: %s'%tmp_weight
             print_weight = False
         # Make histogram
@@ -251,14 +256,14 @@ def main():
 
         # special normalization for QCD MC. 
         if sample_type == 'qcd':
-            w_scale *=  QCD_SF
+            w_scale =  QCD_SF
         h_mc.Scale(w_scale)
 
         # Add into stack
         icolor = helper.getColors(sample_type)
         h_mc.SetFillColor(icolor)
         if sample_type == 'qcd':
-            h_mc.SetFillColor(0)
+            #h_mc.SetFillColor(0)
             h_qcd.append(h_mc)
         h_mc.SetLineColor(icolor)
         h_mc.SetMarkerStyle(0)
@@ -281,7 +286,7 @@ def main():
         print '%s, norm_w = %.3f'%(isample[0],w_scale)
 
     # Add hists into stack in certain order
-    alltypes = ['bck','zjets','WJets','singletop','tt_bkg','other_bkg','gg','qq','signal','ttbar']
+    alltypes = ['bck','zjets','qcd','WJets','singletop','tt_bkg','other_bkg','gg','qq','signal','ttbar']
     for itype in alltypes :
         isamples = [item for item in mc_samples if item[1]==itype]
         if len(isamples)>0:
@@ -328,7 +333,7 @@ def main():
     leg.AddEntry(h_data,'data')
     if var != 'charge_ratio':
         #def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',logy=False,draw_option = 'hist'):
-        c_plot,final_hist = helper.comparison_plot_v1(mc_stack,h_data,leg,hname)
+        c_plot,final_hist = helper.comparison_plot_v1(mc_stack,h_data,leg,hname,lep_type=options.lep_type)
     else :
         fout = ROOT.TFile('plots/'+hname+'_'+var+'_plots.root','recreate')        
         c_plot = ROOT.TCanvas()
