@@ -190,7 +190,7 @@ if plotname == "":
 
 # Make plots
 if plotting_code == 'plotter.py':
-	cmd += ' --Min %s --Max %s --file %s --var %s --weight %s'%(Minx,Maxx,file1,var1,weight)
+	cmd += ' --Min %s --Max %s --file %s --var %s '%(Minx,Maxx,file1,var1)
 
 if plotting_code == 'double_sample_plotter.py':
 	cmd += ' --Min %s --Max %s --file1 %s --file2 %s --var %s'%(Minx,Maxx,file1,file2,var1)
