@@ -77,6 +77,7 @@ yields = ""
 mode = ""
 verbose = ''
 lep_type = 'mu'
+weight_ignore = 'none' 
 
 # find the input arguments
 for i,item in enumerate(argv):
@@ -114,6 +115,7 @@ for i,item in enumerate(argv):
 	if word in ['mode']: mode = item[0]
 	if word in ['mcinfo']: MCinfo = item[0]
         if word in ['lep_type']: lep_type = item[0]
+        if word in ['weight_ignore']: weight_ignore = item[0]
 
 # Determine what kind of plot to make
 plotting_code = ''
@@ -209,7 +211,7 @@ if plotting_code == 'double_var_plotter.py':
 	cmd += ' --Min %s --Max %s --file %s --var1 %s --var2 %s'%(Minx,Maxx,file1,var1,var2)
 
 if plotting_code == 'stack_plotter.py':
-	cmd += ' --Min %s --Max %s --dir %s  --var %s --MCinfo %s --lep_type %s'%(Minx,Maxx,dir_path,var1,MCinfo,lep_type)
+	cmd += ' --Min %s --Max %s --dir %s  --var %s --MCinfo %s --lep_type %s --weight_ignore %s'%(Minx,Maxx,dir_path,var1,MCinfo,lep_type,weight_ignore)
 
 if plotting_code == '2D_plotter.py':
 	cmd += ' --Minx %s --Maxx %s --Miny %s --Maxy %s --biny %s --file %s --varx %s --vary %s '%(Minx,Maxx,Miny,Maxy,biny,file1,var1,var2)

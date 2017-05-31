@@ -7,6 +7,10 @@ python ../masterplot.py dir ../mu_nominal/, var1 jets_pt, bin 50, min 30, max 30
 
 python ../masterplot.py dir ../mu_nominal/, var1 N_btag, bin 5, min 0, max 5, xaxis "Num (b-jets)", plotname nbtag_mu, stack yes, mcinfo ../payloads/MC_input_muon_mcNLO.txt, weight "weight_gen*weight_top_pT"
 
+python ../masterplot.py dir ../mu_nominal/, var1 pileup_events, bin 40, min 0, max 40, xaxis "Numeber of Vertices", plotname PU_corr_mu, stack yes, mcinfo ../payloads/MC_input_muon_mcNLO.txt, weight "weight_gen*weight_top_pT", scale yes
+
+python ../masterplot.py dir ../mu_nominal/, var1 pileup_events, bin 40, min 0, max 40, xaxis "Numeber of Vertices", plotname PU_uncorr_mu, stack yes, mcinfo ../payloads/MC_input_muon_mcNLO.txt, weight "weight_gen*weight_top_pT", scale yes, weight_ignore w_PU
+
 # kin reco vs gen 2D plots
 ../masterplot.py --file ../angles_files/mu/signal/nominal/TT_8TeV-mcatnlo_reco_angles_0.root --varx mtt_mc --vary mtt --binx 30 --biny 30 --Minx 350 --Maxx 1000 --Miny 350 --Maxy 1000 --xaxis "M_{t#bar{t}} (generated)[GeV]" --yaxis "M_{t#bar{t}} (reconstructed)[GeV]" --title "t#bar{t}#rightarrow#mu+jets" --plotname Mtt_2D
 

@@ -61,6 +61,11 @@ parser.add_option('--weight', metavar='F', type='string', action='store',
                   dest='weight',
                   help='which event weight to use for MC')
 
+parser.add_option('--weight_ignore', metavar='F', type='string', action='store',
+                  default='',
+                  dest='w_blacklist',
+                  help='which event weight to ignore for MC')
+
 parser.add_option('--xaxis', metavar='F', type='string', action='store',
               default = "",
                   dest='xaxis',
@@ -105,6 +110,10 @@ parser.add_option('--lep_type', metavar='F', type='string', action='store',
                   dest='lep_type',
                   help='el or mu')
 
+parser.add_option('--scale', action='store_true',
+              default = False,
+                  dest='rescale',
+                  help='normalize to 1')
 
 (options, args) = parser.parse_args()
 
@@ -134,6 +143,7 @@ def main():
     makeyields = options.yields
     plot_overflow = options.overflow
     verbose = options.verbose 
+    w_blacklist = options.w_blacklist.split()# ['w_PU']
 
     if htitle != '':
         canvas_title = htitle
@@ -185,7 +195,12 @@ def main():
     hname_data = hname+'_data'    
     if xmin != xmax:
         h_data = ROOT.TH1F(hname_data, hname_data, bin, xmin, xmax)        
-    ttree_data.Draw(var+">>"+hname_data,""+ cut, "goff")
+    # an ugly special case for PU
+    if 'pileup' in var:
+        data_var = 'pileup_events'
+    else:
+        data_var = var 
+    ttree_data.Draw(data_var+">>"+hname_data,""+ cut, "goff")
     # Print out cut efficiency
     total_data = ttree_data.GetEntries()
     selected_data = ttree_data.GetEntries(cut)
@@ -227,6 +242,8 @@ def main():
             tmp_weight = '%s*%s'%(weight,corr_w)
         else:
             tmp_weight = corr_w
+        # remove weight in blacklist
+        tmp_weight = '*'.join(item for item in tmp_weight.split('*') if item not in w_blacklist)
         # hard coded top_pT reweight for now ...
         if 'CT10' in mc_path and 'TT' in mc_path: 
             if ttree_mc.FindBranch('top_pT_reweight'):
@@ -284,6 +301,9 @@ def main():
         tmpf.Close()
 
         print '%s, norm_w = %.3f'%(isample[0],w_scale)
+    
+    stack_integral = sum(item.Integral() for item in hlist_mc)
+    
 
     # Add hists into stack in certain order
     alltypes = ['bck','zjets','qcd','WJets','singletop','tt_bkg','other_bkg','gg','qq','signal','ttbar']
@@ -297,6 +317,8 @@ def main():
             if len(item)<5: continue
             tmp_h = item[4]
             if i == len(isamples)-1 : tmp_h.SetLineColor(1)
+            if options.rescale:
+                tmp_h.Scale(data_integral/stack_integral)
             mc_stack.Add(tmp_h)
     # Write out yields
     yield_types = ['ttbar','qq','gg','WJets','other_bkg','qcd']
@@ -331,6 +353,10 @@ def main():
 
     # Make data/MC comparison plot
     leg.AddEntry(h_data,'data')
+    # rescale both data and stack if needed
+    if options.rescale:
+        pass
+        #h_data.Scale(1.0/h_data.Integral())
     if var != 'charge_ratio':
         #def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',logy=False,draw_option = 'hist'):
         c_plot,final_hist = helper.comparison_plot_v1(mc_stack,h_data,leg,hname,lep_type=options.lep_type)

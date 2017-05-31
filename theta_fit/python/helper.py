@@ -230,13 +230,17 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
 
     maxxdeviations = 0.0
     for ibin in range(1,h_data.GetNbinsX()+1):
-        databin = h_data.GetBinContent(ibin)
-        mcbin = h_stack.GetBinContent(ibin)
+        databin = max(0,h_data.GetBinContent(ibin))
+        mcbin = max(0,h_stack.GetBinContent(ibin))
         # Calculate residual
         if mcbin != 0 and databin != 0:
             res = databin*1.0/mcbin
             # Calculate error of residual, delta(res) = residual*sqrt(1/data+1/mc)
-            res_err = res*math.sqrt(1.0/databin+1.0/mcbin)
+            try:
+                res_err = res*math.sqrt(1.0/databin+1.0/mcbin)
+            except ValueError:
+                res_err = 0
+                print 'res %f, databin %f, mcbin %f'%(res,databin,mcbin)
 	    ref_err = math.sqrt(1.0/mcbin)
             # Find maximum residual
             maxxdeviations = max(maxxdeviations,max(abs(res+res_err-1.0),abs(res-res_err-1.0)))
