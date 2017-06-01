@@ -7,6 +7,7 @@ import ROOT
 import numpy as np
 import pandas as pd
 from collections import OrderedDict
+from make_closure_test_plots import make_neyman_plots
 execfile("helper.py")
 execfile("common.py")
 ROOT.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
@@ -30,11 +31,13 @@ class thetaFitter(object):
         self.shape_sys_gauss = ['btag_eff_reweight','trigger_reweight','lepID_reweight','tracking_reweight','lepIso_reweight','Pdf_weights','JER','JES']
         self.shape_sys_gauss_white = []
         self.sys_list = ['Nominal','btag_eff_reweight','trigger_reweight']
-        self.shape_sys_gauss_white = 'all'	
+        self.shape_sys_gauss_white = 'all'        
         self.flat_param = ['AFB','R_qq','R_WJets','R_other_bkg','qcd_rate']
         self.non_inf_sys = ['JER','JES','Pdf_weights']
         self.obs = 'f_minus'
         self.pois = ['AFB','R_qq','R_WJets','R_other_bkg','qcd_rate']
+        self.pois_title = {'AFB':'A_{FB}','R_qq':'R_{q#bar{q}}'}
+        self.nominal_fit_res = {}
 
         # define sigma value here for all parameters
         self.sigma_values = {}
@@ -46,16 +49,16 @@ class thetaFitter(object):
         self.sigma_values['lumi']=0.045
 
         # Toy experiments settings
-        self.ntoys = 1000
-        self.Toys_per_thread = 50
+        self.ntoys = 2000
+        self.Toys_per_thread = 200
         # define AFB toy params
-        AFB_list = np.arange(-1,1.01,0.5).tolist()
-        Rqq_list = np.arange(-0.8,1.21,0.4).tolist()
+        AFB_list = np.linspace(-0.2,0.3,10).tolist()
+        Rqq_list = np.linspace(-0.8,0.5,10).tolist()
 
         #AFB_list=[-1.0,-0.5,-0.2,0,0.2,0.5,1.0]
-#        AFB_list = [-0.4,0]
+        #AFB_list = [-0.2,0,0.2]
         #AFB_list = [-50,-20,-10,0,10,20,50]#-5,-2,-0.5,0,0.5,2,5,10]#,0,0.3,0.7]
-        #Rqq_list = [0,0.5,1.0,1.5]
+        #Rqq_list = [-0.5,0,0.5]
 
         self.toy_params = {'AFB':AFB_list,'R_qq':Rqq_list}
 
@@ -143,7 +146,7 @@ class thetaFitter(object):
         # add model info into results
         self.report_model(self.model,self.txtfile)
         # Report the model in an html file
-        par_summary = model_summary(self.model)
+        # par_summary = model_summary(self.model)
 
         # maximum likelihood fit on data without signal (background-only).
         print '(info) Begin MLE fit.'
@@ -154,19 +157,20 @@ class thetaFitter(object):
         # print fit result
 #        self.mle_result_print(parVals)
 
-        # Toy experiments for determination of error of POI
-        if useToys:
-            self.doToys()
-
         # do sys eval
         if do_sys:
             self.eval_sys(self.model,self.shape_sys_gauss)
         else:
+            self.eval_sys(self.model,[])
             # Save post fit hists to root file
-            self.savePostFit(self.postfit_histos)
+            # self.savePostFit(self.postfit_histos)
+
+        # Toy experiments for determination of error of POI
+        if useToys:
+            self.doToys()
 
         # Write as html+
-        report.write_html('%s/htmlout'%self.outdir)
+        # report.write_html('%s/htmlout'%self.outdir)
         # close files
         self.txtfile.close()
         self.fout.Close()
@@ -177,7 +181,10 @@ class thetaFitter(object):
         outputs: fitted toy experiments and plots
         """
 
-        print '(info) Begin toy experiments on %s'%self.toy_params
+        print '\n(info) Begin toy experiments on %s'%self.toy_params
+        print '(info) Nuisance prior distribution for fitting toys.'
+        print_dist(self.nominal_prior.distributions)
+  
         nthreads = str(self.ntoys/self.Toys_per_thread)
         # debug
         #nthreads = '20'
@@ -186,15 +193,21 @@ class thetaFitter(object):
         #toy_dist =  model.distribution.copy()
         for key,value in self.toy_params.iteritems():
             toy_dist = self.getToyDist() 
+            print '(info) starting toy dist:'
+            print_dist(toy_dist.distributions)
 
             toy_sigma = self.sigma_values[key]
             toy_name = key
+            fit_central_value = self.nominal_fit_res[key]
+            par_title = self.pois_title.get(key,key)
 
             fit_hists=[] # for containing fit results of different input param values
             toy_input,toy_fit_mean,toy_fit_sigma = [],[],[]
+            fit1_up,fit1_down,fit2_up,fit2_down,fit0 = [],[],[],[],[]
             for toy_val in value:
+                print '\n'
                 """ def fitToys(self,toy_param_val,toy_param_sigma,toy_param_name): """
-                fit_hist, fit_results, Rqq_input = self.fitToys(toy_dist = toy_dist,toy_param_val=toy_val,toy_param_sigma=toy_sigma,toy_param_name=toy_name)
+                fit_hist, fit_results, Rqq_input,converted_fit_val = self.fitToys(toy_dist = toy_dist,toy_param_val=toy_val,toy_param_sigma=toy_sigma,toy_param_name=toy_name)
                 # fit_results=[fit_mean,fit_sigma]
                 if 'qq' in toy_name:
                     toy_input_val = Rqq_input
@@ -207,23 +220,38 @@ class thetaFitter(object):
                 toy_fit_sigma.append(fit_results[1])
                 fit_hists.append(fit_hist)
                 print '(info) toy exp fit for %s = %.3f is %.3f +/- %.3f'%(toy_name,toy_input_val,fit_results[0],fit_results[1])
+                # Use percentile
+                fit2_down.append(np.percentile(converted_fit_val,2.28))
+                fit1_down.append(np.percentile(converted_fit_val,15.87))
+                fit0.append(np.percentile(converted_fit_val,50))
+                fit1_up.append(np.percentile(converted_fit_val,84.13))
+                fit2_up.append(np.percentile(converted_fit_val,97.72))
 
-            # plot Neyman bands
-            # from helper.py
-            # def makeTGraphErrors(x,y,y_err,x_err=None,x_title='x',y_title='y',title='TGraph'):
-            # makeTGraphErrors is from helper.py
-            neyman_plot = makeTGraphErrors(x=toy_input,y=toy_fit_mean,y_err=toy_fit_sigma,x_title='param_input',y_title='param_fit',title='%s Based on %i toy experiments'%(toy_name,self.ntoys))
-            neyman_plot.Fit("pol1")
-            canv_neyman = ROOT.TCanvas()
-            canv_neyman.SetName('%s_neyman'%toy_name)
-            self.fout.cd()
-            neyman_plot.Draw()
-            canv_neyman.SaveAs('%s/%s_neyman.png'%(self.outdir,toy_name))
-            canv_neyman.Write()
-            neyman_plot.Write()
+            # def make_neyman_plots(x,y2_down,y1_down,y,y1_up,y2_up,par_name,fname,title='',data_fit_central_value=0.1):
+            X = np.array(toy_input)
+            Y = np.array(toy_fit_mean)
+            Y_err = np.array(toy_fit_sigma)
+
+            # save all the pseudo experiment results in csv file
+            toy_results = {'X':X,'fit2_down':fit2_down,'fit1_down':fit1_down,'fit0':fit0,'fit1_up':fit1_up,'fit2_up':fit2_up}
+            pd.DataFrame(toy_results).to_csv('%s/%s_toy_res_percentile.csv'%(self.outdir,toy_name))
+            toy_results = {'X':X,'fit2_down':Y-2*Y_err,'fit1_down':Y-Y_err,'fit0':Y,'fit1_up':Y+Y_err,'fit2_up':Y+2*Y_err}
+            pd.DataFrame(toy_results).to_csv('%s/%s_toy_res_gauss_fit.csv'%(self.outdir,toy_name))
+
+            # use gaussian fit error for confidence interval
+            gauss_res = make_neyman_plots(X,Y-2*Y_err,Y-Y_err,Y,Y+Y_err,Y+2*Y_err,\
+                 par_name=par_title,fname='%s/%s'%(self.outdir,key),data_fit_central_value=fit_central_value)
+            self.txtfile.write('\n%s , confidence interval using Gaussing Fit\n'%toy_name+gauss_res)
+
+            # using the quantile for confidence interval
+            quantile_res = make_neyman_plots(x=X,y2_down=fit2_down,y1_down=fit1_down,y=fit0,y1_up=fit1_up,y2_up=fit2_up,\
+                par_name=par_title,fname='%s/%s_with_Percentile'%(self.outdir,key),data_fit_central_value=fit_central_value)
+            self.txtfile.write('\n%s , confidence interval using AUC Fit\n'%toy_name+quantile_res)
+
             # plot pull plots
             self.plotPull(self.fout)
-            print '(info) Done all toy experiments!'
+
+        print '(info) Done all toy experiments!'
 
     def histogram_filter(self,hname):
         """
@@ -239,7 +267,7 @@ class thetaFitter(object):
 
     def report_model(self,_model,txt_output):
         dist = _model.distribution.distributions
-	self.dist_df = pd.DataFrame(dist)
+        self.dist_df = pd.DataFrame(dist)
         print str(self.dist_df.T) 
         txt_output.write(str(self.dist_df.T))
         print '(info) Done report_model.'
@@ -429,8 +457,8 @@ class thetaFitter(object):
         parameter_values = {}
         for p in self.model.get_parameters([]):
             parameter_values[p] = result[''][p][0][0]
-	histos = evaluate_prediction(self.model,parameter_values,include_signal = False)
-	R_postfit = self.simple_counter(histos)
+        histos = evaluate_prediction(self.model,parameter_values,include_signal = False)
+        R_postfit = self.simple_counter(histos)
 
         postfit_R = '\n(info) R_process postfit from MLE output\n'
         fit_AFB_mean = result['']['AFB'][0][0]*self.sigma_values['AFB']
@@ -504,7 +532,7 @@ class thetaFitter(object):
         sys_list += ['Nominal']
         sys_list = [item for item in sys_list if item in all_par or item=='Nominal']
         all_sys = [item for item in all_par if item in self.shape_sys_gauss]
-        print '(info) all sys to eval are:',sys_list
+        print '\n(info) all sys to eval are:',sys_list
         # loop over all sys, turn on each at a time, and do mle fit, write result in csv
         sys_results = {}
 
@@ -524,16 +552,33 @@ class thetaFitter(object):
             parVals = mle(model, 'data', 1,nuisance_constraint=new_prior,signal_process_groups = {'': [] },options = self.theta_options,chi2=True) 
             sys_results[p],postfit_histo = self.mle_result_print(parVals)
             if p=='Nominal':
-                 print '(info) Save nominal histos into root file'
-                 self.savePostFit(postfit_histo)
-
+                print '(info) Save nominal histos into root file'
+                self.savePostFit(postfit_histo)
+                # store central values of all params
+                # self.parVals['']['R_qq'][0] = (0.805501721611904, 0.12242412236195577)
+                for p in self.pois:
+                    sigma_p = self.sigma_values.get(p,1.0)
+                    try:
+                        parVals[''][p]
+                    except KeyError:
+                        print '(Info) No param %s found!'%p
+                        continue
+                    else:
+                        actual_fit_p = parVals[''][p][0][0]*sigma_p
+                        if 'qq' in p:
+                            self.nominal_fit_res[p] = self.Rqq_MC*(1+actual_fit_p)
+                        else:
+                            self.nominal_fit_res[p] = actual_fit_p
+                # save the prior as nominal prior
+                self.nominal_prior = new_prior
+        print '(debug) nominal fit results:\n',self.nominal_fit_res
         # make a dataframe, print out, and save as csv
         sys_df = pd.DataFrame(sys_results)
         self.sys_df = sys_df
         print str(sys_df.round(4).T)
         tmp_str = self.outdir.split('/')[-1]
         sys_df.to_csv('sys_table_%s.csv'%tmp_str)
-	# calculate sys uncertainty, sigma_poi_sys =  sqrt(sigma_poi_include_sys^2-sigma_poi_nom^2)
+        # calculate sys uncertainty, sigma_poi_sys =  sqrt(sigma_poi_include_sys^2-sigma_poi_nom^2)
 
     def mleFit(self,model):
         """
@@ -643,7 +688,6 @@ class thetaFitter(object):
             str_out+='R_%s = %.3f\n'%(key,val)
         return str_out
 
-############### still working on this!!!! ################
     def fitToys(self,toy_dist,toy_param_val,toy_param_sigma,toy_param_name): # checked
         """
         Fit to toy experiment with input AFB fixed
@@ -659,11 +703,11 @@ class thetaFitter(object):
         R_proc_toy = self.simple_counter(histos)
         Rqq_input = R_proc_toy['qq']
 
-        print '\n(info) Toy experiments with %s = %s'%(toy_param_name,toy_param_val)
+        print '(info) Toy experiments with %s = %s'%(toy_param_name,toy_param_val)
         print '(info) Input R_process is { %s }'%self.dict_to_str(R_proc_toy)
 
         # do mle fit for generated toys
-        toy_fit = mle(self.model, 'toys:0.0', self.ntoys,with_covariance=False, signal_process_groups = {'': [] },chi2=True,options = self.toy_options,nuisance_prior_toys=toy_dist)
+        toy_fit = mle(self.model, 'toys:0.0', self.ntoys,nuisance_constraint=self.nominal_prior,with_covariance=False, signal_process_groups = {'': [] },chi2=True,options = self.toy_options,nuisance_prior_toys=toy_dist)
         fit_AFB,fit_chi2 = [],[]
         # self.ntoys = len(fit_AFB)
         all_AFB = toy_fit[''][toy_param_name]
@@ -695,16 +739,16 @@ class thetaFitter(object):
 
             # remember to convert fit AFB central value back to actual AFB, which is independent of choice of sigma
             actual_AFB = all_AFB[i][0]*toy_param_sigma
-            converted_fit_val.append(actual_AFB)
             if 'qq' in toy_param_name:
                 actual_AFB = self.Rqq_MC*(1+actual_AFB)
+            converted_fit_val.append(actual_AFB)
             # fit_AFB contains all fit results that has converted to physically meanningful val, independent of sigma
             fit_AFB.append(actual_AFB)
             # convert chi2 with ndof to chi2/ndof
             fit_chi2.append(all_chi2[i]*1.0/self.model_bins)
 
         converted_fit_val = numpy.array(converted_fit_val)
-        print '(debug)  converted_fit_val = %.3f +/- %.3f'%(converted_fit_val.mean(),converted_fit_val.std())
+        print '\n(debug)  converted_fit_val = %.3f +/- %.3f'%(converted_fit_val.mean(),converted_fit_val.std())
 
         # make histograms
         if toy_param_val<0:
@@ -723,9 +767,9 @@ class thetaFitter(object):
         #    canv_chi2.SaveAs('%s/chi2_toys_%s.png'%(self.outdir,postfix))
         if 'qq' in toy_param_name:
             mean_and_std = fit_results_AFB
-            return [hist_AFB,hist_chi2],mean_and_std,Rqq_input
+            return [hist_AFB,hist_chi2],mean_and_std,Rqq_input,converted_fit_val
         else:
-            return [hist_AFB,hist_chi2],fit_results_AFB,Rqq_input
+            return [hist_AFB,hist_chi2],fit_results_AFB,Rqq_input,converted_fit_val
 
 
     def plotPull(self,tfile):

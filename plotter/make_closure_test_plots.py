@@ -33,7 +33,7 @@ def make_neyman_plots(x,y2_down,y1_down,y,y1_up,y2_up,par_name,fname,title='',da
     outfile = rt.TFile(output_filename,'recreate')
 
     #TGraphErrors setup
-    n = len(x)-1
+    n = len(x)
     x_errs   = np.zeros(n,'float')
     x = np.array(x)
     y = np.array(y)
@@ -52,6 +52,11 @@ def make_neyman_plots(x,y2_down,y1_down,y,y1_up,y2_up,par_name,fname,title='',da
     twosigma_graph = rt.TGraphAsymmErrors(n,x,y,x_errs,x_errs,y2_err_down,y2_err_up)
     twosigma_graph.SetName('two_sigma')
 
+    # debug
+    to_print = [x,y2_down,y1_down,y,y1_up,y2_up,y1_err_up,y1_err_down,y2_err_up,y2_err_down]
+    for item in to_print:
+        continue
+        print item
     #closure test plot setup
 
     #Set graph attributes
@@ -65,7 +70,7 @@ def make_neyman_plots(x,y2_down,y1_down,y,y1_up,y2_up,par_name,fname,title='',da
     twosigma_graph.SetFillColor(rt.kYellow)
     twosigma_graph.SetTitle('Neyman Construction for '+par_name)
     twosigma_graph.GetXaxis().SetTitle('Input %s'%par_name)
-    twosigma_graph.GetYaxis().SetTitle('Fit A%s'%par_name)
+    twosigma_graph.GetYaxis().SetTitle('Fit %s'%par_name)
 
     #Interpolate given the central value
     
@@ -86,16 +91,19 @@ def make_neyman_plots(x,y2_down,y1_down,y,y1_up,y2_up,par_name,fname,title='',da
     x_high = max(x)+x_range/20.
     xp = np.linspace(min(x),max(x), 100)
 
-    plt.plot(x,y,'o',label='central')
+    fig1 = plt.figure()
+    ax1 = fig1.add_subplot(111)
+    ax1.plot(x,y,'o',label='central')
     for i in range(len(y_errs)):
-        plt.plot(x,y_errs[i],'+',label=y_errs_labels[i])
+        ax1.plot(x,y_errs[i],'+',label=y_errs_labels[i])
         # make fit line plot
-        plt.plot(xp, np.poly1d(y_errs_fit[i])(xp),'--')
+        ax1.plot(xp, np.poly1d(y_errs_fit[i])(xp),'--')
+    plt.xlim(x_low,x_high)
     plt.xlabel('Input %s'%par_name)
     plt.ylabel('Fit %s'%par_name)
     plt.legend(loc='best')
-    plt.savefig('Neyman_%s_check.pdf'%fname)
-    plt.xlim(x_low,x_high)
+    fig1.savefig('%s_Neyman_check.pdf'%fname)
+    plt.gcf().clear()
 
     # print out debug info
     print '(debug) fit_central: %.2f,%.2f'%tuple(fit_central.tolist())
@@ -108,9 +116,11 @@ def make_neyman_plots(x,y2_down,y1_down,y,y1_up,y2_up,par_name,fname,title='',da
     data_fit_two_sigma_down = (data_fit_central_value - fit2_up[1])/fit2_up[0]
     data_fit_two_sigma_up = (data_fit_central_value - fit2_down[1])/fit2_down[0]
 
-    print 'Central value = %.5f, minus one sigma = %.5f, plus one sigma = %.5f'%(data_fit_mean,data_fit_one_sigma_down,data_fit_one_sigma_up)
-    print ' minus two sigma = %.5f, plus two sigma = %.5f'%(data_fit_two_sigma_down,data_fit_two_sigma_up)
-    print 'FINAL RESULT: Parameter %s = %.5f + %.5f - %.5f (95%% CL = %.5f)'%(par_name,data_fit_mean,data_fit_one_sigma_up-data_fit_mean,abs(data_fit_one_sigma_down-data_fit_mean),data_fit_two_sigma_up)
+    print_res = '%s:\n'%par_name 
+    print_res = 'Central value = %.5f\nminus one sigma = %.5f, plus one sigma = %.5f'%(data_fit_mean,data_fit_one_sigma_down,data_fit_one_sigma_up)
+    print_res+='\nminus two sigma = %.5f, plus two sigma = %.5f'%(data_fit_two_sigma_down,data_fit_two_sigma_up)
+    print_res+='\nFINAL RESULT: Parameter %s = %.5f + %.5f - %.5f (95%% CL = %.5f)\n'%(par_name,data_fit_mean,data_fit_one_sigma_up-data_fit_mean,abs(data_fit_one_sigma_down-data_fit_mean),data_fit_two_sigma_up)
+    print print_res
 
     #Build the lines to indicate based on the data fit value
     lines = []
@@ -154,9 +164,10 @@ def make_neyman_plots(x,y2_down,y1_down,y,y1_up,y2_up,par_name,fname,title='',da
     neyman_canv.Write()
     twosigma_graph.Write()
     onesigma_graph.Write()
-    neyman_canv.SaveAs('Neyman_%s.pdf'%fname)
+    neyman_canv.SaveAs('%s_Neyman.pdf'%fname)
 
     outfile.Close()
+    return print_res
 
 
 if __name__ == "__main__":
