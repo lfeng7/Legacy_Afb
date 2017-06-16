@@ -6,6 +6,7 @@ import glob
 from optparse import OptionParser
 import ROOT
 from array import array
+import math
 
 # from angles_tools import *
 
@@ -31,6 +32,12 @@ parser.add_option('--evtstart', metavar='F', type='int', action='store',
                   default = 0,
                   dest='evtstart',
                   help='the evt to start')
+
+parser.add_option('--ttbar_type', metavar='F', type='string', action='store',
+                  default = 'none',
+                  dest='ttbar_type',
+                  help='type of ttbar templates. gg/qq/bkg')
+
 
 parser.add_option('--verbose', metavar='F', type='string', action='store',
                   default = 'no',
@@ -147,12 +154,15 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
     xf_mc = array('f',[-10.]) 
     mtt_mc = array('f',[-10.]) 
 
+    flip = array('i',[-10])
+
     br_defs = [('cos_theta',cos_theta,'cos_theta/F')]
     br_defs += [('xf',xf,'xf/F')]
     br_defs += [('mtt',mtt,'mtt/F')]
     br_defs += [('cos_theta_mc',cos_theta_mc,'cos_theta_mc/F')]
     br_defs += [('xf_mc',xf_mc,'xf_mc/F')]
     br_defs += [('mtt_mc',mtt_mc,'mtt_mc/F')]
+    br_defs += [('flip',flip,'flip/I')]
 
     # Add float branch into ttree
     for ibr in br_defs:
@@ -184,6 +194,8 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
         print 'Is ttbar MC sample! Will get true angles ,x_f and Mtt!'
 
     # Loop over entries
+    num_qqbar_evts = 0
+    num_qqbar = 0
     n_evt = 0
     for iev in range(evt_start,tmptree.GetEntries()):
         # Reset all vector containers
@@ -192,7 +204,9 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
         # Progress report
         if iev%5000 == 0 : print 'processing event',iev 
         # Break at the given event number
-        if iev == evt_end : print 'Finish processing. Quit at event',evt_end; break ;
+        if iev == evt_end : 
+            print 'Finish processing. Quit at event',evt_end; break ;
+        n_evt += 1
         
         tmptree.GetEntry(iev)
 
@@ -203,6 +217,30 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
         # Skip events that kinfit did not converge ( error flag == 4 )
         # if not tmptree.final_errflags[0]==0 : continue
         # h_cutflow.Fill('kinfit error',1)
+
+        tmp_type = 'bkg'
+        # only keep requested qqbar events
+        if is_ttbar == 1:
+            gen_pt = tmptree.gen_pt
+            gen_eta = tmptree.gen_eta
+            gen_phi = tmptree.gen_phi
+            gen_mass = tmptree.gen_mass
+            gen_pdgid = tmptree.gen_pdgid
+            # Check if it is qq->ttbar
+            if gen_pdgid[0]+gen_pdgid[1] ==0 :
+                tmp_type = 'qqbar'
+                num_qqbar += 1
+            elif gen_pdgid[0] == 21 and gen_pdgid[1] == 21:
+                tmp_type = 'gg'
+            elif gen_pdgid[0] != 21 and gen_pdgid[1] != 21:
+                tmp_type = 'q1q2'
+            elif gen_pdgid[0] == 21 or gen_pdgid[1] == 21:
+                tmp_type = 'qg'
+            else :
+                tmp_type = 'unknown'
+
+            # skip this event if not the required ttbar type
+            if options.ttbar_type not in tmp_type and options.ttbar_type != 'none' :  continue
 
         # Book the branches from input ttree
         # reco_p4 is a list of tlep_p4,thad_p4,wlep_p4,whad_p4
@@ -241,49 +279,41 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
         true_xf = -2.
         true_mtt = -2.
         true_cos_theta = -2.
-        tmp_type = 'bkg'
         # Get new values for true qqbar->ttbar events
         if is_ttbar == 1:
-            gen_pt = tmptree.gen_pt
-            gen_eta = tmptree.gen_eta
-            gen_phi = tmptree.gen_phi
-            gen_mass = tmptree.gen_mass
-            gen_pdgid = tmptree.gen_pdgid
-            # Check if it is qq->ttbar
-            if gen_pdgid[0]+gen_pdgid[1] ==0 : 
-                tmp_type = 'qqbar'
-            elif gen_pdgid[0] == 21 and gen_pdgid[1] == 21:
-                tmp_type = 'gg'
-            elif gen_pdgid[0] != 21 and gen_pdgid[1] != 21:
-                tmp_type = 'q1q2'
-            elif gen_pdgid[0] == 21 or gen_pdgid[1] == 21:
-                tmp_type = 'qg'
-            else : 
-                tmp_type = 'unknown'
-
             # Make 4vecs for t,tbar,q,qbar
             true_t_p4 = ROOT.TLorentzVector()
             true_tbar_p4 = ROOT.TLorentzVector()
             true_q_p4 = ROOT.TLorentzVector()
             # Loop over gen pars to set p4
-            q_pdgids = [1,2,3,4]
+            q_pdgids = [1,2,3,4,5]
             q_ids,q_pzs = [],[]
             for i in range(gen_pt.size()):
                 ipt = gen_pt[i]; ieta = gen_eta[i]; iphi = gen_phi[i]; imass = gen_mass[i];
-                if gen_pdgid[i] in q_pdgids : 
+                if gen_pdgid[i] in q_pdgids and i<=1 : 
                     true_q_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
                     q_ids.append(gen_pdgid[i])
-                    q_pzs.append(true_q_p4.Pz())
+                    if math.isnan(true_q_p4.Pz()):
+                        q_pzs.append(ieta)
+                    else:
+                        q_pzs.append(true_q_p4.Pz())
                 if gen_pdgid[i] == 6 : true_t_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
                 if gen_pdgid[i] == -6 : true_tbar_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
             # Get true cos,xf,mtt
             q_pz = 0.0
             if len(q_ids) == 1:
                 q_pz = q_pzs[0]
+                num_qqbar_evts += 1
             true_results = get_true_angles(true_t_p4,true_tbar_p4,q_pz)
             true_xf = true_results[0]
             true_mtt = true_results[1]
-            true_cos_theta = true_results[2]           
+            if len(q_ids) == 1:
+                true_cos_theta = true_results[2]           
+                flip[0] = true_results[3]
+            else:
+                print q_ids
+
+                flip[0] = -10
             # push back true quantities
             xf_mc[0] = true_xf
             mtt_mc[0] = true_mtt
@@ -294,6 +324,9 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
         # Fill this entry
         if options.slim == 'yes' and tmp_type!='qqbar':continue
         newtree.Fill()
+    # debug
+    print 'fraction_qqbar_evts by checking only 1 quark: %.3f'%(num_qqbar_evts*1.0/n_evt)
+    print 'fraction_qqbar by checking id1+id2==0: %.3f'%(num_qqbar*1.0/n_evt)
 
     # Write and close files
     fout.Write()

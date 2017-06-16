@@ -124,13 +124,20 @@ def get_true_angles(mc_t,mc_tbar,qz=0):
     proton2_vec = proton2_vec*(1.0/proton2_vec.Mag());
     # find the unit bisectors direction
     bisector_vec = (proton_vec+proton2_vec)*(1.0/(proton_vec+proton2_vec).Mag());
+
+    cos_theta_cs=top_vec.Dot(bisector_vec);
+
     # Make sure unit bisectors direction is the same as mc_q direction
     if bisector_vec.Pz()*qz < -0.1 : # aka bisector and true qz are in opposite direction and qz exists!
         bisector_vec *= -1.0
+        flipped = 1
+    else:
+        flipped = 0
+    #    print 'bisector_vec.Pz() = %.2f, qz = %.1f,cos_theta_cs=%.2f, x_f=%.2f, ttbar_mass_data=%.1f'%(bisector_vec.Pz(),qz,cos_theta_cs,x_f,ttbar_mass_data)
     #find the CS angle
     cos_theta_cs=top_vec.Dot(bisector_vec);
 
-    return [x_f,ttbar_mass_data,cos_theta_cs]
+    return x_f,ttbar_mass_data,cos_theta_cs,flipped
 
 def Get_beta(m1,m2,mtt):
     return math.sqrt(1-2*(m1*m1+m2*m2)/pow(mtt,2)+pow((m1*m1-m2*m2),2)/pow(mtt,4))

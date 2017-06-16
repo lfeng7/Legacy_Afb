@@ -142,6 +142,7 @@ chain.Draw(var2+">>"+name2,""+ cut, "goff")
 newhist2.SetLineColor(ROOT.kRed)
 newhist2.SetFillColor(0)
 newhist2.SetLineWidth(2)
+
 # newhist2.SetLineStyle(2)	
 # newhist2.SetStats(0)
 if scale:
@@ -175,6 +176,8 @@ if log == "yes":
 	c.SetLogy()
 
 newhist.SetMaximum(max(newhist.GetMaximum(), newhist2.GetMaximum()) * 1.05)
+newhist.SetMinimum(1e-4)
+newhist2.SetMinimum(1e-4)
 
 
 
