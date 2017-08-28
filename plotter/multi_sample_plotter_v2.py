@@ -268,7 +268,7 @@ plotdir = 'plots/'
 if not os.path.exists(plotdir):
     os.mkdir(plotdir)
     print 'Creating new dir '+plotdir
-c.SaveAs(plotdir+name + ".png")
+c.SaveAs(plotdir+name + ".pdf")
 #c.SaveAs(plotdir+name + ".root")
 
     

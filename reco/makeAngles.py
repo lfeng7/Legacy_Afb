@@ -212,7 +212,13 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
 
         h_cutflow.Fill('no cut',1)
         # Apply trigger....
-        if not tmptree.trigger[0] and options.applytrigger == 'yes' : continue
+        try:
+            tmptree.trigger[0]
+        except AttributeError:
+            if iev==0:
+                print ('No trigger branch found!')
+        else:
+            if not tmptree.trigger[0] and options.applytrigger == 'yes' : continue
         h_cutflow.Fill('trigger',1)
         # Skip events that kinfit did not converge ( error flag == 4 )
         # if not tmptree.final_errflags[0]==0 : continue
@@ -252,7 +258,10 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
         thad_eta = tmptree.reco_eta[1]
         thad_phi = tmptree.reco_phi[1]
         thad_mass = tmptree.reco_mass[1]        
-        lep_charge = tmptree.lep_charge[0]
+        try:
+            lep_charge = tmptree.lep_charge[0]
+        except TypeError:
+            lep_charge = tmptree.lep_charge
         # Make 4vec of tlep and thad
         tlep_p4 = ROOT.TLorentzVector()
         thad_p4 = ROOT.TLorentzVector()
@@ -296,7 +305,8 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
                     if math.isnan(true_q_p4.Pz()):
                         q_pzs.append(ieta)
                     else:
-                        q_pzs.append(true_q_p4.Pz())
+                        q_pzs.append(ieta) # switch from buggy pz to eta
+                        #q_pzs.append(true_q_p4.Pz())
                 if gen_pdgid[i] == 6 : true_t_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
                 if gen_pdgid[i] == -6 : true_tbar_p4.SetPtEtaPhiM(ipt,ieta,iphi,imass)
             # Get true cos,xf,mtt
@@ -310,8 +320,6 @@ def makeAngles(tfile,sample_name,evt_start=0,evt_to_run=1000,isFakeLep='no'):
             if len(q_ids) == 1:
                 true_cos_theta = true_results[2]           
                 flip[0] = true_results[3]
-            else:
-                print q_ids
 
                 flip[0] = -10
             # push back true quantities

@@ -8,11 +8,12 @@ argv=sys.argv[1:]
 if len(argv)==0:
 	print """
 	Usage: 
-	python python plot_thetaTemplates.py temp_angles/angles_data_SingleEl_Run2012ABCD.root  (verbose)
+	python plot_thetaTemplates.py temp_angles/angles_data_SingleEl_Run2012ABCD.root  (verbose)
 	"""
 	sys.exit(1)
 
 inputfile = argv.pop(0)
+lep_type = argv.pop(0)
 argv = ' '.join(argv)
 
 is_verbose = False
@@ -23,7 +24,7 @@ if 'fixed' in argv:
 	bin_type = 'fixed'
 	
 
-self = tempPlotter.plotter(template_file=inputfile, verbose=is_verbose, bin_type=bin_type)
+self = tempPlotter.plotter(template_file=inputfile, verbose=is_verbose, bin_type=bin_type,lep_type=lep_type)
 self.main()
 print '(MAIN) All finished.'
 

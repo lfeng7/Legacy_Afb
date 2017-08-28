@@ -139,6 +139,7 @@ if name == 'blank': name = var
 if title == '': title=cut
 # loop over files
 ymax = 0
+ymin = 10000000
 hists = []
 for i,ifile in enumerate(files):
     ttree = ifile.Get(treename)
@@ -168,8 +169,9 @@ for i,ifile in enumerate(files):
     newhist1.GetXaxis().SetTitleSize(0.04)
     if scale:
         newhist1.Scale(1/newhist1.Integral())
-    newhist1.SetMinimum(0)
+        newhist1.SetMinimum(0)
     ymax = max(ymax,newhist1.GetMaximum())
+    ymin = min(ymin,newhist1.GetMinimum())
     newhist1.SetTitle(title)
     hists.append(newhist1)
 
@@ -187,6 +189,7 @@ labels = []
 labels = label.split(' ')
 for i,ihist in enumerate(hists):
     ihist.SetMaximum(ymax*1.1)
+    ihist.SetMinimum(ymin*1.1)
     if i==0 : ihist.Draw('hist')
     else : ihist.Draw("same hist")
     #leg.SetTextSize(0.02)
@@ -204,7 +207,9 @@ if not os.path.exists(plotdir):
     os.mkdir(plotdir)
     print 'Creating new dir '+plotdir
 
-c.SaveAs(plotdir+name + ".png")
+c.SaveAs(plotdir+name + ".pdf")
+c.SaveAs(plotdir+name + ".root")
+
 
 if save.lower() in ['true','yes']:
     rootdir = plotdir+'root/'

@@ -7,7 +7,7 @@ rt.gROOT.Macro( os.path.expanduser( '~/rootlogon.C' ) )
 rt.gROOT.SetBatch(True)
 
 DEGREE = 1 # degree of polynomials
-common_text = 'CMS Simulation, 19.7 fb^{-1} at #sqrt{s} = 8 TeV' 
+common_text = 'Simulation' 
 
 def main():
     # def make_neyman_plots(x,y2_down,y1_down,y,y1_up,y2_up,par_name,fname,data_fit_central_value=0.1):
@@ -139,7 +139,7 @@ def make_neyman_plots(x,y2_down,y1_down,y,y1_up,y2_up,par_name,fname,title='',da
     leg.AddEntry(onesigma_graph,'Mean values','PL')
     leg.AddEntry(onesigma_graph,'#pm 1 #sigma','F')
     leg.AddEntry(twosigma_graph,'#pm 2 #sigma','F')
-    leg.AddEntry(lines[0],'data fit','L')
+#    leg.AddEntry(lines[0],'data fit','L')
 
     #The line to go on the closure test plots
     otherline = rt.TLine(x[0],x[0],x[n-1],x[n-1])
@@ -153,6 +153,7 @@ def make_neyman_plots(x,y2_down,y1_down,y,y1_up,y2_up,par_name,fname,title='',da
     onesigma_graph.Draw('SAME E3')
     onesigma_graph.Draw('SAME PLX')
     for line in lines :
+        continue 
         line.Draw()
     leg.Draw()
 

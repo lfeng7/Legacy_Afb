@@ -160,7 +160,7 @@ class template:
         if self.ttbar_type == 'none':
             fout_name = '%s__template_%i.root'%(self.sample_name,self.evt_start)
         else :
-            fout_name = '%s_%s__template_%i.root'%(self.sample_name,self.ttbar_type,self.evt_start)
+            fout_name = '%s_%s__%s__template_%i.root'%(self.sample_name,self.ttbar_type,self.lep_type,self.evt_start)
         fout = ROOT.TFile(fout_name,'recreate')
         # Make output ttree
         newtree = ROOT.TTree(self.newtree_name,self.newtree_name)
@@ -392,7 +392,7 @@ class template:
 
             h_cutflow.Fill('no cut',1)
             # Skip events that kinfit did not converge ( error flag == 4 )
-            if not tmptree.final_errflags[0]==0 : continue
+            if not take(tmptree.final_errflags)==0 : continue
             h_cutflow.Fill('kinfit error',1)
 
             # separate TTbar into qq,gg,other templates
@@ -415,7 +415,7 @@ class template:
             thad_eta = tmptree.reco_eta[1]
             thad_phi = tmptree.reco_phi[1]
             thad_mass = tmptree.reco_mass[1]        
-            lep_charge = tmptree.lep_charge[0]
+            lep_charge = take(tmptree.lep_charge)
             # Make 4vec of tlep and thad
             tlep_p4 = ROOT.TLorentzVector()
             thad_p4 = ROOT.TLorentzVector()
@@ -425,7 +425,7 @@ class template:
             Qt[0] = math.sqrt(Q_Data.Px()*Q_Data.Px()+Q_Data.Py()*Q_Data.Py())
             cos_theta_cs[0] = take(tmptree.cos_theta)
             Feynman_x[0] = take(tmptree.xf)
-            Q_l[0] = tmptree.lep_charge[0]
+            Q_l[0] = take(tmptree.lep_charge)
 
             cos_theta_mc[0] = -10
             if tmptree.FindBranch('cos_theta_mc'):
@@ -436,14 +436,14 @@ class template:
             ttbar_mass_mc[0] = -10
             if tmptree.FindBranch('mtt_mc'):
                 if take(tmptree.mtt_mc) is not None : ttbar_mass_mc[0] = take(tmptree.mtt_mc)
-            lnL[0] = tmptree.final_chi2[0]
+            lnL[0] = take(tmptree.final_chi2)
 
             if has_chi2_new :
                 chi2_new[0] = tmptree.final_chi2_new
 
-            n_valid_jets[0] = tmptree.N_jets[0]
-            n_bTags[0] = tmptree.N_btag[0]
-            fitParValues[0] = tmptree.final_nv_pz[0]
+            n_valid_jets[0] = take(tmptree.N_jets)
+            n_bTags[0] = take(tmptree.N_btag)
+            fitParValues[0] = take(tmptree.final_nv_pz)
             for i in range(tmptree.kinfit_results.size()):
                 fitParValues[i+1] = tmptree.kinfit_results[i] 
 
@@ -500,7 +500,7 @@ class template:
                 pileup_reweight_hi[0] = take(tmptree.w_PU_up)
 
                 if tmptree.FindBranch('weight_top_pT'):
-                    top_pT_reweight[0]  = tmptree.weight_top_pT[0]/toppt_scale
+                    top_pT_reweight[0]  = take(tmptree.weight_top_pT)/toppt_scale
 
                 if tmptree.FindBranch('w_PDF_up'):
                     Pdf_weights_hi[0] = tmptree.w_PDF_up    
@@ -535,7 +535,7 @@ class template:
 
 
                 # PU
-                pileup_real[0] = tmptree.mc_pileup_events[0]
+                pileup_real[0] = take(tmptree.mc_pileup_events)
                 # total weight
                 correction_weight[0] = top_pT_reweight[0]*btag_eff_reweight[0]*lepID_reweight[0]*trigger_reweight[0]*pileup_reweight[0]
                 correction_weight[0]*= lepIso_reweight[0]*tracking_reweight[0]
@@ -580,7 +580,7 @@ class template:
             # Match reco t's and w's with gen objects using deltaR for TT semilep events only
             do_Matching = 0
             if is_TT_MC:
-                if tmptree.gen_type[0] == self.lep_type:
+                if tmptree.gen_type[0] == take(self.lep_type):
                     do_Matching = 1
 
             # initialization

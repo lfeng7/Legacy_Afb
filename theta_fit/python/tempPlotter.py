@@ -12,12 +12,12 @@ from collections import OrderedDict
 DEBUG_RUNS = -1
 SYS_debug = 'all'
 
-DEBUG_RUNS = 1
-SYS_debug = 'JER'
+#DEBUG_RUNS = 1
+#SYS_debug = 'JER'
 
 class plotter(object):
     """docstring for plotter"""
-    def __init__(self, template_file , verbose = False,bin_type='fixed'):
+    def __init__(self, template_file , lep_type, verbose = False,bin_type='fixed'):
         super(plotter, self).__init__()
         self.input_file = template_file
         self.verbose = verbose
@@ -37,6 +37,7 @@ class plotter(object):
         self.process_counts = OrderedDict() # for total number of events given the 1D templates , for R_process calculation
         self.bin_type = bin_type
         self.shapes_to_compare = ['qq','gg','WJets','other_bkg']
+        self.lep_type = lep_type
 
     def main(self):
         """
@@ -454,7 +455,7 @@ class plotter(object):
             istack = self.stacks[key]
             data_hist = value
             # def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'h',logy=False):
-            c_compare,h_err = helper.comparison_plot_v1(mc_=istack,data_=data_hist,outputdir=self.output_src_dir,legend=self.legend,event_type='%s/%s'%(self.output_dir,key),bin_type = self.bin_type)
+            c_compare,h_err = helper.comparison_plot_v1(mc_=istack,data_=data_hist,outputdir=self.output_src_dir,legend=self.legend,event_type='%s/%s'%(self.output_dir,key),bin_type = self.bin_type,lep_type=self.lep_type)
 
         print '(info) Done making data/mc comparison plots.'
 
