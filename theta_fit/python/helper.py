@@ -176,7 +176,7 @@ def getColors(name):
     
 # This is specifically for comparing the stacked MC plots with data adding residule plots too
 import math
-def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',logy=False,draw_option = 'hist',outputdir='',lep_type = 'mu'):
+def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',logy=False,draw_option = 'hist',outputdir='',lep_type = '#mu + Jets'):
     # reset some tdrStyle
     ROOT.tdrStyle.SetTitleY(0.9);
     ROOT.tdrStyle.SetStatY(0.97);
@@ -332,10 +332,7 @@ def comparison_plot_v1(mc_,data_,legend,event_type='plots',bin_type = 'fixed',lo
     legend.SetFillColor(0)   
 
     x_histo_pad.cd();
-    if lep_type == 'mu':
-        pt = ROOT.TLatex(.2,.84,"#mu + Jets");  
-    else:
-        pt = ROOT.TLatex(.2,.84,"e + Jets");
+    pt = ROOT.TLatex(.2,.84,lep_type);  
 
     pt.SetNDC(ROOT.kTRUE);
     pt.Draw();

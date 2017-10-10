@@ -16,7 +16,9 @@ class thetaTemp(object):
     Take a root file w/ ttree (for Data) or smoothed 3D templates (for MC) 
     and create a single root file with all templates 
     """
-    def __init__(self, outputName, inputFile, lep_type, isTTree=False, txtfile=None, use_MC_DATA=False, top_reweight=True,JEC_sys='nominal', use_sys = True, verbose = False, bin_type = 'fixed', nevts = -1):
+    def __init__(self, outputName, inputFile, lep_type, isTTree=False, txtfile=None, use_MC_DATA=False, \
+        top_reweight=True,JEC_sys='nominal', use_sys = True, verbose = False, \
+        bin_type = 'fixed', nevts = -1, lep_combo = False):
         """
         inputFile is a list of path of input template root files (for ttree) or a single file for MC
         outputName is the name for output thetaTemp.root file
@@ -42,6 +44,7 @@ class thetaTemp(object):
         self.use_sys = use_sys
         self.JEC_sys = JEC_sys # nominal,JES__minus,JES__plus, JER__minus,JER__plus
         self.AFB_sigma=1.0 # one sigma deviation of AFB from zero
+        self.lep_combo = lep_combo
         if txtfile is None:
             txtfile = 'MC_input_with_bkg.txt'
         self.samples_obj = samples.samples(txtfile,self.verbose)
@@ -457,7 +460,12 @@ class thetaTemp(object):
             if self.verbose : print '(Debug) Add twice is %s\n'%str(add_twice)
         # Write proper unrolled 1D templates into thetaTemp file
         for i,itemp in enumerate(tmp_objects):
-            self.Add_1D_temp(template=tmp_objects[i],tempName=tmpNames[i],tempTitle=tmpNames[i])
+            # where theta template name is given
+            if self.lep_combo:
+                template_name = '%s_%s'%(self.lep_type,tmpNames[i])
+            else:
+                template_name = tmpNames[i]
+            self.Add_1D_temp(template=tmp_objects[i],tempName=template_name,tempTitle=template_name)
             # further, write original projections into aux file for later conparisons
             self.output_original_templates(template=tmp_objects[i])
 
@@ -475,10 +483,10 @@ class thetaTemp(object):
         self.outfile.cd()
         # First get Ntt,Nbkg,Nqq
         self.nominal_hist_map={}
-        self.nominal_hist_map['qq'] = ('f_plus__qq','f_minus__qq')
-        self.nominal_hist_map['gg'] = ('f_plus__gg','f_minus__gg')
-        self.nominal_hist_map['WJets'] = ('f_plus__WJets','f_minus__WJets')
-        self.nominal_hist_map['other_bkg'] = ('f_plus__other_bkg','f_minus__other_bkg')
+        self.nominal_hist_map['qq'] = ('%s_f_plus__qq'%self.lep_type,'%s_f_minus__qq'%self.lep_type)
+        self.nominal_hist_map['gg'] = ('%s_f_plus__gg'%self.lep_type,'%s_f_minus__gg'%self.lep_type)
+        self.nominal_hist_map['WJets'] = ('%s_f_plus__WJets'%self.lep_type,'%s_f_minus__WJets'%self.lep_type)
+        self.nominal_hist_map['other_bkg'] = ('%s_f_plus__other_bkg'%self.lep_type,'%s_f_minus__other_bkg'%self.lep_type)
         hist_map = self.nominal_hist_map
 
         Nqq = 0
@@ -488,7 +496,7 @@ class thetaTemp(object):
         for hist in self.thetaHistList:
             iname = hist.GetName()
             self.thetaHistList_map[iname] = hist
-            if iname in hist_map['qq']:
+            if iname in hist_map['qq']: # iname is like f_plus__qq or el_f_plus__qq, depend on if is lep combined
                 Nqq += hist.Integral()
             elif iname in hist_map['gg']:
                 Ngg += hist.Integral()
@@ -541,8 +549,13 @@ class thetaTemp(object):
                     if ihist_nominal==0:
                         print '(Error) No %s 1D temp found!'%iname
                         sys.exit(1)
-                    new_plus_name = '%s__R_%s__plus'%(iname,process_name)
-                    new_minus_name = '%s__R_%s__minus'%(iname,process_name)
+                    if process_name != 'qq':
+                        print 'process_name = ',process_name
+                        new_plus_name = '%s__R_%s_%s__plus'%(iname,process_name,self.lep_type)
+                        new_minus_name = '%s__R_%s_%s__minus'%(iname,process_name,self.lep_type)
+                    else:                        
+                        new_plus_name = '%s__R_%s__plus'%(iname,process_name)
+                        new_minus_name = '%s__R_%s__minus'%(iname,process_name)
                     ihist_scaled_plus = ihist_nominal.Clone(new_plus_name)
                     ihist_scaled_minus = ihist_nominal.Clone(new_minus_name)
                     ihist_scaled_plus.Scale(iSF_plus)

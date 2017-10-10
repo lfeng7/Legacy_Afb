@@ -28,7 +28,7 @@ class plotter(object):
         self.all_hist = []
         self.projections = OrderedDict() # {'wjets_plus':[hist_cs,hist_xf,hist_mass],,,}
         self.process = OrderedDict()
-        self.observables = ['plus','minus','comb']
+        self.observables = ['comb']
         self.stack_lists = ['x','y','z']
         self.stack_xaxis = ['cos#theta*','|x_{F}|','M_{tt}(GeV)']
         self.stacks = {} # keys: 'plus_x','minus_y' etc
@@ -113,7 +113,7 @@ class plotter(object):
                     # Keep data projections in another hashtable
                     self.DATA_proj[stack_key] = ihist
                 # add to legend
-                if stack_key=='plus_x':
+                if stack_key in ['plus_x','el_f_plus_x']:
                     print '(info) Adding %s into stack'%iprocess_title
                     if iprocess != 'DATA':
                         self.legend.AddEntry(ihist,iprocess_title,"F")
@@ -192,6 +192,10 @@ class plotter(object):
         Write all control stuff in an aux.root file
         """ 
         all_templates_names = helper.GetListTH1D(self.template_file)
+        # get all observable names
+        obs_names = list(set([item.split('__')[0] for item in all_templates_names]))
+        self.observables += obs_names
+        # add templates into nominal or systematic list
         self.all_templates = []
         self.nominal_templates = []
         # print '(info) Keeping these hists.'
@@ -452,10 +456,29 @@ class plotter(object):
             pass
         # Loop over data projections and make plots
         for key,value in self.DATA_proj.iteritems():
+            # print '[data_proj] keys:',key
             istack = self.stacks[key]
             data_hist = value
             # def comparison_plot_v1(mc_,data_,legend,event_type='plots',draw_option = 'h',logy=False):
-            c_compare,h_err = helper.comparison_plot_v1(mc_=istack,data_=data_hist,outputdir=self.output_src_dir,legend=self.legend,event_type='%s/%s'%(self.output_dir,key),bin_type = self.bin_type,lep_type=self.lep_type)
+            lep_type_ = self.lep_type
+            # find lep charge type, plus or minus
+            if 'plus' in key:
+                charge_type = 'Q>0'
+            elif 'minus' in key:
+                charge_type = 'Q<0'
+            else:
+                charge_type = 'Charge combined'
+            # assign lep type, to be e+jets, mu+jets or l+jets
+            if self.lep_type=='combo' :
+                if 'el' in key:
+                    lep_type_ = 'e+Jets'
+                elif 'mu' in key:
+                    lep_type_ = '#mu + Jets'
+                else:
+                    lep_type_ = 'l+Jets'
+            c_compare,h_err = helper.comparison_plot_v1( mc_=istack,data_=data_hist,outputdir=self.output_src_dir,\
+                legend=self.legend,event_type='%s/%s'%(self.output_dir,key),bin_type = self.bin_type,\
+                lep_type='%s,%s'%(lep_type_,charge_type) )
 
         print '(info) Done making data/mc comparison plots.'
 
@@ -490,21 +513,21 @@ class plotter(object):
         for key,value in self.process_counts.iteritems():
             if value==0:continue
             towrite += '%15s,%15i,%15.1f%%\n'%(key,value,value*1.0/total_temp_counts*100)
-        # Add AFB from data
-        data_cs_proj = [self.projections['DATA__minus'][0],self.projections['DATA__plus'][0]]
-        bin_edge1 = data_cs_proj[0].FindFixBin(-1)
-        bin_edge2 = data_cs_proj[0].FindFixBin(-0.001)
-        bin_edge3 = data_cs_proj[0].FindFixBin(0.001)
-        bin_edge4 = data_cs_proj[0].FindFixBin(1)
-        # check if bin_edge2 and 3 correspond to 1 bin difference
-        if bin_edge3-bin_edge2!=1:
-            print '(debug) cs=-0.001 and 0.001 are not two adjecant bins!'
-        N_fwd,N_bwd = 0,0
-        for ihist in data_cs_proj:
-            N_bwd += ihist.Integral(bin_edge1,bin_edge2)
-            N_fwd += ihist.Integral(bin_edge3,bin_edge4)
-        AFB = (N_fwd-N_bwd)/(N_fwd+N_bwd)
-        towrite += '                Data AFB=%.3f\n'%AFB
+        # # Add AFB from data
+        # data_cs_proj = [self.projections['DATA__minus'][0],self.projections['DATA__plus'][0]]
+        # bin_edge1 = data_cs_proj[0].FindFixBin(-1)
+        # bin_edge2 = data_cs_proj[0].FindFixBin(-0.001)
+        # bin_edge3 = data_cs_proj[0].FindFixBin(0.001)
+        # bin_edge4 = data_cs_proj[0].FindFixBin(1)
+        # # check if bin_edge2 and 3 correspond to 1 bin difference
+        # if bin_edge3-bin_edge2!=1:
+        #     print '(debug) cs=-0.001 and 0.001 are not two adjecant bins!'
+        # N_fwd,N_bwd = 0,0
+        # for ihist in data_cs_proj:
+        #     N_bwd += ihist.Integral(bin_edge1,bin_edge2)
+        #     N_fwd += ihist.Integral(bin_edge3,bin_edge4)
+        # AFB = (N_fwd-N_bwd)/(N_fwd+N_bwd)
+        # towrite += '                Data AFB=%.3f\n'%AFB
         # write into file
         self.txt_file.write(towrite)
         print '(info) Done write_counts_to_file .'
