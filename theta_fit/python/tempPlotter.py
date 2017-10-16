@@ -113,7 +113,7 @@ class plotter(object):
                     # Keep data projections in another hashtable
                     self.DATA_proj[stack_key] = ihist
                 # add to legend
-                if stack_key in ['plus_x','el_f_plus_x']:
+                if stack_key in ['f_plus_x','el_f_plus_x']:
                     print '(info) Adding %s into stack'%iprocess_title
                     if iprocess != 'DATA':
                         self.legend.AddEntry(ihist,iprocess_title,"F")

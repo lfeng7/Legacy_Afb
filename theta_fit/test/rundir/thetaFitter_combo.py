@@ -157,7 +157,7 @@ class thetaFitter(object):
         # add model info into results
         self.report_model(self.model,self.txtfile)
         # Report the model in an html file
-        # par_summary = model_summary(self.model)
+        par_summary = model_summary(self.model)
 
         # maximum likelihood fit on data without signal (background-only).
         print '(info) Begin MLE fit.'
@@ -181,7 +181,7 @@ class thetaFitter(object):
             self.doToys()
 
         # Write as html+
-        # report.write_html('%s/htmlout'%self.outdir)
+        report.write_html('%s/htmlout'%self.outdir)
         # close files
         self.txtfile.close()
         self.fout.Close()
