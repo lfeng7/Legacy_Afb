@@ -28,7 +28,7 @@ class plotter(object):
         self.all_hist = []
         self.projections = OrderedDict() # {'wjets_plus':[hist_cs,hist_xf,hist_mass],,,}
         self.process = OrderedDict()
-        self.observables = ['comb']
+        self.observables = ['combo']
         self.stack_lists = ['x','y','z']
         self.stack_xaxis = ['cos#theta*','|x_{F}|','M_{tt}(GeV)']
         self.stacks = {} # keys: 'plus_x','minus_y' etc
@@ -120,7 +120,7 @@ class plotter(object):
                     else:
                         self.legend.AddEntry(ihist,iprocess_title,"lep")
                 # add total integral of hists into a list for later calculation of R_process
-                if 'comb_x' in stack_key:
+                if 'combo_x' in stack_key:
                     self.process_counts[iprocess] += ihist.Integral()
                 #    print '(info) Add counts of process %s from hist %s into count table'%(iprocess,stack_key)
         self.write_stack_to_auxfile(hist_list=self.stacks.values(),legend=self.legend)
@@ -170,7 +170,9 @@ class plotter(object):
             # template name: f_plus__DATA
             temp_name = itemp.GetName()
             proc_name = '__'.join(temp_name.split('__')[1:])
-            combined_key = 'f_comb__%s'%proc_name
+            obs_name = temp_name.split('__')[0]
+            combo_obs_name = '_'.join(obs_name.split('_')[:-1]+['combo'])
+            combined_key = '%s__%s'%(combo_obs_name,proc_name)
             if comb_temps.get(combined_key,0)==0:
                 print '(info) Making combined temp %s'%combined_key
                 tmp_hist = itemp.Clone(combined_key)
@@ -247,7 +249,7 @@ class plotter(object):
                 channel,process,SYS,pm = key.split('__')
             except ValueError:
                 continue
-            if 'plus' not in pm or 'comb' not in channel: continue
+            if 'plus' not in pm or 'combo' not in channel: continue
             if tmp_index==DEBUG_RUNS:
                 print 'End debug run for sys plotter!'
                 break
