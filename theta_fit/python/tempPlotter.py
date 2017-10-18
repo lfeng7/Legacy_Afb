@@ -26,6 +26,7 @@ class plotter(object):
             self.is_postfit = True
         self.template_file = ROOT.TFile(template_file)
         self.all_hist = []
+        # only contains nominal templates!
         self.projections = OrderedDict() # {'wjets_plus':[hist_cs,hist_xf,hist_mass],,,}
         self.process = OrderedDict()
         self.observables = ['combo']
@@ -78,7 +79,8 @@ class plotter(object):
         input: self.projections
         output: stackplots
         """
-        for iobs in self.observables: # three projections for plus and minus charge templates 
+        all_obs = list(set( [ item.split('__')[1] for item in self.projections.keys()]))
+        for iobs in all_obs: # three projections for plus and minus charge templates 
             # set up stacks
             for i,value in enumerate(self.stack_lists):
                 ikey = '%s_%s'%(iobs,value)
@@ -111,7 +113,7 @@ class plotter(object):
                     self.temp_shapes[stack_key].append(ihist)
                 else:
                     # Keep data projections in another hashtable
-                    self.DATA_proj[stack_key] = ihist
+                    self.DATA_proj[stack_key] = ihist.Clone()
                 # add to legend
                 if stack_key in ['f_plus_x','el_f_plus_x']:
                     print '(info) Adding %s into stack'%iprocess_title
@@ -183,6 +185,21 @@ class plotter(object):
                     self.nominal_templates.append(tmp_hist)
             else:
                 comb_temps[combined_key].Add(itemp)
+            # add charge and lep type combined templates for only nominal templates
+            lep_combo_key = 'lep_combo__%s'%proc_name
+            if len(temp_name.split('__'))<=2:
+                try:
+                    comb_temps[lep_combo_key]
+                except KeyError:
+                    print '(info) Making lep and chargecombined temp %s'%lep_combo_key
+                    tmp_hist_combo = itemp.Clone(lep_combo_key)
+                    tmp_hist_combo.SetDirectory(0)
+                    comb_temps[lep_combo_key]=tmp_hist_combo
+                    # add nominal temp combined to the corresponding list
+                    self.nominal_templates.append(tmp_hist_combo)            
+                else:
+                    comb_temps[lep_combo_key].Add(itemp)
+        
         # Append comb templates into self.templates
         tmp_hists = [val for key,val in comb_temps.iteritems()]
         self.all_templates.extend(tmp_hists)
@@ -217,7 +234,7 @@ class plotter(object):
         tmp_projections = {} # only has nominal template projections
         for ihist in self.all_templates:
             # get 3 projections from 1D templates and write in aux file
-            hname = ihist.GetName()+'_proj'
+            hname = ihist.GetName()+'__proj'
             template_obj =  template.template(name=hname,formatted_name=hname+' projected back from 1D hist',bin_type=self.bin_type)
             #   getTemplateProjections  return [self.histo_3D,self.histo_x,self.histo_y,self.histo_z]
             hist_proj = template_obj.getTemplateProjections(ihist)
@@ -228,11 +245,14 @@ class plotter(object):
             self.write_templates_to_auxfile([ihist])
             # assign projections to corresponding MC processes, for nominal templates only
             if ihist not in self.nominal_templates: continue
-            for key,value in self.process.iteritems():
-                for iobs in self.observables:
-                    newkey = '%s__%s'%(key,iobs) # wjets_plus etc
-                    if key in hname and iobs in hname:
-                        tmp_projections[newkey] = hist_proj[1:]
+            newkey = '%s__%s'%(hname.split('__')[1],hname.split('__')[0]) # wjets_plus etc
+            tmp_projections[newkey] = hist_proj[1:]
+
+#            for key,value in self.process.iteritems():
+#                for iobs in self.observables:
+#                    newkey = '%s__%s'%(key,iobs) # wjets_plus etc
+#                    if key in hname and iobs in hname:
+#                        tmp_projections[newkey] = hist_proj[1:]
 
         # re-arrange projections with the same order or self.process, only add nominal templates for plot stacks later
         for iprocess in self.process:
@@ -246,7 +266,7 @@ class plotter(object):
         tmp_index = 0
         for key in tmp_proj_all:
             try:
-                channel,process,SYS,pm = key.split('__')
+                channel,process,SYS,pm = key.split('__')[:4]
             except ValueError:
                 continue
             if 'plus' not in pm or 'combo' not in channel: continue
@@ -254,9 +274,9 @@ class plotter(object):
                 print 'End debug run for sys plotter!'
                 break
             tmp_index += 1
-            proj_plus = tmp_proj_all['%s__%s__%s__plus_proj'%(channel,process,SYS)]
-            proj_nom = tmp_proj_all['%s__%s_proj'%(channel,process)]
-            proj_minus = tmp_proj_all['%s__%s__%s__minus_proj'%(channel,process,SYS)]
+            proj_plus = tmp_proj_all['%s__%s__%s__plus__proj'%(channel,process,SYS)]
+            proj_nom = tmp_proj_all['%s__%s__proj'%(channel,process)]
+            proj_minus = tmp_proj_all['%s__%s__%s__minus__proj'%(channel,process,SYS)]
             for i in range(len(tmp_proj_all[key])):
                 # loop over proj x,y,z
                 hlist = [ proj_plus[i],proj_nom[i],proj_minus[i] ]
@@ -329,7 +349,7 @@ class plotter(object):
                     pass
                 # Need to find correct color first....
                 # f_plus__qcd_proj_x 
-                proc_name = ihist_0.GetName().split('__')[-1].split('_proj')[0]
+                proc_name = ihist_0.GetName().split('__')[1]
                 icolor = helper.getColors(proc_name)
                 ihist = ihist_0.Clone()
 #                ihist.SetDirectory(0)
@@ -347,7 +367,7 @@ class plotter(object):
                     isFirstHist=False
                 else:
                     ihist.Draw("hist same e0")
-            print '%s done'%key
+#            print '%s done'%key
             has_leg = True
             self.legend.Draw("same")
             # c.SaveAs('%s/%s_shapes.png'%(self.output_dir,key))
