@@ -21,9 +21,10 @@ parser.add_argument('-fixed', help='use fixed binning', action='store_true')
 parser.add_argument('-verbose', help='if verbose', action='store_true')
 parser.add_argument('-mc_data', help='use mc data sample for theoretical prediction.', action='store_true')
 parser.add_argument('-top_reweight', help='use top_pT_reweighting', action='store_true')
+parser.add_argument('-no_top_reweight', help='NOT use top_pT_reweighting', action='store_true')
 parser.add_argument('-use_sys', help='create sys templates', action='store_true')
 parser.add_argument('-JEC_sys',type=str, default='nominal', help='which JEC_sys to use: JES__minus/plus, JER__minus/plus')
-parser.add_argument('-lep_combo', help='if use lepton combination', action='store_true')
+parser.add_argument('-no_lep_combo', help='if not use lepton combination', action='store_true')
 
 
 args = parser.parse_args()
@@ -40,6 +41,16 @@ if not args.smoothed:
     inputfile = glob.glob(args.input)
 else:
     inputfile = args.input
+if args.no_top_reweight :
+    apply_top_reweight = False
+else:
+    apply_top_reweight = True
+
+if args.no_lep_combo:
+    lep_combo = False
+else:
+    lep_combo = True
+
 output_name = '%s'%args.output
 
 def bool_to_str(var):
@@ -50,13 +61,13 @@ def bool_to_str(var):
 
 print 'options: thetaTemp(outputName=%s,lep_type=%s, use_smoothed_temp=%s, bin_type=%s, use_MC_Data=%s,\
 	top_weight=%s,use_sys = %s, MC_info=%s, lep_combo=%s)'%(output_name,args.lep_type,bool_to_str(args.smoothed),\
-	bin_type,bool_to_str(args.mc_data),bool_to_str(args.top_reweight),bool_to_str(args.use_sys) ,\
-	 args.MC_info, bool_to_str(args.lep_combo))
+	bin_type,bool_to_str(args.mc_data),bool_to_str(apply_top_reweight),bool_to_str(args.use_sys) ,\
+	 args.MC_info, bool_to_str(lep_combo))
 
 self = thetaTempMaker.thetaTemp(JEC_sys=args.JEC_sys,outputName=output_name, inputFile=inputfile,\
 	lep_type = args.lep_type, isTTree=(not args.smoothed), txtfile=args.MC_info, \
-	bin_type=bin_type, use_MC_DATA=args.mc_data, top_reweight=args.top_reweight, \
-	use_sys=args.use_sys, verbose = args.verbose, nevts=args.nevts, lep_combo=args.lep_combo)
+	bin_type=bin_type, use_MC_DATA=args.mc_data, top_reweight=apply_top_reweight, \
+	use_sys=args.use_sys, verbose = args.verbose, nevts=args.nevts, lep_combo=lep_combo)
 self.main()
 print 'All finished.'
 

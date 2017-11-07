@@ -116,15 +116,15 @@ class plotter(object):
                     self.DATA_proj[stack_key] = ihist.Clone()
                 # add to legend
                 if stack_key in ['f_plus_x','el_f_plus_x']:
-                    print '(info) Adding %s into stack'%iprocess_title
+                    print '(info) Adding %s into stack legend'%iprocess_title
                     if iprocess != 'DATA':
                         self.legend.AddEntry(ihist,iprocess_title,"F")
                     else:
                         self.legend.AddEntry(ihist,iprocess_title,"lep")
                 # add total integral of hists into a list for later calculation of R_process
                 if 'combo_x' in stack_key:
-                    self.process_counts[iprocess] += ihist.Integral()
-                #    print '(info) Add counts of process %s from hist %s into count table'%(iprocess,stack_key)
+                    self.process_counts[iprocess] = ihist.Integral()
+                    print '(info) Add counts of process %s from hist %s into count table'%(iprocess,stack_key)
         self.write_stack_to_auxfile(hist_list=self.stacks.values(),legend=self.legend)
         print '(info) Done stackMaker.'
 

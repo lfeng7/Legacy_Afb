@@ -32,8 +32,8 @@ class thetaFitter(object):
         self.shape_sys_gauss_white = []
         self.sys_list = ['Nominal','btag_eff_reweight','trigger_reweight']
         self.shape_sys_gauss_white = 'all'        
-        self.flat_param = ['AFB','R_qq','R_WJets_el','R_other_bkg_el','qcd_rate','R_WJets_mu','R_other_bkg_mu']
-        self.non_inf_sys = ['JER','JES','Pdf_weights']
+        self.flat_param = ['AFB','R_qq','R_WJets_el','R_other_bkg_el','R_WJets_mu','R_other_bkg_mu']
+        self.non_inf_sys = ['JER','JES','Pdf_weights','qcd_rate']
         self.obs = 'el_f_minus'
         self.pois = ['AFB','R_qq','R_WJets_el','R_other_bkg_el','qcd_rate','R_WJets_mu','R_other_bkg_mu']
         self.pois_title = {'AFB':'A_{FB}','R_qq':'R_{q#bar{q}}'}
@@ -301,27 +301,22 @@ class thetaFitter(object):
         # where p is the parameter specified as first argument and lambda is the constant
         # in the second argument:
         # check if has qcd temp, if not , not adding qcd_rate sys
+        self.has_qcd = False
         if 'qcd' in model.get_processes('el_f_minus'):
             self.has_qcd = True
             model.add_lognormal_uncertainty('qcd_rate', math.log(1.2), 'qcd') # gauss, sigma=50%
-        else:
-            self.has_qcd = False
 
         # Set parameter ranges
         for p in model.distribution.get_parameters() :
             if p=='AFB' :
                 pass
-    #            model.distribution.set_distribution_parameters(p,typ='flat_distribution',range=[-1.0,1.0])
             elif p=='R_qq' or p=='wjets_rate' or p=='gg_rate' :
                 pass
-    #            model.distribution.set_distribution_parameters(p,typ='flat_distribution',range=[-5.0,inf])
             elif p=='qcd_rate':
-    #       pass
                 model.distribution.set_distribution_parameters(p, range = [-1.0, 1.0]) 
             else :
                 d = model.distribution.get_distribution(p)
                 if d['typ'] == 'gauss' :
-    #       pass
                     model.distribution.set_distribution_parameters(p, range = [-1.0, 1.0])        
         
         # the qcd is derived from data, so do not apply a lumi uncertainty on that:
@@ -357,6 +352,9 @@ class thetaFitter(object):
             self.model.distribution.set_distribution_parameters(p,range=[-inf,inf])
         self.model.distribution.set_distribution_parameters('qcd_rate',range=[-inf,inf]) 
         self.model.distribution.set_distribution_parameters('AFB',range=[-AFB_range,AFB_range])
+
+        # turn off qcd
+        #self.model.distribution.set_distribution('qcd_rate',typ='gauss',mean=-10.0,width=0.0,range=[-10.0,-10.0])
 
         # for sys
         print '(info) reset range for sys.'
@@ -718,6 +716,8 @@ class thetaFitter(object):
         histos = evaluate_prediction(self.model,toy_dist.get_means(),include_signal = False)
         R_proc_toy = self.simple_counter(histos)
         Rqq_input = R_proc_toy['qq']
+        # set input param val for pull plot 
+        input_param = toy_param_val
 
         print '(info) Toy experiments with %s = %s'%(toy_param_name,toy_param_val)
         print '(info) Input R_process is { %s }'%self.dict_to_str(R_proc_toy)
@@ -733,6 +733,7 @@ class thetaFitter(object):
         # toy_fit['']['lumi'] = [(-0.9563586273699287, 0.8486084490392977), (-0.8390765758997597, 0.89665414376131)] 
         if 'qq' in toy_param_name:
             fit_Rqq = []
+            input_param = Rqq_input
             for i in range(len(all_AFB)):
                 continue    
                 if i%50==1: print '(progress) simple_counter at %i toy'%i
@@ -771,8 +772,11 @@ class thetaFitter(object):
             postfix = 'minus%ipct'%(abs(toy_param_val)*100)
         else:
             postfix = 'plus%ipct'%(toy_param_val*100)
-        hist_AFB,canv_AFB,fit_results_AFB = self.plot_hist(data=fit_AFB,name='%s_%s'%(toy_param_name,postfix),xtitle='%s(fit)'%toy_param_name,title='%s for %i toys, input = %.2f'%(toy_param_name,self.ntoys,toy_param_val))
-        hist_chi2,canv_chi2,fit_results_chi2 = self.plot_hist(data=fit_chi2,name='chi2_%s'%postfix,xtitle='chi2/%i'%self.model_bins,title='chi2 for %i toys, AFB_input = %.2f'%(self.ntoys,toy_param_val))
+        hist_AFB,canv_AFB,fit_results_AFB = self.plot_hist(data=fit_AFB,name='%s_%s'%(toy_param_name,postfix),\
+        xtitle='%s(fit)'%toy_param_name,title='%s for %i toys, input = %.3f'%(toy_param_name,self.ntoys,input_param))
+
+        hist_chi2,canv_chi2,fit_results_chi2 = self.plot_hist(data=fit_chi2,name='chi2_%s'%postfix,\
+        xtitle='chi2/%i'%self.model_bins,title='chi2 for %i toys, AFB_input = %.2f'%(self.ntoys,toy_param_val))
 
         # compare Theta-fitter output for fit param
         print '(debug) Theta output %s = %.3f +/- %.3f'%(toy_param_name,fit_results_AFB[0],fit_results_AFB[1])
@@ -804,7 +808,7 @@ class thetaFitter(object):
             ihist = tfile.Get(histname)
             canv = ROOT.TCanvas()
             ihist.Draw()
-            canv.SaveAs('%s/pull_%s.png'%(self.outdir,histname))
+            canv.SaveAs('%s/pull_%s.pdf'%(self.outdir,histname))
         print '(info) Done plotPull.'
 
     def savePostFit(self,histos):
