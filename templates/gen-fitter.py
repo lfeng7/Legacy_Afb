@@ -14,7 +14,7 @@ import numpy as np
 # Some preset constants
 data_lumi = 19748 
 csvm = 0.679 
-top_mass = 173.3
+top_mass = 173.0
 
 
 # from angles_tools import *
@@ -38,9 +38,10 @@ class gen_fitter(object):
         alpha_minuit = TMinuit(2); alpha_minuit.SetFCN(self.alpha_fcn)
         #miscellaneous minuit stuff
         ierflag = Long(1); arglist = array('d',2*[-1])
-        alpha_minuit.mnexcm('SET PRINT', arglist, 2,ierflag); alpha_minuit.mnexcm('SET NOWARNINGS',arglist,2,ierflag)
         arglist[0]=100000.
         arglist[1]=100000.
+        start_val = 0.0
+        error_up = 1.0
 
         #add parameter
         """
@@ -55,10 +56,21 @@ class gen_fitter(object):
         IERFLG=0 if no problems
         >0 if MNPARM unable to implement definition
         """
-        alpha_minuit.mnparm(0,'alpha',0.1,0.3,-10.,10.,ierflag)
-        alpha_minuit.mnparm(1,'AFB',0.1,0.3,-0.9,0.9,ierflag)
+        alpha_minuit.mnparm(0,'alpha',start_val,0.1,0,0,ierflag)
+        alpha_minuit.mnparm(1,'AFB',start_val,0.1,0,0,ierflag)
+
         #minimize
-        alpha_minuit.mnexcm('MIGRAD',arglist,2,ierflag)
+        arglist[0] = 3.
+        alpha_minuit.mnexcm('SET PRINT', arglist, 1,ierflag); alpha_minuit.mnexcm('SET NOWARNINGS',arglist,1,ierflag)
+        # MIGRAD
+        alpha_minuit.SetErrorDef(error_up)
+        arglist[0] = 100000.
+        alpha_minuit.mnexcm('MIGRAD',arglist,0,ierflag)
+        # Minos
+        alpha_minuit.SetErrorDef(error_up)
+        arglist[0] = 0.
+        alpha_minuit.mnexcm('MINOS',arglist,0,ierflag)
+
         #get back the fitted alpha value
         fitted_alpha=Double(0.0); fitted_alpha_err=Double(0.0)
         fitted_AFB=Double(0.0); fitted_AFB_err=Double(0.0)
@@ -75,9 +87,12 @@ class gen_fitter(object):
 
         alpha = par[0]
         AFB = par[1]
-        lnL=0.
+        NLL=0. # the Negative log likelihood for minimization
+        nevts = self.ttree.GetEntries()
+
+        N_bad_evts = 0
         #loop over entries
-        for i in range(self.ttree.GetEntries()) :
+        for i in range(nevts) :
             # stop at nevts
             if i==self.nevts: continue
             self.ttree.GetEntry(i)
@@ -94,16 +109,20 @@ class gen_fitter(object):
             beta_tmp = 1-4*(top_mass/Mtt)**2
             if beta_tmp < 0 : continue
             beta = np.sqrt(beta_tmp)
-            # calc w_a
-            w_a = 2*cstar*(1+1/3*beta**2+(1-beta**2)+alpha*(1-1/3*beta**2))/\
-            (1+beta**2*cstar**2+(1-beta**2)+alpha*(1-beta**2*cstar**2))
-            f_L = 1+AFB*w_a
+            # calc likelihood , checked with formular (45)
+            f_L = (2+beta**2*cstar**2-beta**2+alpha*(1-beta**2*cstar**2))/\
+                    2*(2-2*beta**2/3+alpha*(1-beta**2/3)) + AFB*cstar
             if f_L>0 :
-                lnL+=2.0*np.log(f_L)*gen_w
+                NLL+= -2.0*np.log(f_L)*gen_w
             else :
-                lnL+= -10000000000.
-        print '    lnL = %.3f, alpha = %.3f, AFB = %.3f'%(-lnL,alpha,AFB) #DEBUG
-        f[0] = -lnL
+                N_bad_evts += 1
+                continue
+                NLL+= 10000000000.
+        f[0] = NLL
+
+        print "f = %.5f, alpha = %.5f, AFB = %.5f, N_bad_evts=%i, flag = %i, nevts = %i"%\
+                (f[0], alpha, AFB, N_bad_evts, flag, nevts);
+
 
 if __name__=='__main__':
 
