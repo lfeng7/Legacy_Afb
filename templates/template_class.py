@@ -475,7 +475,7 @@ class template:
                         Atop_MC.SetPtEtaPhiM(gen_pt[i],gen_eta[i],gen_phi[i],gen_mass[i])
 
                 # Get weights
-                tmp_w = GetAnglesWeights(top_MC,Atop_MC,tmptree.cos_theta_mc,alpha_input=alpha)
+                tmp_w = GetAnglesWeights(top_MC,Atop_MC,tmptree.cos_theta_mc,alpha_input=alpha,beta=True)
                 w_a[0],w_a_opp[0],w_s_xi[0],w_s_xi_opp[0] = tmp_w[0],tmp_w[1],tmp_w[2],tmp_w[3]
                 w_a_xi[0],w_a_xi_opp[0],w_s_delta[0],w_s_delta_opp[0] = tmp_w[4],tmp_w[5],tmp_w[6],tmp_w[7]
                 w_a_delta[0],w_a_delta_opp[0] = tmp_w[8],tmp_w[9]

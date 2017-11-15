@@ -3,6 +3,9 @@ from ROOT import *
 from math import sqrt
 import math
 
+alpha_table_amcnlo = {0:-1.27,1:-1.09,2:-0.55,3:-0.39,4:-0.28,5:-0.27,6:-0.28,7:-0.28,8:-0.27,9:-0.26}
+alpha_table_powheg = {0:-1.27,1:-1.09,2:-0.55,3:-0.39,4:-0.28,5:-0.27,6:-0.28,7:-0.28,8:-0.27,9:-0.26}
+
 # Get cos(theta*) for reco top pair p4
 def get_angles(reco_t,reco_tbar):
     
@@ -144,7 +147,13 @@ def Get_beta(m1,m2,mtt):
 
 
 # Get reweighting weights for qqbar->ttbar templates
-def GetAnglesWeights(Top_MC,ATop_MC,cos_theta_cs_mc,alpha_input=-0.129):
+def GetAnglesWeights(Top_MC,ATop_MC,cos_theta_cs_mc,beta=False,generator='amcnlo',alpha_input=-0.129):
+    # load alpha-table
+    if generator == 'amcnlo':
+        alpha_table = alpha_table_amcnlo
+    else:
+        alpha_table = alpha_table_powheg
+
     m1   = Top_MC.M();
     m2   = ATop_MC.M();
     mtt = (Top_MC+ATop_MC).M()
@@ -165,7 +174,10 @@ def GetAnglesWeights(Top_MC,ATop_MC,cos_theta_cs_mc,alpha_input=-0.129):
     # else if (nValidJets == 5)
     #   alpha = 0.143;
     # combined average alpha
-    alpha = alpha_input;
+    if beta:
+        alpha = alpha_table[int(beta_mc/0.1)]
+    else:
+        alpha = alpha_input;
     one_m_b2 = 1.0-beta_mc*beta_mc;
     b2c2 = beta_mc*beta_mc*cos_theta_cs_mc*cos_theta_cs_mc;
     otb2 = (1.0/3.0)*beta_mc*beta_mc;
